@@ -426,7 +426,52 @@ Factory-configured multi-sensor calibration with onboard extrinsic parameters un
 These characteristics, combined with the software integration and synchronization infrastructure described in Section 3.2, provide the foundation for rigorous evaluation of \ac{LiDAR}-based object detection performance and comparison with vision-based approaches as presented in Chapters 5 and 6.
 
             \subsubsection{Pinpoint GPS/INS}
-            
+
+The Pinpoint \ac{GPS}/\ac{INS} does two critical jobs in the Minion perception system: it provides precise global time for synchronizing all sensors, and it tracks the vessel's position and orientation for correcting \ac{LiDAR} data during motion.
+The \ac{GPS} receiver acts as the master clock for the entire synchronization hierarchy described in Section 3.2.2.1, while the integrated \ac{IMU} enables high-rate pose updates between \ac{GPS} fixes.
+
+Global Navigation Satellite System signals carry highly accurate timing information by their very nature—satellite positioning works by precisely measuring signal delay from multiple satellites with synchronized atomic clocks.
+The Pinpoint receiver extracts this timing and serves it over the vessel's network using Network Time Protocol.
+We assigned the \ac{GPS} unit a static IP address of 201.7.90.30 on the Minion network and configured it to broadcast \ac{GPS}-disciplined time via Network Time Protocol.
+The Atlas PC main computer syncs its clock to this \ac{GPS} source with typical accuracy in the tens to hundreds of nanoseconds, limited more by network latency than by \ac{GPS} accuracy itself.
+
+This \ac{GPS} time reference flows through the synchronization hierarchy to every computing resource on the platform.
+Atlas operates as a Network Time Protocol server for the NVIDIA Jetson Xavier camera computer, which then serves as a Precision Time Protocol master for the Livox Horizon \ac{LiDAR} sensors.
+The cascaded approach means timestamps from all sensors—cameras, \ac{LiDAR}, and \ac{GPS}/\ac{INS}—share a common time reference traceable to \ac{GPS} time.
+
+Beyond timekeeping, the \ac{GPS}/\ac{INS} system continuously tracks platform position and orientation, which we need for \ac{LiDAR} temporal aggregation.
+As described in Section 3.1.1.3, accumulating \ac{LiDAR} points over several seconds requires compensating for vessel motion during that period.
+The Pinpoint system fuses \ac{GPS} position measurements with \ac{IMU} acceleration and rotation data through an Extended Kalman Filter to produce pose estimates at rates far higher than \ac{GPS} alone could provide.
+\ac{GPS} fixes arrive at 1-10 Hz depending on satellite visibility, while the \ac{IMU} runs at hundreds of hertz.
+The fusion algorithm propagates pose estimates forward using \ac{IMU} integration between \ac{GPS} updates, then corrects accumulated drift when new \ac{GPS} measurements arrive.
+
+The resulting pose solution gives us six-degree-of-freedom state estimates—three-dimensional position and three-dimensional orientation—at high enough temporal resolution to interpolate platform pose to the exact timestamp of each \ac{LiDAR} point.
+This supports the transformation methodology in Chapter 5, where we transform \ac{LiDAR} points acquired at different times during motion to a common reference frame before projecting them onto camera images.
+
+The Pinpoint \ac{GPS}/\ac{INS} connects to the Minion computing infrastructure via Ethernet, using both Network Time Protocol for time distribution and User Datagram Protocol for pose data.
+\ac{ROS} driver nodes on the Atlas PC receive and parse the binary \ac{GPS}/\ac{INS} messages, publishing pose estimates as standard \ac{ROS} geometry messages.
+These messages include position (latitude, longitude, altitude), orientation (roll, pitch, yaw), uncertainty estimates, and \ac{GPS} fix quality flags.
+The \ac{ROS} tf2 library consumes these pose estimates to maintain the time-varying transformation tree relating sensor frames to platform and world frames, enabling automated coordinate transformation for sensor fusion.
+
+The \ac{GPS}/\ac{INS} defines the inertial reference frame for the platform, with position in geographic coordinates (WGS84 datum) and orientation relative to true north and local gravity.
+This world-referenced system serves as the common reference for transforming observations from multiple sensors acquired at different times during motion.
+Transforming from sensor-local frames to the \ac{GPS}/\ac{INS} world frame requires knowing the sensor-to-platform extrinsic calibration parameters.
+We determine these through calibration procedures described in Section 3.2.1.2 for cameras and Section 3.2.1.3 for \ac{LiDAR} sensors.
+Once we have extrinsic parameters, the \ac{GPS}/\ac{INS} pose solution lets us transform any sensor observation to world coordinates or to any other sensor's reference frame.
+
+Maritime environments create challenges for \ac{GPS}/\ac{INS} systems that differ from land vehicles.
+Water surface reflections cause multipath interference in \ac{GPS} signals, while vessel pitch and roll motion exercises the full range of the \ac{IMU}.
+The Pinpoint system was designed for marine applications and incorporates algorithms to handle these factors while maintaining accuracy during vessel maneuvering.
+\ac{GPS} accuracy degrades in areas with limited satellite visibility—near tall structures, bridges, or fjord-like coastal terrain.
+The \ac{IMU} provides short-term pose continuity during \ac{GPS} outages, though accumulated drift limits how long pure inertial navigation remains accurate.
+For our data collection, we operated in open water with good satellite visibility, ensuring consistent \ac{GPS} fix quality throughout recording sessions.
+
+The \ac{GPS}/\ac{INS} system enables two functions essential for multi-modal sensor fusion research.
+First, \ac{GPS}-disciplined time distributed to all sensors means timestamps from cameras, \ac{LiDAR}, and \ac{GPS} itself reference the same time base, giving us frame-accurate temporal association across modalities.
+Second, continuous pose estimates let us transform temporally distributed observations to common reference frames, supporting \ac{LiDAR} aggregation during motion and registration of sensor fields of view for fusion operations.
+Combined with the synchronization verification and drift correction procedures in Section 3.2.2, these capabilities provide the temporal and spatial foundation for rigorous object detection performance evaluation across sensing modalities.
+The \ac{GPS}/\ac{INS} thus serves not just as a navigation sensor but as critical infrastructure enabling the multi-modal perception analysis central to this research.
+
         \subsection{Compute and LAN}
         
     \section{Data Collection}
