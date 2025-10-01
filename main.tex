@@ -237,9 +237,188 @@ The resulting sensor configuration provides the geometric foundation for the com
 Detailed specifications of individual sensor components are presented in the following subsections.
 
             \subsubsection{HDR Camera}
-            
+
+The vision component of the Minion perception system employs three Leopard Imaging LI-USB30-IMX490-GW5400-GMSL2-065H \ac{HDR} cameras.
+These cameras were selected for their capability to handle the challenging lighting conditions characteristic of maritime environments, where high-contrast scenes with bright sky, reflective water surfaces, and shadowed objects demand extended dynamic range to preserve visual detail across the luminance spectrum \cite{thompson2023}.
+
+The Leopard Imaging IMX490 camera system is built around Sony's automotive-grade image sensor, designed for advanced driver assistance systems applications with similar environmental challenges to maritime perception.
+Table 3.1 presents the key specifications of the camera hardware.
+
+\begin{table}[h]
+\centering
+\caption{Leopard Imaging IMX490 HDR Camera Specifications}
+\begin{tabular}{ll}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Model & LI-USB30-IMX490-GW5400-GMSL2-065H \\
+Horizontal Resolution & 2880 pixels \\
+Vertical Resolution & 1860 pixels \\
+Aspect Ratio & 1.55:1 \\
+Maximum Frame Rate & 25 fps \\
+Horizontal Field of View & 65° \\
+Interface & USB 3.0 (UVC) \\
+HDR Capability & 120 dB \\
+\hline
+\end{tabular}
+\label{tab:hdr_camera_specs}
+\end{table}
+
+The 2880×1860 pixel resolution provides sufficient spatial detail for object detection at ranges relevant to autonomous surface vessel navigation, while the 25 frames-per-second maximum frame rate exceeds the temporal sampling requirements for typical vessel speeds and maneuverability constraints.
+The 65-degree horizontal field of view, when deployed across three cameras with overlapping coverage, delivers the wide forward-facing perception envelope described in Section 3.1.1.1.
+
+The IMX490 camera employs a two-stage interface architecture that separates the camera head from image signal processing.
+The camera sensor communicates via a Gigabit Multimedia Serial Link 2 interface to a secondary enclosure containing dedicated image signal processing hardware.
+This image signal processing unit, manufactured by Leopard Imaging, performs debayering, white balance, gamma correction, and \ac{HDR} tone mapping in a fixed processing pipeline with no end-user configurable parameters \cite{thompson2023}.
+The image signal processing enclosure provides a USB 3.0 interface configured to operate as a Universal Video Class device.
+Universal Video Class compliance ensures compatibility with standard operating system video capture interfaces without requiring proprietary drivers.
+In the Ubuntu Linux environment deployed on the Minion platform, the cameras are accessed through the Video for Linux version 2 subsystem, which provides a standardized kernel-level interface for video capture devices.
+
+Video capture from the \ac{HDR} cameras is implemented using the GStreamer multimedia framework, an industry-standard pipeline-based media processing library.
+GStreamer's modular architecture enables construction of complex video processing pipelines from individual functional elements connected in directed graphs.
+The \texttt{v4l2src} element interfaces with the Video for Linux version 2 kernel subsystem to acquire raw image frames from the camera, which are then processed through a pipeline incorporating format conversion, encoding, and streaming elements.
+The standard GStreamer video pipeline operates with timestamps relative to the start of the stream, which is insufficient for multi-sensor fusion applications requiring absolute time references for temporal alignment.
+To address this limitation, a custom GStreamer plugin was developed to inject absolute system timestamps into the video stream.
+This timestamp plugin is described in detail in Section 3.2.2.2, where the Supplemental Enhancement Information timestamp embedding methodology is presented.
+
+The custom timestamp plugin operates as a GStreamer pad probe attached to the source pad of the \texttt{v4l2src} element \cite{thompson2023}.
+Upon receiving each new image buffer from the camera, the plugin samples the system time via the POSIX \texttt{gettimeofday()} function, capturing the Unix epoch timestamp in milliseconds.
+This timestamp is then associated with the corresponding video frame through external comma-separated value logging, where the frame number and timestamp are written to a file creating a frame-to-time lookup table external to the video stream, or through in-band embedding, where the timestamp is embedded directly into the video bitstream as metadata that persists through encoding and streaming operations.
+The in-band timestamp embedding approach, detailed in Section 3.2.2.2, provides superior robustness by ensuring that timing information cannot be separated from the associated image data during recording, playback, or network transmission.
+This capability proves essential for the temporal drift analysis and correction procedures described in Section 3.2.2.3.
+
+Accurate timestamps require that the system clock from which they are derived maintains synchronization with the global time reference shared by all sensors on the platform.
+The \ac{HDR} camera system operates on the NVIDIA Jetson Xavier embedded computer, which synchronizes its system clock via Network Time Protocol with the Atlas PC main computing platform.
+The Atlas PC, in turn, derives time from the Pinpoint \ac{GPS} receiver, establishing a hierarchical time distribution architecture detailed in Section 3.2.2.1.
+Before launching the video capture pipeline, the camera enclosure software verifies that Network Time Protocol synchronization is established and that the system clock has been updated to \ac{GPS} time.
+Only after successful verification does the system begin video streaming, ensuring that all timestamps reflect \ac{GPS}-disciplined time from the first captured frame.
+This verification procedure prevents the recording of data with uncalibrated timestamps, which would compromise subsequent temporal alignment operations.
+
+The maritime operating environment presents several challenges that informed the camera selection and deployment strategy.
+The high dynamic range capability addresses the extreme brightness variations between sky, water, and shadowed vessel structures, while the automotive-grade sensor provides environmental sealing and extended operating temperature range suitable for outdoor deployment.
+The USB 3.0 interface enables placement of the camera sensor in weatherproof housing separate from computing hardware, with up to 5-meter cable runs supported by the USB 3.0 specification.
+The three cameras are mounted in individual weatherproof enclosures integrated into the camera enclosure assembly described in Section 3.1.2.2.
+This assembly provides power distribution, environmental protection, and network connectivity for all three cameras while maintaining the geometric relationships required for the perception geometry configuration.
+
+The IMX490 sensor's native \ac{HDR} capability combines multiple exposures within a single frame acquisition period, delivering 120 dB dynamic range without requiring sequential multi-exposure capture.
+This simultaneous \ac{HDR} approach avoids motion artifacts that would occur with temporal exposure bracketing, particularly important for a mobile platform operating in dynamic maritime environments with moving targets.
+Image quality validation and intrinsic calibration procedures are described in Section 3.2.1.1, where lens distortion characterization and camera matrix estimation are documented.
+The combination of wide dynamic range, moderate resolution, and calibrated geometric parameters provides the image quality necessary for training and evaluating vision-based object detection models as presented in Chapter 5.
+
+The camera hardware and integration methodology described in this section, originally developed by \cite{thompson2023}, provides a proven foundation for maritime perception research.
+The addition of in-band timestamp embedding and temporal drift correction, detailed in Section 3.2.2, represents the primary extension to this baseline system required for rigorous multi-modal sensor fusion analysis.
+
             \subsubsection{Livox Horizon}
-            
+
+The spatial sensing component of the Minion perception system employs three Livox Horizon solid-state \ac{LiDAR} units.
+These sensors were selected to replace the existing Velodyne mechanical spinning \ac{LiDAR} sensors based on superior point cloud density within the camera field of view and a non-repetitive scan pattern that improves spatial coverage through temporal aggregation \cite{thompson2023}.
+
+Initial planning for the multi-modal perception system anticipated utilizing the Velodyne HDL-32E and VLP-16 sensors already installed on the Minion platform.
+However, analysis of the point cloud density achievable within the camera field of view revealed fundamental limitations of the mechanically rotating \ac{LiDAR} architecture when applied to sensor fusion applications.
+Traditional spinning \ac{LiDAR} sensors such as the Velodyne HDL-32E employ a fixed vertical array of laser emitters that rotates horizontally at constant angular velocity.
+The HDL-32E, for example, features 32 laser channels arranged in a vertical array spanning approximately 40 degrees of elevation.
+This array rotates at 10 Hz, producing 32 discrete horizontal rings of point returns distributed across the full 360-degree azimuthal range \cite{thompson2023}.
+
+While this omnidirectional coverage provides comprehensive spatial awareness, it presents significant limitations for camera-\ac{LiDAR} fusion.
+Sparse azimuthal sampling means that for a stationary or slow-moving platform, each of the 32 lasers repeatedly samples the same azimuthal positions on successive rotations, yielding no increase in spatial sampling density over time.
+Furthermore, inefficient field of view utilization occurs because the full 360-degree coverage distributes the sensor's point return budget across the entire horizontal plane, allocating only a fraction of total returns to the forward-facing camera field of view.
+These limitations motivated the selection of an alternative \ac{LiDAR} technology optimized for forward-facing perception with temporal aggregation capabilities.
+
+The Livox Horizon employs a non-repetitive rosette scan pattern that progressively covers its entire field of view over an integration period rather than repeatedly sampling fixed positions.
+The sensor features an 81.7° × 25.1° (horizontal × vertical) field of view, substantially wider in azimuth than the 65-degree horizontal field of view of individual \ac{HDR} cameras.
+Three Livox Horizon units are deployed to provide a combined horizontal coverage of approximately 165° × 25.1°, encompassing the full camera array field of view with complete horizontal overlap and approximately 77\% vertical overlap \cite{thompson2023}.
+Table 3.2 presents the key specifications of the Livox Horizon \ac{LiDAR} system.
+
+\begin{table}[h]
+\centering
+\caption{Livox Horizon LiDAR Specifications}
+\begin{tabular}{ll}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Model & Livox Horizon \\
+Horizontal Field of View & 81.7° \\
+Vertical Field of View & 25.1° \\
+Range & 260 m @ 80\% reflectivity \\
+Point Rate (Single Return) & 240,000 pts/sec \\
+Point Rate (Dual Return) & 480,000 pts/sec \\
+Range Precision & ±2 cm \\
+Wavelength & 905 nm \\
+Scan Pattern & Non-repetitive rosette \\
+Interface & UDP (Ethernet) \\
+Operating Frequency & 100 Hz \\
+\hline
+\end{tabular}
+\label{tab:livox_horizon_specs}
+\end{table}
+
+The 905 nm near-infrared wavelength is absorbed by water, resulting in few or no returns from water surfaces—a characteristic that proves advantageous for maritime object detection by reducing clutter from wave surfaces that would otherwise generate false positives in clustering-based detection algorithms.
+
+The fundamental distinction between the Livox Horizon and traditional spinning \ac{LiDAR} lies in the scan pattern geometry.
+A mechanically spinning \ac{LiDAR} with N laser channels produces N discrete horizontal rings that repeat identically with each rotation period.
+For a vessel traveling at typical autonomous surface vehicle speeds (2-5 m/s), the platform displacement between successive rotations remains small relative to object dimensions, resulting in near-perfect overlap of consecutive scans within the platform reference frame.
+The Livox Horizon, by contrast, employs a two-dimensional scanning mechanism that traces a non-repetitive rosette pattern across the field of view.
+This pattern is generated by two orthogonal scanning mirrors operating at slightly incommensurate frequencies, causing the laser beam to trace a complex Lissajous-like trajectory that progressively fills the sensor's field of view without repeating \cite{thompson2023}.
+
+The scan pattern coverage evolves over time, with denser spatial sampling achieved through longer integration periods.
+At the standard 100 Hz data output rate, each UDP message contains approximately 10 milliseconds of \ac{LiDAR} returns.
+Over a one-second aggregation period, the rosette pattern provides substantially higher spatial coverage than achievable with a spinning \ac{LiDAR}'s fixed ring geometry.
+Figure 3.7 in \cite{thompson2023} demonstrates this density advantage by projecting one second of aggregated Livox point cloud data onto an \ac{HDR} camera image, revealing dense coverage across the image plane with few gaps.
+This density proves critical for the grid-based clustering algorithm employed for \ac{LiDAR} object detection, as described in Chapter 5.
+
+Quantitative comparison of effective point cloud density within the camera field of view reveals the advantage of the Livox configuration.
+A Velodyne HDL-32E operating in dual-return mode generates approximately 1.4 million points per second distributed across the full 360-degree horizontal plane.
+With the camera field of view occupying roughly 165 degrees of this range, the effective point rate within the region of interest is:
+
+$$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165°}{360°} \approx 641,000 \text{ pts/sec}$$
+
+Three Livox Horizon units operating in dual-return mode collectively produce:
+
+$$\text{Combined Livox rate} = 3 \times 480,000 = 1.44 \times 10^6 \text{ pts/sec}$$
+
+This represents a 2.25× increase in point returns within the camera field of view, even before accounting for the superior vertical sampling density afforded by the non-repetitive scan pattern versus fixed 32-ring geometry \cite{thompson2023}.
+
+The non-repetitive scan pattern delivers maximum benefit when multiple scans are temporally aggregated, accumulating points over an integration window to increase spatial sampling density.
+For a moving platform, this aggregation requires compensation for vehicle motion during the accumulation period.
+The \ac{LiDAR} aggregation methodology, detailed in Chapter 5, employs the \ac{GPS}/\ac{INS} system to track platform pose as a function of time.
+Each \ac{LiDAR} point is transformed from the sensor reference frame to an inertial world reference frame using the platform pose at the point's acquisition timestamp.
+Points accumulated over the integration window are then transformed from the inertial frame to the reference frame of the target camera image, enabling dense point cloud overlay on the corresponding image.
+For this research, a four-second integration period was selected based on empirical evaluation of point cloud density versus motion blur effects.
+Each camera image sampled at 1 Hz is accompanied by all \ac{LiDAR} points acquired during the preceding four seconds, transformed to the image capture time reference frame.
+This aggregation strategy provides the spatial resolution necessary for reliable object detection while maintaining acceptable motion compensation accuracy given the platform's typical velocity profile.
+
+The Livox Horizon sensors communicate via User Datagram Protocol over Ethernet, transmitting point cloud data as binary messages at 100 Hz.
+Livox provides an open-source \ac{ROS} software development kit that handles network communication, message parsing, and point cloud publication to \ac{ROS} topics.
+Integration of the Livox SDK into the Minion software architecture required minimal modification, primarily involving configuration of network parameters and adjustment of \ac{ROS} launch files.
+The SDK was deployed on the Atlas PC main computing platform, where it receives UDP messages from all three \ac{LiDAR} units simultaneously over the local area network described in Section 3.1.2.3.
+
+Accurate fusion of data from multiple \ac{LiDAR} units requires precise knowledge of the geometric relationship between sensors.
+The Livox Horizon units support onboard storage of extrinsic calibration parameters, enabling each sensor to transform its measurements to a common reference frame before transmission.
+The \ac{LiDAR}-to-\ac{LiDAR} extrinsic calibration procedure, described in Section 3.2.1.3, determines the six-degree-of-freedom transformation (three-dimensional translation and three-dimensional rotation) relating each sensor's local coordinate system to that of the designated primary sensor.
+These transformation parameters are written to non-volatile memory on each Livox unit, configuring the sensors to automatically apply the transformation such that all point clouds are broadcast in the reference frame of the center \ac{LiDAR} \cite{thompson2023}.
+This factory-configured transformation simplifies downstream processing by eliminating the need for software-based point cloud registration of data from the three individual sensors.
+The unified point cloud is then related to the camera coordinate systems through camera-to-\ac{LiDAR} extrinsic calibration, as detailed in Section 3.2.1.2.
+
+Temporal alignment of \ac{LiDAR} measurements with camera images and \ac{GPS}/\ac{INS} pose data requires that all \ac{LiDAR} points be timestamped with reference to a common global time base.
+The Livox Horizon units support IEEE 1588 Precision Time Protocol, enabling sub-microsecond clock synchronization when operating on a network with a Precision Time Protocol master clock source.
+In the Minion architecture, the NVIDIA Jetson Xavier embedded computer in the camera enclosure operates as the Precision Time Protocol master clock, providing synchronization to the three \ac{LiDAR} units.
+The Jetson itself synchronizes to \ac{GPS} time via a hierarchical Network Time Protocol architecture, as detailed in Section 3.2.2.1.
+This cascaded synchronization ensures that \ac{LiDAR} timestamps share the same \ac{GPS}-disciplined time reference as camera frame timestamps, enabling frame-accurate temporal alignment for sensor fusion.
+Verification of Precision Time Protocol synchronization status is performed using the Livox Viewer software application, which displays the synchronization state and time source information for each connected sensor.
+Proper Precision Time Protocol lock is confirmed before data collection operations, ensuring temporal accuracy of all recorded data.
+
+An important characteristic of the 905 nm wavelength employed by the Livox Horizon is strong absorption by water.
+This physical property results in minimal \ac{LiDAR} returns from water surfaces, in contrast to vision sensors that clearly image water texture and wave patterns.
+The absence of water surface returns reduces point cloud clutter and simplifies object detection by eliminating the need to filter ground plane points corresponding to the water surface.
+This behavior is visible in point cloud visualizations overlaid on camera images, where dense \ac{LiDAR} coverage appears on vessels, buoys, and other solid objects while the water surface yields few or no returns.
+For the grid-based clustering algorithm employed in this research, the absence of water returns proves advantageous by preventing false positive detections of wave crests or foam patterns as discrete objects.
+
+The Livox Horizon \ac{LiDAR} configuration provides several key capabilities that enable the comparative object detection performance analysis central to this research.
+The system delivers 2.25× more points within the camera field of view compared to omnidirectional spinning \ac{LiDAR} alternatives, while the non-repetitive scan pattern increases sampling density through temporal aggregation.
+Per-point timestamps and \ac{GPS}/\ac{INS} integration enable accurate aggregation during platform motion, while Precision Time Protocol synchronization provides sub-microsecond timing accuracy relative to camera and \ac{GPS} sensors.
+Factory-configured multi-sensor calibration with onboard extrinsic parameters unifies point clouds from three sensors before transmission, and the 905 nm wavelength characteristics reduce clutter in maritime environments by rejecting water surface returns.
+These characteristics, combined with the software integration and synchronization infrastructure described in Section 3.2, provide the foundation for rigorous evaluation of \ac{LiDAR}-based object detection performance and comparison with vision-based approaches as presented in Chapters 5 and 6.
+
             \subsubsection{Pinpoint GPS/INS}
             
         \subsection{Compute and LAN}
