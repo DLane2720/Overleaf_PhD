@@ -201,7 +201,62 @@ Addressing these research gaps will contribute to the advancement of autonomous 
         \subsection{Sensors}
         
             \subsubsection{Perception Geometry}
-            
+
+The sensor configuration on the Minion \ac{ASV} was designed to maximize spatial and temporal overlap between vision and \ac{LiDAR} sensing modalities, enabling robust multi-modal object detection and sensor fusion.
+The perception geometry emphasizes forward-facing coverage optimized for maritime navigation scenarios, where objects of interest primarily appear ahead of the vessel during transit operations.
+
+\paragraph{Sensor Layout Philosophy}
+
+The multi-modal perception system integrates complementary sensor types to leverage the strengths of each modality while compensating for individual limitations.
+High dynamic range cameras provide dense pixel-level information with rich texture and color features, while \ac{LiDAR} sensors deliver precise three-dimensional spatial measurements independent of lighting conditions.
+The geometric arrangement ensures that both sensor types observe the same spatial volume, a prerequisite for effective late fusion methodologies.
+
+\paragraph{Field of View Configuration}
+
+The perception system employs three Leopard Imaging IMX490 \ac{HDR} cameras arranged to provide overlapping horizontal coverage.
+Each camera features a 65-degree horizontal field of view, positioned with strategic overlap to create a composite forward-facing perception envelope.
+This configuration yields comprehensive visual coverage of the navigation corridor ahead of the vessel while maintaining sufficient overlap for stereoscopic depth estimation if required in future work.
+
+Complementing the camera array, three Livox Horizon \ac{LiDAR} units provide spatial measurement coverage designed to maximize overlap with the camera field of view.
+Each Livox Horizon features an 81.7° × 25.1° (horizontal × vertical) field of view.
+The three units are positioned to deliver a combined horizontal coverage of approximately 165° × 25.1°, resulting in complete horizontal overlap with the camera system and approximately 77\% vertical overlap \cite{thompson2023}.
+
+\paragraph{Sensor Overlap Optimization}
+
+The decision to employ forward-facing \ac{LiDAR} sensors rather than traditional 360-degree rotating units reflects the research focus on sensor fusion performance.
+Unlike mechanically rotating \ac{LiDAR} systems such as the Velodyne HDL-32E, which distribute returns across the full horizontal plane, the Livox Horizon units concentrate their sampling density within the forward-facing camera field of view.
+This targeted approach delivers higher effective point cloud density in the region of interest, improving the spatial resolution available for object detection algorithms.
+
+The Livox Horizon scan pattern differs fundamentally from traditional spinning \ac{LiDAR} designs.
+Rather than sampling fixed vertical rings that repeat with each rotation, the Livox units employ a rosette-pattern scanning approach that progressively covers the entire field of view over a one-second integration period \cite{thompson2023}.
+This non-repetitive scan pattern yields substantially higher spatial sampling density when multiple scans are temporally aggregated, as detailed in Section 3.1.1.3.
+
+\paragraph{Spatial Reference Frame}
+
+All sensor measurements are registered to a common spatial reference frame centered on the vessel platform.
+Precise geometric relationships between individual sensors are established through extrinsic calibration procedures detailed in Section 3.2.1.
+The \ac{LiDAR} units additionally benefit from factory-configured inter-sensor calibration, allowing all three Livox devices to report points from a unified origin corresponding to the center sensor position.
+
+Position and orientation of the platform itself is provided by a Pinpoint \ac{GPS}/\ac{INS} system, enabling transformation of sensor observations between the vessel reference frame and inertial (world) coordinates.
+This capability proves essential for temporal aggregation of \ac{LiDAR} observations during vessel motion, as described in the synchronization methodology of Section 3.2.2.
+
+\paragraph{Design Rationale}
+
+The perception geometry reflects several key design priorities specific to maritime autonomous navigation research:
+
+\begin{enumerate}
+    \item \textbf{Fusion-optimized coverage}: Maximum spatial overlap between vision and \ac{LiDAR} modalities enables direct comparison of detection performance and validates late fusion approaches.
+
+    \item \textbf{Forward-facing emphasis}: Maritime collision avoidance and navigation planning require detailed perception of the forward corridor, making 360-degree coverage unnecessary for this research application.
+
+    \item \textbf{Density over breadth}: Concentrating \ac{LiDAR} sampling within the camera field of view provides higher effective point cloud density compared to omnidirectional sensors with equivalent point return rates.
+
+    \item \textbf{Temporal aggregation support}: The Livox scan pattern and \ac{GPS}/\ac{INS} integration enable temporal accumulation of observations during vessel motion, further increasing effective spatial resolution.
+\end{enumerate}
+
+The resulting sensor configuration provides the geometric foundation for the comparative object detection performance analysis that forms the core of this research.
+Detailed specifications of individual sensor components are presented in the following subsections.
+
             \subsubsection{HDR Camera}
             
             \subsubsection{Livox Horizon}
