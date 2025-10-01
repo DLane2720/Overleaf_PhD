@@ -1,0 +1,661 @@
+\documentclass{erauthesis}
+\department{Mechanical Engineering}
+\chair{Eric Coyle, Ph.D}
+\dean{James Gregory, Ph.D.}
+\dgc{Lon Moeller, J.D.}
+\depchair{Patrick Currier, Ph.D.}
+\advisortitle{Committee chair}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{enumitem}
+% \usepackage[style=authoryear]{biblatex} % or numeric, apa, etc.
+% \addbibresource{Dissertation.bib}         % your Zotero export
+
+
+\title{A STUDY IN OBJECT DETECTION AND CLASSIFICATION
+PERFORMANCE BY SENSING MODALITY FOR AUTONOMOUS
+SURFACE VESSELS} % the title should be included here
+\author{Daniel P. Lane} 
+\graduation{December}{2025}
+\advisor {Eric Coyle} %Committe chair
+
+
+\coadvisor{Subhradeep Roy} % If you do not have a co-advisor, delete this whole command
+
+\committememzero{Xxxx X. Xxxxxxxxx, Ph.D.} % If you have a co-advisor, do not edit this member name 
+%% Enter the name of the committee members 
+\committememone{Patrick Currier}
+\committememtwo{Monica Garcia}
+\committememthree{Jianhua Liu}
+% \committememfour{Xxxx X. Xxxxxxxxx, Ph.D.}
+
+
+
+%\signaturepush{-2.0}									
+
+\begin{document}
+
+\frontmatter
+
+\maketitle
+
+\makesignature
+
+\begin{acknowledgements}
+
+	% \raggedright XXxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.  Xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.\\Xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.  Xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.\\
+    \raggedright In addition to any personal statements of acknowledgement, be sure to include any acknowledgement statements required by research sponsors.\\{[Single page limit]} 
+
+    \raggedright This research was sponsored in part by the Department of the Navy, Office of Naval Research through ONR N00014-17-1-2492, and the Naval Engineering Education Consortium (NEEC) through grants N00174-19-1-0018 and N00174-22-1-0012, sponsored by NSWC Carderock and NUWC Keyport respectively. Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the Department of the Navy or Office of Naval Research.
+\end{acknowledgements}
+
+\begin{abstract}
+	\raggedright Researcher: Daniel P. Lane
+ \\Title: A study in object detection and classification performance by sensing modality for autonomous surface vessels \\Institution:	Embry-Riddle Aeronautical University\\Degree:	Doctor of Philosophy in Mechanical Engineering\\Year:	2025 \\
+ This research addresses the critical gap in quantitative performance comparison between Light Detection and Ranging (LiDAR) and vision-based sensing for real-time maritime object detection on autonomous surface vessels. 
+ Using Embry-Riddle Aeronautical University's Minion platform and 2024 Maritime RobotX Challenge data, this study evaluates Grid-Based Clustering and Concave Hull Extraction LiDAR processing against You Only Look Once vision detection across six maritime object categories. The methodology encompasses real-time performance analysis, multi-sensor calibration, and sensor fusion for bounding box confidence integration. 
+ Performance metrics include precision, recall, mean average precision, training requirements, and computational efficiency. 
+ % Results demonstrate [key performance finding] and establish [fusion outcome]. 
+ The research provides quantitative baselines for maritime sensing modality selection and validated calibration procedures enabling improved autonomous navigation in complex maritime environments.
+ 
+ % Lorem ipsum dolor sit amet... This is a summative abstract, not just a list of topics.  Include relevant information including conclusions and recommendations.  Limit to 150 words; spell out abbreviations; citations not needed.
+
+\end{abstract}
+\pagetableofcontents
+\clearpage
+\listoftables					% Or \nolistoftables if there are no 
+\clearpage
+\listoffigures					% Or \nolistoffigures if there are no 
+
+
+
+\mainmatter
+\newpage
+\chapter{Introduction}
+
+\section{Introduction}
+
+\subsection{Significance of Study}
+
+The development of autonomous surface vessels (ASVs) represents a significant technological advancement requiring sophisticated perception systems capable of detecting and classifying maritime objects with high accuracy and reliability in real-time operational environments. As ASV technology advances toward practical deployment in commercial and research applications, understanding the comparative performance characteristics of different sensing modalities and their integration through sensor fusion methodologies becomes critical for effective system design and operational safety assurance.
+
+The advancement of autonomous surface vessel technology has gained significant momentum through comprehensive research programs and competitive evaluation platforms such as the Maritime RobotX Challenge, where multidisciplinary teams develop and test ASV platforms under realistic maritime operational conditions. These research platforms serve as essential testbeds for evaluating perception technologies under actual environmental constraints, providing valuable empirical insights into sensor performance characteristics, real-time processing capabilities, and complex system integration challenges that cannot be adequately assessed through simulation alone.
+
+Research platforms provide critical opportunities for real-world validation of perception algorithms under actual maritime conditions with operational time constraints. These platforms enable comprehensive comparative analysis opportunities for evaluating different sensor modalities and advanced sensor fusion approaches under controlled yet realistic testing scenarios. Furthermore, research platforms facilitate essential technology transfer pathways from experimental research systems to operational ASV deployments requiring robust real-time performance guarantees. Finally, these platforms enable systematic performance benchmarking that supports rigorous evaluation of detection accuracy, classification reliability, and sensor fusion effectiveness across diverse maritime operational scenarios.
+
+Current ASV development faces a significant knowledge gap regarding the quantitative performance characteristics of different sensing modalities and their integration methodologies in complex maritime environments. While individual sensor technologies, particularly Light Detection and Ranging (LiDAR) systems and vision-based cameras, have been extensively studied and validated in terrestrial applications, their comparative performance characteristics and sensor fusion integration capabilities in maritime contexts lack systematic quantitative analysis with emphasis on real-time processing constraints and computational efficiency requirements.
+
+Comprehensive performance analysis requires systematic detection accuracy comparison between LiDAR-based systems utilizing Grid-Based Clustering and Concave Hull Extraction (GB-CACHE) processing and vision-based systems implementing You Only Look Once (YOLO) object detection algorithms. Additionally, rigorous classification performance evaluation across diverse maritime object types using advanced machine learning algorithms must be conducted to establish performance baselines. Assessment of training requirements for machine learning-based classification systems, particularly focusing on data efficiency and convergence characteristics, represents another critical analytical requirement. Real-time processing capabilities and computational efficiency evaluation under operational constraints must be systematically analyzed to ensure practical deployment feasibility. Moreover, sensor fusion effectiveness evaluation, specifically examining bounding box confidence integration methodologies, requires comprehensive analysis to determine optimal multi-modal processing approaches. Finally, environmental robustness evaluation across varying maritime conditions, including different weather states, lighting conditions, and sea states, must be conducted to ensure reliable operational performance.
+
+ASV perception systems must reliably detect and classify a diverse range of maritime objects that are critical for safe autonomous navigation, requiring robust algorithms capable of real-time processing under challenging environmental conditions. The maritime environment presents unique detection challenges due to varying lighting conditions, wave-induced platform motion, and the diverse physical characteristics of navigation-critical objects that must be accurately identified and classified. Navigation buoys, including Polyform A-2 and A-3 buoys available in various colors for channel marking and navigation guidance, represent primary detection targets requiring high accuracy classification. Regulatory markers, specifically Sur-Mark tall buoys designed for navigation reference and hazard identification, present distinct detection challenges due to their geometric characteristics and operational deployment contexts. Light towers serving as active navigation aids provide both visual and electronic guidance signals, requiring detection algorithms capable of handling variable illumination and signaling states. Various vessels, including recreational boats and commercial watercraft, represent dynamic detection targets with diverse size, shape, and motion characteristics that complicate reliable classification. Maritime infrastructure elements, including docks, piers, and other fixed navigational hazards, require robust detection capabilities to ensure safe autonomous navigation in complex harbor and coastal environments.
+
+% \subsection{Problem Statement}
+\subsection{Problem Statement: Performance Comparison Gap}
+
+Despite the growing operational importance of autonomous surface vessels and the significant maturation of individual sensor technologies over the past decade, there exists a critical and well-documented gap in quantitative performance comparison between different sensing modalities specifically applied to maritime object detection and classification tasks. Current ASV development efforts lack systematic analytical frameworks for evaluating how LiDAR-based systems utilizing advanced point cloud processing algorithms perform relative to vision-based systems implementing state-of-the-art deep learning approaches when deployed in realistic maritime operational environments.
+
+Existing research efforts in maritime object detection and classification have primarily focused on individual sensor implementations and algorithm development without conducting comprehensive comparative analysis that would inform optimal sensor selection and integration strategies for operational ASV systems. Contemporary research demonstrates a predominant focus on LiDAR-only implementations that emphasize point cloud processing methodologies and clustering algorithms specifically adapted for maritime environments, yet these studies typically lack comparative evaluation against alternative sensing modalities. Similarly, vision-only system research emphasizes deep learning approaches for maritime object recognition, particularly convolutional neural network architectures, but generally operates in isolation without systematic comparison to LiDAR-based approaches. The limited cross-modal comparison studies that do exist provide insufficient quantitative performance metrics and lack standardized evaluation frameworks necessary for meaningful comparative analysis. Furthermore, there exists a notable absence of standardized evaluation frameworks specifically designed for maritime perception systems, hindering systematic comparison and technology advancement across research groups and commercial developers.
+
+The absence of comprehensive quantitative performance analysis leaves fundamental technical and operational questions unanswered for ASV system designers and engineers responsible for developing reliable autonomous navigation systems. Critical questions regarding detection and classification performance remain inadequately addressed in current research literature. Specifically, the comparative detection accuracy performance of LiDAR-based systems utilizing GB-CACHE processing versus vision-based systems implementing YOLO algorithms for specific maritime object types requires systematic investigation. The precision and recall characteristics of each sensing modality across different object classes under varying environmental conditions need quantitative evaluation to inform sensor selection decisions. Training requirements, including data volume, computational resources, and convergence time, differ significantly between LiDAR feature-based approaches and vision-based deep learning methodologies, yet these differences lack systematic quantification. Computational overhead associated with each sensing modality for real-time operation, including processing latency and resource utilization, requires comprehensive analysis to ensure practical deployment feasibility. Additionally, the effectiveness of sensor fusion methodologies, particularly bounding box confidence integration approaches, needs rigorous evaluation to determine optimal multi-modal processing strategies for enhanced detection performance.
+
+% \subsection{Problem Statement}
+\subsection{Problem Statement: Sensor Fusion Challenges}
+
+Autonomous surface vessels require precise integration of multiple sensing modalities to achieve reliable object detection and classification performance that meets operational safety standards for autonomous navigation. A fundamental and persistent challenge in ASV perception system development lies in establishing and maintaining accurate spatial and temporal calibration between LiDAR and camera systems under dynamic maritime operational conditions that present unique environmental challenges not encountered in terrestrial applications.
+
+Multi-sensor ASV platforms face unique spatial calibration requirements that differ significantly from terrestrial applications due to the dynamic nature of maritime environments and the continuous mechanical stresses imposed by marine operational conditions. Environmental factors affecting calibration present ongoing challenges for maintaining sensor alignment accuracy. Platform motion induced by wave action creates continuous roll, pitch, and yaw movements that affect sensor alignment and require robust calibration maintenance strategies. Vibration and mechanical stress inherent in marine environments cause gradual calibration drift that can degrade sensor fusion performance over extended operational periods. Temperature variations in maritime environments affect sensor mounting structures and optical characteristics, potentially introducing systematic calibration errors that must be compensated through adaptive calibration procedures. Saltwater corrosion presents long-term challenges by potentially altering sensor mounting hardware characteristics over extended deployment periods, requiring regular calibration validation and maintenance protocols.
+
+Precision requirements for effective sensor fusion establish demanding performance specifications for calibration maintenance systems that must operate reliably under dynamic maritime conditions. Sub-pixel accuracy calibration is essential for accurate LiDAR point cloud projection onto camera images, enabling effective correlation between sensor modalities for object detection applications and ensuring that spatial relationships between sensors remain consistent across operational scenarios. Millimeter-level precision in spatial calibration is required for effective object detection correlation between LiDAR and vision systems, particularly for small maritime objects such as navigation buoys where detection accuracy directly impacts navigation safety. Consistent calibration maintenance across varying operational conditions, including different sea states and weather conditions, requires robust calibration validation procedures that can adapt to changing environmental parameters. Real-time calibration validation capabilities are necessary for detecting calibration degradation during operation and implementing corrective measures to maintain sensor fusion performance without interrupting autonomous navigation operations.
+
+\subsection{Limitations and Assumptions}
+
+This research investigation is conducted using Embry-Riddle Aeronautical University's Minion ASV research platform and utilizes sensor data collected during the 2024 Maritime RobotX Challenge competition, which establishes specific operational and methodological constraints that define the scope and applicability of research findings.
+
+Platform-specific limitations inherent in this research approach must be acknowledged and considered when interpreting results and their broader applicability. Research findings are specifically applicable to ERAU's Minion research platform design, including its particular sensor mounting configuration, platform dynamics characteristics, and operational capabilities, which may not directly translate to other ASV platform designs. The competition environment context, where primary data collection occurred during RobotX challenge events, may not represent the full spectrum of maritime operational conditions encountered in commercial or military ASV deployments. Geographic constraints imposed by conducting testing in competition and training areas introduce environmental characteristics that may not be representative of other maritime operational regions. Operational scenarios focused on RobotX challenge tasks may not encompass the complete range of potential ASV mission requirements and environmental conditions encountered in practical autonomous vessel operations.
+
+This research focuses on specific maritime object categories that are relevant to RobotX competition scenarios and representative of typical ASV navigation challenges, while acknowledging that maritime environments contain additional object types not addressed in this investigation. The research addresses six primary object classes that represent critical navigation elements in maritime environments. Tall buoys, specifically Sur-Mark regulatory buoys with standardized dimensions of 39-inch height, 10-inch column diameter, and 18-inch ring diameter, represent regulatory navigation markers requiring reliable detection and classification. Polyform A-2 buoys, measuring 14.5 inches by 19.5 inches and available in red, green, blue, and black color variants, serve as channel markers and navigation references requiring color-specific classification capabilities. Polyform A-3 buoys, with dimensions of 17 inches by 23 inches and identical color availability, represent larger navigation buoys requiring robust detection across varying distances and environmental conditions. Light towers function as active navigation aids incorporating electronic and visual signaling capabilities, presenting detection challenges due to variable illumination states and complex geometric structures. Jon boats, characterized as flat-bottom chase boats utilized in competition and training scenarios, represent small vessel detection targets with distinct geometric and motion characteristics. Sailboats, including recreational sailing vessels commonly encountered in competition environments, represent larger vessel detection targets with variable configuration due to sail and rigging arrangements.
+
+\textbf{Definitions of Terms}
+
+\begin{itemize}[label={}]
+    \item\textbf{Autonomous Surface Vessel (ASV)} An unmanned watercraft capable of independent navigation and task execution without direct human control, utilizing onboard sensors and computational systems for environmental perception and decision-making.
+    
+    \item\textbf{Clustering} A computational technique that groups data points with similar characteristics or spatial proximity to identify distinct objects or regions within complex datasets.
+
+    \item\textbf{Grid-Based Clustering} A spatial data organization methodology that partitions three-dimensional point cloud data into regular grid structures to facilitate efficient clustering analysis and object identification within defined spatial regions.
+    
+    \item\textbf{Concave Hull} A geometric boundary that closely follows the shape of a point set by allowing inward curves, providing a more accurate representation of object boundaries compared to convex hull approaches.
+    
+    \item\textbf{You Only Look Once (YOLO)} A real-time object detection algorithm that processes entire images in a single forward pass through a convolutional neural network, simultaneously predicting bounding boxes and class probabilities for detected objects.
+    
+    \item\textbf{Sensor Fusion} The computational process of combining data from multiple sensors to produce more accurate, reliable, or comprehensive information than could be achieved using individual sensors independently.
+    
+    \item\textbf{Bounding Box} A rectangular region that defines the spatial boundaries of a detected object within an image or three-dimensional space, typically specified by corner coordinates or center point with width and height dimensions.
+    
+    \item\textbf{Confidence Integration} A methodology for combining detection results from multiple sensors by evaluating and integrating the confidence scores associated with object predictions to improve overall detection reliability.
+    
+    \item\textbf{Maritime RobotX Challenge} An international autonomous surface vessel competition that provides standardized testing scenarios and performance evaluation frameworks for ASV perception, navigation, and manipulation capabilities.
+    
+    \item\textbf{Real-time Processing} Computational processing that guarantees response within specified time constraints, typically requiring completion of detection and classification tasks within predetermined latency limits suitable for autonomous navigation safety requirements.
+    
+    \item\textbf{Light Detection and Ranging (LiDAR)} A remote sensing technology that uses laser pulses to measure distances and create detailed three-dimensional point cloud representations of environmental features and objects.
+    
+    \item\textbf{Point Cloud} A collection of data points in three-dimensional space representing the external surface of objects, typically generated by LiDAR sensors through distance measurements to environmental features.
+\end{itemize}
+
+\textbf{List of Acronyms}
+
+\begin{itemize}[label={}]
+    \item\textbf{ASV} Autonomous Surface Vessel
+    \item\textbf{ERAU} Embry-Riddle Aeronautical University  
+    \item\textbf{GB-CACHE} Grid-Based Clustering and Concave Hull Extraction
+    \item\textbf{LiDAR} Light Detection and Ranging
+    \item\textbf{RGB} Red, Green, Blue
+    \item\textbf{ROS} Robot Operating System
+    \item\textbf{YOLO} You Only Look Once
+    \item\textbf{IoU} Intersection over Union
+    \item\textbf{mAP} mean Average Precision
+    \item\textbf{ROI} Region of Interest
+    \item\textbf{GPS} Global Positioning System
+    \item\textbf{IMU} Inertial Measurement Unit
+\end{itemize}
+
+\chapter{Review of the Relevant Literature}
+
+% Note: All in-text citations should appear as \cite{einstein}
+
+Autonomous surface vessels (USVs) have emerged as essential platforms capable of performing dangerous, dirty, and cumbersome tasks that exceed human capability. These vessels are pivotal in various maritime operations, including environmental monitoring, search and rescue missions, and resource exploration \cite{liebergall, eckstein2024}.% [1], [2]. 
+Their ability to operate independently with minimal human intervention has significantly enhanced operational efficiency and safety at sea \cite{bai2022}.%[3].
+
+Autonomous vehicles use a variety of sensors to perceive their surroundings but primarily rely on some combination of visual information through a camera and spatial data provided by LiDAR \cite{yeong2021}.%[4]. 
+Each sensing modality offers distinct advantages: visual data provides rich color and texture information, while LiDAR delivers precise spatial measurements of the surrounding environment. 
+Real-time object detection methods have been developed for both sensing modalities, leveraging deep learning architectures. 
+Object detection with visual data often employs transfer learning on pre-trained convolutional neural networks such as ResNet \cite{he2016} and You Only Look Once (YOLO) \cite{ultralytics}.%[6]. 
+Similarly, LiDAR-based object detection can be performed using point-based algorithms like PointNet \cite{garcia-garcia2016}, voxel-based methods such as VoxelNet \cite{zhou2018a}, or hybrid approaches like PV-RCNN \cite{shi2021}.%[9]. 
+Despite these advancements, each modality has inherent limitations—vision-based systems struggle with poor lighting conditions and occlusions, while LiDAR data can be sparse and affected by water reflections.
+
+To address these limitations, sensor fusion techniques have been explored as a means of combining the strengths of both modalities. 
+Research into sensor fusion methods dates back to military applications in the 1980s and has gained significant traction in the last 15 years, particularly due to interest from the automotive industry in autonomous driving technologies. However, no unified approach has been established for optimal sensor fusion, with ongoing debates regarding the best fusion strategies (e.g., early, mid, or late fusion) and their trade-offs concerning computational efficiency and accuracy.
+
+While research in the automotive sector has contributed significantly to sensor fusion methodologies \cite{yeong2021,clunie2021,roriz2022,cui2022,das2022,liu2023a}, direct application to maritime environments remains challenging due to fundamental environmental differences. 
+Automotive environments are highly structured, with well-defined lanes, uniform object classes, and relatively predictable lighting conditions. 
+In contrast, the maritime environment introduces additional complexities, including dynamic vehicle motion induced by wind and waves, variable scene density (ranging from sparse open waters to congested littoral zones), and specular reflections on the water surface that can interfere with both vision-based \cite{liu2023a} and LiDAR-based object detection \cite{ahmed2024}.%[15]. 
+These factors necessitate domain-specific adaptations of sensor fusion architectures to ensure robust real-time object detection for USVs. 
+However, the lack of available maritime-specific datasets \cite{jun-hwa2022,su2023,thompson2023} creates an additional challenge.
+
+Given these challenges, further research is needed to enhance sensor fusion methodologies for maritime applications. 
+Key areas of investigation include efficient feature selection tailored to maritime object classes, the development of lightweight fusion architectures suited for real-time processing, and an evaluation of computational requirements for deployment on USV hardware. 
+Addressing these research gaps will contribute to the advancement of autonomous maritime perception, enhancing the operational capabilities of USVs in complex and dynamic environments.
+
+
+% \section{Autonomous Surface Vessel Perception Systems}
+
+% % This section will review literature on ASV perception technologies including:
+% % - Current state of ASV perception system development
+% % - Sensor technologies used in maritime autonomous systems
+% % - Challenges specific to maritime object detection and classification
+% % - Performance evaluation methodologies for ASV perception systems
+
+% \subsection{Maritime Object Detection Technologies}
+% % Placeholder for literature review on maritime detection methods
+
+% \subsection{ASV Platform Development and Testing}
+% % Placeholder for ASV research platform literature review
+
+% \section{LiDAR-Based Maritime Object Detection}
+
+% % This section will review literature on LiDAR applications in maritime environments:
+% % - Point cloud processing for maritime object detection
+% % - LiDAR performance characteristics in marine environments
+% % - Feature-based classification approaches for maritime objects
+% % - Real-time processing constraints and solutions
+
+% \subsection{Point Cloud Processing in Maritime Environments}
+% % Placeholder for LiDAR maritime application literature
+
+% \subsection{GB-CACHE and Related Clustering Algorithms}
+% % Placeholder for clustering algorithm literature review
+
+% \section{Vision-Based Maritime Object Detection}
+
+% % This section will review literature on computer vision in maritime applications:
+% % - Deep learning approaches for maritime object recognition
+% % - YOLO and related object detection architectures
+% % - Maritime-specific vision challenges (lighting, weather, sea state)
+% % - Training dataset requirements and transfer learning approaches
+
+% \subsection{Deep Learning for Maritime Object Recognition}
+% % Placeholder for maritime computer vision literature
+
+% \subsection{YOLO Architecture and Maritime Applications}
+% % Placeholder for YOLO maritime implementation literature
+
+% \section{Multi-Sensor Calibration and Synchronization}
+
+% % This section will review literature on multi-sensor system integration:
+% % - Spatial calibration methodologies for mobile platforms
+% % - Temporal synchronization approaches for real-time systems
+% % - Precision Time Protocol (PTP) applications
+% % - Calibration stability in dynamic environments
+
+% \subsection{Spatial Calibration for Mobile Sensor Platforms}
+% % Placeholder for calibration methodology literature
+
+% \subsection{Temporal Synchronization in Distributed Systems}
+% % Placeholder for synchronization literature review
+
+% \section{Performance Comparison Studies in Autonomous Systems}
+
+% % This section will review literature on comparative sensor performance analysis:
+% % - Methodologies for sensor performance comparison
+% % - Statistical analysis approaches for system evaluation
+% % - Performance metrics for object detection and classification
+% % - Real-time processing performance assessment
+
+% \subsection{Sensor Performance Evaluation Methodologies}
+% % Placeholder for performance evaluation literature
+
+% \subsection{Statistical Analysis of Detection System Performance}
+% % Placeholder for statistical analysis methodology literature
+
+% \section{Maritime RobotX Challenge and Competition-Based Research}
+
+% % This section will review literature related to maritime robotics competitions:
+% % - RobotX Challenge objectives and technical requirements
+% % - Competition-based validation of autonomous systems
+% % - Research contributions from maritime robotics competitions
+% % - Technology transfer from competition platforms to operational systems
+
+% \subsection{Maritime Robotics Competition Research}
+% % Placeholder for competition-based research literature
+
+% \subsection{RobotX Challenge Technical Requirements and Validation}
+% % Placeholder for RobotX-specific literature review
+
+% \section{Research Gap Identification and Justification}
+
+% % This section will synthesize the literature review to identify the specific gap
+% % that this research addresses:
+% % - Lack of quantitative performance comparison between sensing modalities
+% % - Insufficient systematic analysis of LiDAR vs. vision performance in maritime environments
+% % - Need for standardized calibration and synchronization frameworks for ASV platforms
+% % - Limited real-time processing performance assessment for maritime perception systems
+
+% \subsection{Quantitative Performance Comparison Gap}
+% % Placeholder for gap analysis related to performance comparison
+
+% \subsection{Maritime-Specific Sensor Evaluation Limitations}
+% % Placeholder for maritime-specific research gap identification
+
+% \section{Research Contribution and Significance}
+
+% % This section will establish how this research fills the identified gaps:
+% % - Systematic quantitative comparison between LiDAR and vision modalities
+% % - Validated calibration and synchronization framework for ASV platforms
+% % - Real-time processing performance benchmarks for maritime perception systems
+% % - Evidence-based guidance for ASV perception system design
+
+\chapter{Methodology}
+
+\section{Research Approach}
+
+\subsection{Quantitative Performance Comparison Framework for ASV Sensing Modalities}
+
+This research employs a systematic comparative analysis approach to evaluate the performance characteristics of LiDAR and vision-based sensing systems for autonomous surface vessel object detection and classification. The methodology focuses on empirical performance evaluation using ERAU's Minion ASV platform and data collected during the 2024 Maritime RobotX Challenge to establish quantitative baselines for maritime sensing modality selection.
+
+\subsection{Performance Comparison Research Framework}
+
+The study utilizes a quantitative comparison approach addressing three primary research objectives:
+
+\subsubsection{Research Objective 1: Comparative Performance Analysis}
+\begin{itemize}
+\item \textbf{Detection accuracy comparison} between LiDAR (GB-CACHE) and vision (YOLO) systems
+\item \textbf{Classification performance evaluation} across six maritime object categories
+\item \textbf{Statistical analysis} of precision, recall, and mAP metrics under identical conditions
+\item \textbf{Training requirement assessment} for machine learning-based classification approaches
+\end{itemize}
+
+\subsubsection{Research Objective 2: Multi-Sensor Calibration and Synchronization}
+\begin{itemize}
+\item \textbf{Spatial calibration framework} development for multi-sensor ASV platforms
+\item \textbf{Temporal synchronization} implementation using Precision Time Protocol (PTP)
+\item \textbf{Calibration accuracy validation} under maritime operational conditions
+\item \textbf{Synchronization performance measurement} for real-time sensor fusion requirements
+\end{itemize}
+
+\subsubsection{Research Objective 3: Real-Time Processing Performance}
+\begin{itemize}
+\item \textbf{Computational performance evaluation} measuring processing latency and resource utilization
+\item \textbf{Real-time capability assessment} for autonomous navigation requirements
+\item \textbf{Processing pipeline optimization} for maritime edge computing constraints
+\item \textbf{Performance benchmarking} establishing standards for ASV perception systems
+\end{itemize}
+
+\subsection{ERAU Minion ASV Multi-Sensor Platform Configuration}
+
+\subsubsection{LiDAR System: GB-CACHE with Triple Livox Horizon Array}
+
+\textbf{Hardware Configuration}
+\begin{itemize}
+\item \textbf{Three Livox Horizon units} providing 81.7° effective horizontal FOV per unit with non-repetitive scanning pattern
+\item \textbf{Detection range optimization} for objects within typical ASV navigation ranges
+\item \textbf{Mounting configuration} optimized for maritime platform stability and coverage
+\item \textbf{Environmental protection} designed for saltwater exposure and marine conditions
+\end{itemize}
+
+\textbf{GB-CACHE Processing Framework}
+\begin{itemize}
+\item \textbf{10-feature classification} framework using geometric and intensity characteristics
+\item \textbf{Grid-based spatial indexing} for efficient point cloud processing
+\item \textbf{Real-time processing} optimized for operational timing constraints
+\item \textbf{Maritime object adaptation} tuned for specific ASV navigation requirements
+\end{itemize}
+
+\subsubsection{Vision System: Multi-Camera Array with YOLO Processing}
+
+\textbf{Camera Hardware Configuration}
+\begin{itemize}
+\item \textbf{Blackfly S 120S4C SDR cameras} providing 4K resolution at 30 FPS
+\item \textbf{Leopard Imaging IMX490 HDR cameras} delivering 2880x1860 resolution at 25 FPS
+\item \textbf{65° horizontal FOV} cameras with coordinated coverage
+\item \textbf{Maritime environmental protection} with appropriate enclosures and mounting
+\end{itemize}
+
+\textbf{YOLO Implementation Specifications}
+\begin{itemize}
+\item \textbf{YOLOv5 Small architecture} optimized for real-time maritime detection
+\item \textbf{Maritime training dataset} with 557 train, 159 validation, 79 test images
+\item \textbf{Six object class focus} covering RobotX competition maritime objects
+\item \textbf{Transfer learning approach} adapted from general object detection to maritime domain
+\end{itemize}
+
+\section{Design and Procedures}
+
+\subsection{ERAU Minion ASV Platform Implementation and RobotX Data Collection}
+
+This section details the specific implementation procedures and technical configurations used for the ERAU Minion ASV platform during the 2024 Maritime RobotX Challenge, including the GB-CACHE LiDAR processing system and YOLO vision detection system.
+
+\subsection{GB-CACHE LiDAR System Implementation}
+
+\subsubsection{ERAU Minion ASV LiDAR Configuration}
+
+\textbf{Triple Livox Horizon Array Specification}
+\begin{itemize}
+\item \textbf{Three Livox Horizon units}: 81.7° effective horizontal FOV per unit
+\item \textbf{Non-repetitive scanning pattern}: Unique point cloud coverage methodology
+\item \textbf{Detection range optimization}: Configured for typical ASV navigation ranges
+\item \textbf{Maritime environmental protection}: Saltwater exposure and motion resilience
+\end{itemize}
+
+\textbf{GB-CACHE Processing Pipeline}
+\begin{verbatim}
+Point Cloud Input → Surface Filtering → Clustering →
+Feature Extraction → Classification → Performance Analysis
+\end{verbatim}
+
+\textbf{RobotX Data Collection Results}
+\begin{itemize}
+\item \textbf{65 data collection bags} from 2024 competition and training sessions
+\item \textbf{Object encounter distribution}: Tall Buoy (421,275 messages), A2 Buoy (96,077 messages), A3 Buoy (88,012 messages), Light Tower (9,431 messages)
+\item \textbf{Performance measurement}: Processing latency and accuracy assessment across maritime objects
+\item \textbf{Environmental condition documentation}: Weather and sea state during data collection
+\end{itemize}
+
+\subsubsection{GB-CACHE 10-Feature Classification Framework}
+
+\textbf{Geometric Feature Set}
+\begin{enumerate}
+\item \textbf{Object dimensions}: Length, width, height from clustered point cloud boundaries
+\item \textbf{Shape descriptors}: Perimeter and area from concave hull calculations
+\item \textbf{Symmetry measures}: Principal axis analysis for object regularity
+\item \textbf{Compactness metrics}: Geometric ratios characterizing object shape
+\end{enumerate}
+
+\textbf{Intensity-Based Features}
+\begin{enumerate}
+\setcounter{enumi}{4}
+\item \textbf{Maximum intensity}: Peak reflectivity within object cluster
+\item \textbf{Minimum intensity}: Baseline material reflectivity
+\item \textbf{Average intensity}: Mean object reflectivity characteristics
+\item \textbf{Standard deviation}: Intensity variation across object surface
+\item \textbf{Intensity range}: Dynamic range of object reflectivity
+\item \textbf{Intensity uniformity}: Spatial consistency of reflectivity patterns
+\end{enumerate}
+
+\subsection{ERAU ASV Vision System Implementation}
+
+\subsubsection{Multi-Camera Hardware Configuration}
+
+\textbf{Camera Array Specification}
+\begin{itemize}
+\item \textbf{Blackfly S 120S4C SDR cameras}: 4K resolution at 30 FPS capability
+\item \textbf{Leopard Imaging IMX490 HDR cameras}: 2880x1860 resolution at 25 FPS
+\item \textbf{65° horizontal FOV}: Coordinated coverage for maritime object detection
+\item \textbf{Environmental protection}: Marine-grade enclosures for saltwater operation
+\end{itemize}
+
+\subsubsection{YOLOv5 Small Architecture Implementation}
+
+\textbf{Maritime-Optimized Model}
+\begin{itemize}
+\item \textbf{Maritime-optimized model}: Adapted for RobotX competition object categories
+\item \textbf{Real-time processing}: Optimized for ASV computational constraints
+\item \textbf{Transfer learning approach}: Leveraging pre-trained weights for maritime adaptation
+\item \textbf{Six object class focus}: Specialized for maritime navigation objects
+\end{itemize}
+
+\textbf{Training Dataset Characteristics}
+\begin{itemize}
+\item \textbf{557 training images}: Maritime-specific object annotations
+\item \textbf{159 validation images}: Model optimization and hyperparameter tuning
+\item \textbf{79 test images}: Independent performance evaluation
+\item \textbf{RobotX object coverage}: Balanced representation across competition maritime objects
+\end{itemize}
+
+\section{Treatment of the Data}
+
+\subsection{Statistical Analysis and Performance Comparison Methods}
+
+This section outlines the comprehensive data treatment procedures employed to analyze comparative performance between LiDAR and vision sensing modalities using the RobotX competition dataset. The methodology emphasizes rigorous statistical analysis and quantitative performance comparison while addressing the specific requirements of ASV perception system evaluation.
+
+\subsection{Multi-Sensor Calibration and Synchronization Framework}
+
+\subsubsection{Precision Time Protocol (PTP) Implementation}
+\begin{itemize}
+\item \textbf{Hardware-level synchronization}: Sub-150ms latency achievement for real-time operation
+\item \textbf{Network-based timing}: Distributed processing temporal alignment across processing units
+\item \textbf{1Gb/s Ethernet timing}: Coordination of multi-sensor data streams
+\item \textbf{Synchronization accuracy validation}: Measurement of temporal alignment precision
+\end{itemize}
+
+\subsubsection{Checkerboard-Based Spatial Calibration}
+\begin{itemize}
+\item \textbf{Multi-sensor spatial registration}: LiDAR and camera coordinate system alignment
+\item \textbf{Extrinsic parameter estimation}: Transformation matrix calculation between sensor modalities
+\item \textbf{Calibration accuracy assessment}: Quantitative evaluation of spatial registration precision
+\item \textbf{Maritime environment validation}: Calibration stability under operational conditions
+\end{itemize}
+
+\subsection{Comparative Performance Analysis Framework}
+
+\subsubsection{Sensing Modality Performance Metrics}
+
+\textbf{LiDAR vs. Vision Detection Accuracy}
+\begin{itemize}
+\item \textbf{Precision comparison}: Evaluation for both modalities across maritime object categories
+\item \textbf{Recall assessment}: Statistical evaluation across sensor types
+\item \textbf{F1-Score analysis}: Comprehensive performance comparison between sensing approaches
+\item \textbf{Mean Average Precision (mAP)}: Multi-class evaluation across six maritime object categories
+\end{itemize}
+
+\textbf{Classification Performance Comparison}
+\begin{itemize}
+\item \textbf{Confusion matrix analysis}: Inter-class accuracy comparison between LiDAR and vision systems
+\item \textbf{Object-specific performance}: Individual assessment across tall buoys, A2/A3 buoys, light towers, boats
+\item \textbf{Training requirement analysis}: Data needs and computational cost comparison between modalities
+\item \textbf{Statistical significance testing}: Validation of performance differences between sensing approaches
+\end{itemize}
+
+\subsection{RobotX Competition Dataset Analysis}
+
+\subsubsection{Object Encounter Distribution Analysis}
+
+\textbf{Maritime Object Category Distribution}
+\begin{itemize}
+\item \textbf{Tall Buoy encounters}: 421,275 LiDAR messages with 71,934 in-FOV instances across 65 bags
+\item \textbf{A2 Buoy encounters}: 96,077 LiDAR messages with 11,680 in-FOV instances across 50 bags
+\item \textbf{A3 Buoy encounters}: 88,012 LiDAR messages with 14,313 in-FOV instances across 57 bags
+\item \textbf{Light Tower encounters}: 9,431 LiDAR messages with 2,842 in-FOV instances across 15 bags
+\end{itemize}
+
+\subsection{Sensor Calibration and Synchronization Framework}
+
+\subsubsection{Multi-Sensor Spatial and Temporal Alignment for ERAU ASV Platform}
+
+This framework addresses Research Objective 2: Multi-sensor calibration and synchronization framework development for autonomous surface vessel applications, providing comprehensive calibration and synchronization procedures for the ERAU Minion ASV platform.
+
+\textbf{Spatial Calibration Methodology Development}
+\begin{itemize}
+\item \textbf{Checkerboard-based calibration approach}: Multi-sensor spatial registration ensuring accurate coordinate system alignment between triple Livox Horizon LiDAR array and multiple camera systems
+\item \textbf{Maritime-adapted calibration procedures}: Designed for autonomous surface vessel operational requirements and environmental constraints
+\item \textbf{Extrinsic parameter estimation}: Camera-to-LiDAR transformation matrix calculation enabling accurate sensor fusion integration
+\item \textbf{Environmental robustness testing}: Validation of calibration stability under maritime operational conditions including platform motion and environmental variations
+\end{itemize}
+
+\textbf{Temporal Synchronization Implementation}
+\begin{itemize}
+\item \textbf{Precision Time Protocol (PTP) synchronization}: Hardware-level synchronization architecture achieving sub-150ms latency for real-time operational requirements
+\item \textbf{Distributed processing temporal alignment}: ROS2 message timestamping and Gstreamer video synchronization coordinating multi-camera data streams with LiDAR processing
+\item \textbf{Cross-platform timing validation}: Measuring synchronization accuracy between NVIDIA Jetson Xavier processing units
+\item \textbf{Latency measurement and optimization}: Systematic assessment and minimization of processing delays
+\end{itemize}
+
+
+\chapter{Results}
+
+\section{Research Objective 1: Comparative Performance Analysis Results}
+
+% This section will contain the quantitative comparison results between LiDAR (GB-CACHE)
+% and vision (YOLO) systems including:
+% - Detection accuracy comparison across six maritime object categories
+% - Precision, recall, and mAP analysis under identical conditions
+% - Training requirement assessment for machine learning approaches
+% - Statistical significance testing results
+
+\subsection{LiDAR vs. Vision Detection Performance}
+% Placeholder for comparative performance metrics
+
+\subsection{Classification Performance by Object Category}
+% Placeholder for object-specific performance analysis
+
+\subsection{Training Requirements Analysis}
+% Placeholder for training data and computational cost comparison
+
+\section{Research Objective 2: Calibration and Synchronization Results}
+
+% This section will contain results from the multi-sensor calibration and
+% synchronization framework including:
+% - Spatial calibration accuracy measurements
+% - Temporal synchronization performance validation
+% - Calibration stability under maritime conditions
+% - Sub-150ms latency achievement verification
+
+\subsection{Spatial Calibration Accuracy Assessment}
+% Placeholder for calibration precision measurements
+
+\subsection{Temporal Synchronization Performance}
+% Placeholder for PTP synchronization results
+
+\section{Research Objective 3: Real-Time Processing Performance Results}
+
+% This section will contain computational performance evaluation results including:
+% - Processing latency measurements on NVIDIA Jetson Xavier
+% - Resource utilization analysis (CPU, GPU, memory)
+% - Real-time capability assessment for autonomous navigation
+% - Performance benchmarking against ASV operational requirements
+
+\subsection{Computational Performance Metrics}
+% Placeholder for processing performance data
+
+\subsection{Real-Time Capability Assessment}
+% Placeholder for operational performance validation
+
+\section{RobotX Competition Dataset Analysis Results}
+
+% This section will contain analysis of the 65 data collection bags including:
+% - Object encounter frequency and distribution
+% - Environmental condition impact on performance
+% - Cross-validation results across different sessions
+% - Performance consistency across maritime conditions
+
+\subsection{Object Detection Distribution Analysis}
+% Placeholder for encounter frequency results
+
+\subsection{Environmental Condition Impact}
+% Placeholder for weather and sea state performance analysis
+
+\section{Statistical Analysis and Validation}
+
+% This section will contain:
+% - Statistical significance testing results
+% - Cross-validation performance metrics
+% - Confidence interval analysis
+% - Performance comparison statistical validation
+
+\subsection{Performance Comparison Statistical Validation}
+% Placeholder for statistical analysis results
+
+\chapter{Conclusions}
+
+% This chapter will synthesize findings from all three research objectives:
+% - Summary of comparative performance results between LiDAR and vision systems
+% - Calibration and synchronization framework effectiveness
+% - Real-time processing capability validation
+% - Implications for ASV perception system design
+% - Contribution to maritime autonomous systems knowledge
+
+\section{Research Objective Achievement Summary}
+% Placeholder for objective completion summary
+
+\section{Performance Comparison Findings}
+% Placeholder for key comparative analysis conclusions
+
+\section{Implications for ASV System Design}
+% Placeholder for practical design guidance conclusions
+
+\chapter{Recommendations and Future Work}
+
+% This chapter will address:
+% - Recommendations for ASV perception system design based on findings
+% - Sensor selection guidance for maritime applications
+% - Future research directions for maritime sensor fusion
+% - Technology transfer opportunities to operational systems
+
+\section{ASV Perception System Design Recommendations}
+% Placeholder for design guidance recommendations
+
+\section{Future Research Directions}
+% Placeholder for future work recommendations
+
+\section{Technology Transfer Opportunities}
+% Placeholder for practical application recommendations
+
+
+
+
+% \printbibliography
+\bibliographystyle{ieeetr}
+% \bibliography{References}
+\bibliography{Dissertation}
+
+\backmatter
+
+\chapter{A Test of the Appendix System}
+
+Tables of Results
+
+\chapter{Another Test of the Appendix System}
+Supplemental Figures.
+\end{document}
+
