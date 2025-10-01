@@ -23,12 +23,12 @@ SURFACE VESSELS} % the title should be included here
 
 \coadvisor{Subhradeep Roy} % If you do not have a co-advisor, delete this whole command
 
-\committememzero{Xxxx X. Xxxxxxxxx, Ph.D.} % If you have a co-advisor, do not edit this member name 
-%% Enter the name of the committee members 
+\committememzero{Xxxx X. Xxxxxxxxx, Ph.D.} % If you have a co-advisor, do not edit this member name
+%% Enter the name of the committee members
 \committememone{Patrick Currier}
 \committememtwo{Monica Garcia}
 \committememthree{Jianhua Liu}
-% \committememfour{Xxxx X. Xxxxxxxxx, Ph.D.}
+\committememfour{TBD}
 
 
 
@@ -40,7 +40,10 @@ SURFACE VESSELS} % the title should be included here
 
 \maketitle
 
-\makesignature
+% \makesignature
+\makeatletter 
+\advance\fau@frontstage by 1  % Skip signature page but maintain counter
+% \makeanother
 
 \begin{acknowledgements}
 
@@ -645,7 +648,7 @@ This framework addresses Research Objective 2: Multi-sensor calibration and sync
 
 
 % \printbibliography
-\bibliographystyle{ieeetr}
+\bibliographystyle{plainnat}
 % \bibliography{References}
 \bibliography{Dissertation}
 

@@ -521,9 +521,11 @@
 	\addtolength\footskip{-\textheight}%
 	\def\@oddfoot{\hfill
 		\raisebox{0pt}[0pt][0pt]{\parbox[b]{6in}{\centering
-  \\Embry Riddle Aeronautical University\\
+  % \\Embry Riddle Aeronautical University\\
+  Embry Riddle Aeronautical University\\
 				Daytona Beach, FLorida\\
-				\@gradmonth\ \@gradyear\\
+				% \@gradmonth\ \@gradyear\\
+				\@gradmonth\ \@gradyear
 				}}}\hfill}
 
 
