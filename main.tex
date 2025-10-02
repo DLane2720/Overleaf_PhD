@@ -202,46 +202,49 @@ Addressing these research gaps will contribute to the advancement of autonomous 
         
             \subsubsection{Perception Geometry}
 
-The Minion's sensor layout maximizes overlap between vision and \ac{LiDAR} in both spatial and temporal domains, providing the necessary foundation for reliable multi-modal object detection and sensor fusion.
-The geometry emphasizes forward-facing coverage, aligning with maritime navigation requirements where objects of interest predominantly appear ahead of the vessel during transit.
+The Minion autonomous surface vessel features a comprehensive multi-modal sensor suite designed to support comparative analysis of object detection performance across sensing modalities.
+The platform integrates both omnidirectional situational awareness sensors and forward-facing perception sensors optimized for sensor fusion research.
 
-This configuration combines sensors with complementary strengths while compensating for individual limitations.
-The \ac{HDR} cameras provide dense pixel-level information with rich texture and color, while \ac{LiDAR} offers precise 3D spatial measurements independent of lighting conditions.
-Arranging the sensors to observe the same spatial volume satisfies the fundamental requirement for effective late fusion.
+The Minion sensor configuration includes 360-degree \ac{LiDAR} coverage provided by three Velodyne HDL-32E units positioned to deliver complete omnidirectional point cloud coverage of the vessel's operating environment.
+A forward-facing perception array comprises three Livox Horizon \ac{LiDAR} units paired with six cameras, providing high-density returns and visual data in a 165-degree forward field of view.
+Visual sensing modalities include three 4K FLIR cameras, two \ac{LWIR} thermal cameras, and one \ac{HDR} camera.
+A Pinpoint \ac{GPS}/\ac{INS} system provides both global time synchronization and platform pose estimation.
 
-Three Leopard Imaging IMX490 \ac{HDR} cameras are arranged with overlapping horizontal coverage.
-Each camera possesses a 65-degree horizontal field of view, positioned with strategic overlap to create a composite forward-facing envelope.
-This configuration provides comprehensive visual coverage of the navigation corridor while maintaining sufficient overlap for potential stereoscopic depth estimation.
-Three Livox Horizon \ac{LiDAR} units complement the cameras, providing spatial coverage designed to overlap with the camera field of view.
-Each Livox unit features an 81.7° × 25.1° (horizontal × vertical) field of view, substantially wider than the cameras in azimuth.
-The three units positioned together deliver approximately 165° × 25.1° of combined coverage, achieving complete horizontal overlap with the camera system and covering approximately 77\% vertically \cite{thompson2023}.
+The sensor coordinate frames are organized in a hierarchical transformation tree structure.
+The inertial reference frame (\texttt{map}) defines the world-fixed coordinate system based on \ac{GPS}.
+The platform reference frame (\texttt{base\_link}) represents the vessel body frame defined by the Pinpoint \ac{GPS}/\ac{INS}.
+The center Livox frame (\texttt{livox\_center}) serves as the primary \ac{LiDAR} reference, with the port Livox frame (\texttt{livox\_port}) and starboard Livox frame (\texttt{livox\_starboard}) as child frames.
+Six camera image frames exist within this tree, with \texttt{hdr\_camera\_frame} serving as the primary camera for fusion research.
+Intrinsic calibration parameters including camera matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in Section 3.2.1.
 
-Forward-facing \ac{LiDAR} sensors were selected over traditional 360-degree rotating units due to their superior performance for sensor fusion applications.
-While mechanically rotating systems like the Velodyne HDL-32E distribute returns across the full horizontal plane, the Livox units concentrate sampling density within the forward camera field of view.
-This concentration provides enhanced point cloud density in the region of interest, improving spatial resolution for object detection.
-The Livox scan pattern differs fundamentally from traditional spinning \ac{LiDAR}.
-Rather than sampling fixed vertical rings that repeat with each rotation, the Livox units trace a rosette pattern that progressively covers the entire field of view over a one-second period \cite{thompson2023}.
-This non-repetitive pattern yields substantially higher spatial sampling when aggregating multiple scans over time, as detailed in Section 3.1.1.3.
+While the Velodyne sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the forward-facing Livox Horizon \ac{LiDAR} units were selected specifically for sensor fusion research due to their superior point cloud density within the camera field of view.
+The three Livox units concentrate sampling density in the forward 165-degree field of view, matching the horizontal coverage of the three 4K FLIR cameras.
+Each Livox Horizon features an 81.7° × 25.1° (horizontal × vertical) field of view.
+The overlapping deployment ensures higher uniform point density across the 165-degree forward perception envelope.
 
-All sensor measurements are registered to a common spatial reference frame centered on the vessel.
-Extrinsic calibration procedures, detailed in Section 3.2.1, establish precise geometric relationships between individual sensors.
-The \ac{LiDAR} units incorporate factory-configured inter-sensor calibration, enabling all three Livox devices to report points from a unified origin at the center sensor position.
-A Pinpoint \ac{GPS}/\ac{INS} system tracks the platform's position and orientation, facilitating transformation of sensor observations between the vessel frame and world coordinates.
-This capability is essential for temporal aggregation of \ac{LiDAR} observations during vessel motion, as described in Section 3.2.2.
+The Livox scan pattern employs a non-repetitive rosette pattern that progressively covers the field of view over time rather than repeatedly sampling fixed positions.
+This characteristic enables temporal aggregation to increase effective spatial resolution, particularly beneficial for a moving platform where \ac{GPS}/\ac{INS} pose data enables motion-compensated point cloud accumulation.
 
-The perception geometry reflects several priorities specific to the maritime research objectives.
-Maximum spatial overlap between vision and \ac{LiDAR} enables direct comparison of detection performance and validation of late fusion approaches.
-The forward-facing emphasis acknowledges that maritime collision avoidance and navigation planning require detailed perception of the forward hemisphere, rendering 360-degree coverage unnecessary for this application.
-Concentrating \ac{LiDAR} sampling within the camera field of view achieves higher point cloud density than omnidirectional sensors with comparable point budgets.
-The Livox scan pattern combined with \ac{GPS}/\ac{INS} integration enables accumulation of observations during motion, further enhancing effective spatial resolution.
-This sensor configuration provides the geometric foundation for the comparative object detection analysis.
-The following subsections detail individual sensor specifications.
+The dual \ac{LiDAR} architecture serves complementary purposes.
+The Velodyne HDL-32E units provide the omnidirectional awareness required for autonomous navigation, while the Livox Horizon sensors optimize point cloud density specifically within the forward camera field of view for fusion research.
+This configuration enables comparative evaluation of detection performance while maintaining operational navigation capabilities.
+The sensor suite supports the research objectives of comparing detection performance across modalities and evaluating late fusion approaches.
+The following subsections detail individual sensor specifications and selection rationale.
 
-            \subsubsection{HDR Camera}
+            \subsubsection{Camera Systems}
 
-Three Leopard Imaging LI-USB30-IMX490-GW5400-GMSL2-065H \ac{HDR} cameras serve as the vision component of Minion's perception system.
-These cameras were selected specifically to address the challenging lighting conditions characteristic of maritime environments, including bright sky, reflective water surfaces, and shadowed objects appearing simultaneously within the same scene.
-Extended dynamic range is essential to preserve visual detail across this broad luminance spectrum \cite{thompson2023}.
+The Minion platform features six cameras providing visual perception across multiple sensing modalities.
+The camera suite comprises three 4K FLIR cameras arranged to provide overlapping forward coverage extending to 165 degrees horizontal field of view, with one camera facing directly forward and the other two positioned with overlapping fields of view to extend lateral coverage.
+Two \ac{LWIR} thermal cameras provide overlapping 165-degree forward field of view for thermal imaging capability.
+One Leopard Imaging IMX490 \ac{HDR} camera offers forward-facing high dynamic range imaging with 65-degree horizontal field of view.
+
+The Leopard Imaging LI-USB30-IMX490-GW5400-GMSL2-065H \ac{HDR} camera was selected as the primary visual sensor for \ac{LiDAR}-camera fusion research.
+This selection was based on several factors including the camera's capability to handle challenging maritime lighting conditions and results from preliminary comparative studies.
+Early testing conducted by Liebergall et al. \cite{liebergall} compared YOLO-based object detection performance between the \ac{HDR} camera and the 4K FLIR cameras aboard Minion.
+Although the final results of this comparative study were published after the dataset for this research had been collected, the preliminary findings supported the \ac{HDR} camera selection for fusion experiments.
+
+The \ac{HDR} camera addresses high-contrast scenes characteristic of maritime environments, where bright sky, reflective water surfaces, and shadowed objects appear simultaneously.
+Extended dynamic range preserves visual detail across the broad luminance spectrum encountered in these conditions \cite{thompson2023}.
 
 The Leopard Imaging IMX490 incorporates Sony's automotive-grade image sensor, originally designed for advanced driver assistance systems facing similar environmental challenges.
 Table 3.1 presents the camera's key specifications.
@@ -271,33 +274,8 @@ HDR Capability & 120 dB \\
 \end{table}
 
 The 2880×1860 resolution provides sufficient spatial detail for detecting objects at relevant ranges in autonomous vessel navigation, while the 25 fps frame rate adequately supports typical vessel speeds and maneuvering.
-Deploying the three cameras with overlapping 65-degree fields of view achieves the wide forward-facing coverage described in Section 3.1.1.1.
 
-The IMX490 employs a two-stage interface design that separates the camera head from image processing.
-The sensor communicates via Gigabit Multimedia Serial Link 2 to a secondary box containing dedicated image processing hardware.
-This Leopard Imaging image processor performs debayering, white balance, gamma correction, and \ac{HDR} tone mapping in a fixed pipeline with no user-configurable parameters \cite{thompson2023}.
-The processor box outputs USB 3.0 configured as a Universal Video Class device, enabling compatibility with standard operating system video interfaces without proprietary drivers.
-Under Ubuntu Linux, the cameras are accessed through Video for Linux version 2, the standard kernel interface for video capture.
-
-Video capture from the \ac{HDR} cameras utilizes GStreamer, an industry-standard pipeline-based framework for media processing.
-GStreamer's modular design enables construction of complex video pipelines from individual functional blocks connected in directed graphs.
-The \texttt{v4l2src} element interfaces with the Video for Linux kernel to acquire raw frames, which subsequently flow through a pipeline incorporating format conversion, encoding, and streaming.
-However, standard GStreamer pipelines employ timestamps relative to stream start, which proves inadequate for multi-sensor fusion requiring absolute time references for temporal alignment.
-This limitation was addressed through development of a custom GStreamer plugin that injects absolute system timestamps into the video stream.
-Section 3.2.2.2 describes the timestamp plugin implementation and the Supplemental Enhancement Information embedding method employed.
-
-The custom plugin operates as a GStreamer pad probe attached to the \texttt{v4l2src} output \cite{thompson2023}.
-Upon receipt of each new image buffer from the camera, the plugin samples system time using the POSIX \texttt{gettimeofday()} function, acquiring the Unix epoch timestamp in milliseconds.
-This timestamp is associated with the video frame through one of two methods: external CSV logging, which writes frame number and timestamp to a file for subsequent lookup, or in-band embedding, which places the timestamp directly in the video bitstream as metadata.
-The in-band approach, detailed in Section 3.2.2.2, proves superior because timing information remains bound to the image data through recording, playback, and network transmission, preventing inadvertent separation.
-This persistence is essential for the temporal drift analysis and correction described in Section 3.2.2.3.
-
-Accurate timestamps require the system clock to maintain synchronization with the global time reference shared by all sensors.
-The \ac{HDR} cameras operate on the NVIDIA Jetson Xavier embedded computer, which synchronizes its clock via Network Time Protocol to the Atlas PC.
-Atlas derives its time from the Pinpoint \ac{GPS} receiver, establishing the hierarchical time distribution detailed in Section 3.2.2.1.
-Prior to initiating the video pipeline, the camera software verifies that Network Time Protocol synchronization is established and the clock corresponds to \ac{GPS} time.
-Streaming commences only after this verification, ensuring all timestamps reflect \ac{GPS}-disciplined time from the first frame onward.
-This verification prevents recording data with erroneous timestamps that would compromise temporal alignment in subsequent processing.
+The camera interface architecture, software integration, GStreamer pipeline implementation, and timestamp synchronization infrastructure are discussed in detail in the video pipeline section.
 
 The maritime environment influenced both camera selection and deployment approach.
 The \ac{HDR} capability addresses extreme brightness differences between sky, water, and shadowed structures, while the automotive-grade sensor provides environmental sealing and a temperature range suitable for outdoor operation.
@@ -312,12 +290,18 @@ The combination of wide dynamic range, moderate resolution, and calibrated geome
 Thompson et al. \cite{thompson2023} originally developed this camera hardware and integration approach, establishing a foundation for maritime perception research.
 The primary enhancement introduced in this work comprises in-band timestamp embedding and temporal drift correction detailed in Section 3.2.2, which are essential for rigorous multi-modal sensor fusion analysis.
 
-            \subsubsection{Livox Horizon}
+            \subsubsection{LiDAR Systems}
 
-Three Livox Horizon solid-state \ac{LiDAR} units provide spatial sensing capability.
-These sensors were selected to replace the existing Velodyne mechanical spinning sensors based on their superior point cloud density within the camera field of view and non-repetitive scan pattern that enhances coverage through temporal aggregation \cite{thompson2023}.
+The Minion platform features six \ac{LiDAR} units providing both omnidirectional environmental awareness and forward-facing high-density perception.
+The \ac{LiDAR} suite comprises three Velodyne HDL-32E units and three Livox Horizon units.
 
-Initial planning considered utilizing the Velodyne HDL-32E and VLP-16 sensors already installed on the Minion platform.
+The three Velodyne HDL-32E mechanically rotating 360-degree \ac{LiDAR} sensors are positioned to provide complete omnidirectional point cloud coverage.
+One unit is positioned at aft-center, with the other two placed at approximately one-third intervals around the vessel at forward-port and forward-starboard locations to achieve full 360-degree field of view coverage.
+
+The three Livox Horizon solid-state forward-scanning \ac{LiDAR} sensors provide high-density returns within a 165-degree forward field of view matching the camera array coverage.
+These sensors were selected specifically for \ac{LiDAR}-camera fusion research based on superior point cloud density within the camera field of view and a non-repetitive scan pattern that enhances coverage through temporal aggregation \cite{thompson2023}.
+
+Initial planning considered utilizing the Velodyne HDL-32E sensors already installed on the Minion platform for fusion research.
 However, analysis of point cloud density within the camera field of view revealed fundamental limitations of mechanically rotating \ac{LiDAR} for sensor fusion applications.
 Traditional spinning sensors like the Velodyne HDL-32E employ a fixed vertical array of laser emitters that rotates horizontally at constant speed.
 The HDL-32E incorporates 32 laser channels arranged vertically across approximately 40 degrees of elevation.
@@ -370,7 +354,19 @@ Two orthogonal mirrors operating at slightly different frequencies cause the las
 Scan pattern coverage accumulates over time, with longer integration periods yielding denser spatial sampling.
 At the standard 100 Hz output rate, each UDP message contains approximately 10 milliseconds of returns.
 Over a one-second aggregation period, the rosette pattern provides substantially higher spatial coverage than a spinning sensor's fixed ring geometry.
-Figure 3.7 in \cite{thompson2023} demonstrates this advantage by projecting one second of Livox data onto an \ac{HDR} camera image, revealing dense coverage across the image with minimal gaps.
+
+The non-repetitive forward-scanning nature of the Livox units means that point cloud density is not uniform across the field of view.
+The 81.7-degree horizontal field of view allows for overlap between the three units, achieving more uniform density across the 165-degree field of view matching the 4K FLIR camera coverage.
+
+% Insert figure showing Livox scan pattern here
+% \begin{figure}[h]
+% \centering
+% \includegraphics[width=0.8\textwidth]{Images/livox_scan_pattern.png}
+% \caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution over one-second integration period.}
+% \label{fig:livox_scan_pattern}
+% \end{figure}
+
+Figure \ref{fig:livox_scan_pattern} illustrates the non-repetitive rosette scan pattern and resulting point cloud density distribution.
 This density is critical for the grid-based clustering employed for \ac{LiDAR} object detection in Chapter 5.
 
 Comparison of point cloud density within the camera field of view reveals the Livox advantage.
@@ -428,7 +424,8 @@ Combined with the software integration and synchronization infrastructure descri
 
             \subsubsection{Pinpoint GPS/INS}
 
-The Pinpoint \ac{GPS}/\ac{INS} performs two critical functions in the Minion perception system: providing precise global time for sensor synchronization, and tracking vessel position and orientation for motion correction of \ac{LiDAR} data.
+The Minion platform features a single Pinpoint \ac{GPS}/\ac{INS} with differential corrections.
+The system performs two critical functions in the perception architecture: providing precise global time for sensor synchronization, and tracking vessel position and orientation for motion correction of \ac{LiDAR} data.
 The \ac{GPS} receiver functions as the master clock for the entire synchronization hierarchy described in Section 3.2.2.1, while the integrated \ac{IMU} enables high-rate pose updates between \ac{GPS} fixes.
 
 Global Navigation Satellite System signals inherently carry highly accurate timing information, as satellite positioning operates through precise measurement of signal delay from multiple satellites with synchronized atomic clocks.
