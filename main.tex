@@ -198,16 +198,21 @@ Addressing these research gaps will contribute to the advancement of autonomous 
 
     \section{USV Platform}
 
+The Minion autonomous surface vessel features a comprehensive multi-modal sensor suite designed to support maritime perception research across different sensing modalities.
+The vessel's sensor configuration provides omnidirectional coverage provided by three Velodyne HDL-32E units positioned to deliver a 360-degree \ac{LiDAR} point cloud coverage of the vessel's immediate operating environment.
+An additional forward-facing perception array offers a significantly higher fidelity of data.
+This array combines three forward-scanning Livox Horizon \ac{LiDAR}, four high-definition cameras and two \ac{LWIR} cameras that cover a 165-degree field of view which enables robust object detection in the direction of travel.
+
         \subsection{Sensors}
         
             \subsubsection{Perception Geometry}
 
-The Minion autonomous surface vessel features a comprehensive multi-modal sensor suite designed to support comparative analysis of object detection performance across sensing modalities.
-The platform integrates both omnidirectional situational awareness sensors and forward-facing perception sensors optimized for sensor fusion research.
+While the Velodyne \ac{LiDAR} sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the forward-facing Livox Horizon \ac{LiDAR} units were selected for their superior point cloud density to facilitate a higher resolution for object detection.
+The three Livox units concentrate sampling density in the forward field of view, matching the horizontal coverage of the six cameras.
+Both modalities overlap the field of view of their respective individual senors.
+This sensor arrangement ensures higher density and more uniform point-cloud across the 165-degree forward perception envelope in the case of \ac{LiDAR}, but also make the system more robust to failure.
+Loosing a single sensor will not create a blind spot for either sensing modality in the forward path of motion of the \ac{USV}. 
 
-The Minion sensor configuration includes 360-degree \ac{LiDAR} coverage provided by three Velodyne HDL-32E units positioned to deliver complete omnidirectional point cloud coverage of the vessel's operating environment.
-A forward-facing perception array comprises three Livox Horizon \ac{LiDAR} units paired with six cameras, providing high-density returns and visual data in a 165-degree forward field of view.
-Visual sensing modalities include three 4K FLIR cameras, two \ac{LWIR} thermal cameras, and one \ac{HDR} camera.
 A Pinpoint \ac{GPS}/\ac{INS} system provides both global time synchronization and platform pose estimation.
 
 The sensor coordinate frames are organized in a hierarchical transformation tree structure.
@@ -217,10 +222,7 @@ The center Livox frame (\texttt{livox\_center}) serves as the primary \ac{LiDAR}
 Six camera image frames exist within this tree, with \texttt{hdr\_camera\_frame} serving as the primary camera for fusion research.
 Intrinsic calibration parameters including camera matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in Section 3.2.1.
 
-While the Velodyne sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the forward-facing Livox Horizon \ac{LiDAR} units were selected specifically for sensor fusion research due to their superior point cloud density within the camera field of view.
-The three Livox units concentrate sampling density in the forward 165-degree field of view, matching the horizontal coverage of the three 4K FLIR cameras.
-Each Livox Horizon features an 81.7° × 25.1° (horizontal × vertical) field of view.
-The overlapping deployment ensures higher uniform point density across the 165-degree forward perception envelope.
+
 
 The Livox scan pattern employs a non-repetitive rosette pattern that progressively covers the field of view over time rather than repeatedly sampling fixed positions.
 This characteristic enables temporal aggregation to increase effective spatial resolution, particularly beneficial for a moving platform where \ac{GPS}/\ac{INS} pose data enables motion-compensated point cloud accumulation.
@@ -359,12 +361,12 @@ The non-repetitive forward-scanning nature of the Livox units means that point c
 The 81.7-degree horizontal field of view allows for overlap between the three units, achieving more uniform density across the 165-degree field of view matching the 4K FLIR camera coverage.
 
 % Insert figure showing Livox scan pattern here
-% \begin{figure}[h]
-% \centering
-% \includegraphics[width=0.8\textwidth]{Images/livox_scan_pattern.png}
-% \caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution over one-second integration period.}
-% \label{fig:livox_scan_pattern}
-% \end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{Images/Livox_1.png}
+\caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution from 0.1 to 0.5 seconds.}
+\label{fig:livox_scan_pattern}
+\end{figure}
 
 Figure \ref{fig:livox_scan_pattern} illustrates the non-repetitive rosette scan pattern and resulting point cloud density distribution.
 This density is critical for the grid-based clustering employed for \ac{LiDAR} object detection in Chapter 5.
