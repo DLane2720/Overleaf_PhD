@@ -9,6 +9,7 @@
 \usepackage{amsmath}
 \usepackage{array}
 \usepackage{enumitem}
+\usepackage{xcolor}
 % \usepackage[style=authoryear]{biblatex} % or numeric, apa, etc.
 % \addbibresource{Dissertation.bib}         % your Zotero export
 
@@ -196,18 +197,18 @@ Addressing these research gaps will contribute to the advancement of autonomous 
 
 \chapter{Sensing Platform}
 
-    \section{USV Platform}
+    % \section{USV Platform}
 
 The Minion autonomous surface vessel features a comprehensive multi-modal sensor suite designed to support maritime perception research across different sensing modalities.
 The vessel's sensor configuration provides omnidirectional coverage provided by three Velodyne HDL-32E units positioned to deliver a 360-degree \ac{LiDAR} point cloud coverage of the vessel's immediate operating environment.
 An additional forward-facing perception array offers a significantly higher fidelity of data.
 This array combines three forward-scanning Livox Horizon \ac{LiDAR}, four high-definition cameras and two \ac{LWIR} cameras that cover a 165-degree field of view which enables robust object detection in the direction of travel.
 
-        \subsection{Sensors}
-        
-            \subsubsection{Perception Geometry}
 
-While the Velodyne \ac{LiDAR} sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the forward-facing Livox Horizon \ac{LiDAR} units were selected for their superior point cloud density to facilitate a higher resolution for object detection.
+        
+\section{Perception Geometry}
+
+While the Velodyne \ac{LiDAR} sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the forward-facing Livox Horizon \ac{LiDAR} units were selected for their superior point cloud density and ability to facilitate a higher resolution for object detection.
 The three Livox units concentrate sampling density in the forward field of view, matching the horizontal coverage of the six cameras.
 Both modalities overlap the field of view of their respective individual senors.
 This sensor arrangement ensures higher density and more uniform point-cloud across the 165-degree forward perception envelope in the case of \ac{LiDAR}, but also make the system more robust to failure.
@@ -218,11 +219,9 @@ A Pinpoint \ac{GPS}/\ac{INS} system provides both global time synchronization an
 The sensor coordinate frames are organized in a hierarchical transformation tree structure.
 The inertial reference frame (\texttt{map}) defines the world-fixed coordinate system based on \ac{GPS}.
 The platform reference frame (\texttt{base\_link}) represents the vessel body frame defined by the Pinpoint \ac{GPS}/\ac{INS}.
-The center Livox frame (\texttt{livox\_center}) serves as the primary \ac{LiDAR} reference, with the port Livox frame (\texttt{livox\_port}) and starboard Livox frame (\texttt{livox\_starboard}) as child frames.
-Six camera image frames exist within this tree, with \texttt{hdr\_camera\_frame} serving as the primary camera for fusion research.
-Intrinsic calibration parameters including camera matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in Section 3.2.1.
-
-
+The center Livox frame (\textcolor{red}{\texttt{livox\_center}}) serves as the primary \ac{LiDAR} reference, with the port Livox frame (\textcolor{red}{\texttt{livox\_port}}) and starboard Livox frame (\textcolor{red}{\texttt{livox\_starboard}}) as child frames.
+Six camera image frames exist within this tree, with \textcolor{red}{camera frame} serving as the primary camera for fusion research.
+Intrinsic calibration parameters including camera specific matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in \textcolor{red}{Appendix \#}.
 
 The Livox scan pattern employs a non-repetitive rosette pattern that progressively covers the field of view over time rather than repeatedly sampling fixed positions.
 This characteristic enables temporal aggregation to increase effective spatial resolution, particularly beneficial for a moving platform where \ac{GPS}/\ac{INS} pose data enables motion-compensated point cloud accumulation.
@@ -233,23 +232,71 @@ This configuration enables comparative evaluation of detection performance while
 The sensor suite supports the research objectives of comparing detection performance across modalities and evaluating late fusion approaches.
 The following subsections detail individual sensor specifications and selection rationale.
 
-            \subsubsection{Camera Systems}
+    \section{Sensors}
 
-The Minion platform features six cameras providing visual perception across multiple sensing modalities.
-The camera suite comprises three 4K FLIR cameras arranged to provide overlapping forward coverage extending to 165 degrees horizontal field of view, with one camera facing directly forward and the other two positioned with overlapping fields of view to extend lateral coverage.
-Two \ac{LWIR} thermal cameras provide overlapping 165-degree forward field of view for thermal imaging capability.
-One Leopard Imaging IMX490 \ac{HDR} camera offers forward-facing high dynamic range imaging with 65-degree horizontal field of view.
+Six cameras are encased in a waterproof camera enclosure
+\textcolor{red}{[Insert Camera Enclosure Image]}
 
-The Leopard Imaging LI-USB30-IMX490-GW5400-GMSL2-065H \ac{HDR} camera was selected as the primary visual sensor for \ac{LiDAR}-camera fusion research.
-This selection was based on several factors including the camera's capability to handle challenging maritime lighting conditions and results from preliminary comparative studies.
-Early testing conducted by Liebergall et al. \cite{liebergall} compared YOLO-based object detection performance between the \ac{HDR} camera and the 4K FLIR cameras aboard Minion.
-Although the final results of this comparative study were published after the dataset for this research had been collected, the preliminary findings supported the \ac{HDR} camera selection for fusion experiments.
+\subsection{LWIR Thermal Cameras}
+Two Teledyne Calibir 640 \ac{LWIR} thermal cameras extend perception to night and low-light conditions. 
+While limited to 640×480 resolution due to bolometer technology, they provide a 165 degree forward field of view when paired, ensuring redundancy with the
+visible and HDR cameras.
 
-The \ac{HDR} camera addresses high-contrast scenes characteristic of maritime environments, where bright sky, reflective water surfaces, and shadowed objects appear simultaneously.
-Extended dynamic range preserves visual detail across the broad luminance spectrum encountered in these conditions \cite{thompson2023}.
+\subsection{Visible Spectrum Cameras}
 
-The Leopard Imaging IMX490 incorporates Sony's automotive-grade image sensor, originally designed for advanced driver assistance systems facing similar environmental challenges.
-Table 3.1 presents the camera's key specifications.
+\textcolor{red}{Expand this entire discussion}
+The visible spectrum camera suite on the Minion platform is designed to balance two factors are particularly important for maritime perception: imaging resolution and dynamic range.  
+Resolution determines the ability to resolve small targets at distance.
+Specific imaging sensors and lenses can be selected by determining the size and distance at which objects need to be resolved:
+\textcolor{red}{Insert equations for pixel density / resolution}
+The dynamic range of an imaging sensor refers to the range of signal intensities it can detect, from the faintest signal that can be recorded to the brightest signal before saturation.
+Insufficient dynamic range leads to washed-out highlights or lost detail in shadows.  
+Because maritime environments routinely present both bright sky reflections and deep shadows in the same scene, dynamic range is as critical as resolution when selecting cameras for perception tasks.  
+
+\subsubsection{FLIR Blackfly S 4K Cameras}
+
+Three FLIR Blackfly S 4K visible-light cameras, arranged to provide a combined 165 degrees of forward-facing coverage through overlapping 65 degree lenses.  
+This configuration provides the requisite resolution of objects while avoiding the distortion that would occur with fewer sensors equipped with ultra-wide lenses, ensuring that objects remain adequately resolved across the vessel's perception envelope.  
+
+Each Blackfly S sensor achieves an effective dynamic range of 69.4~dB.  
+% This corresponds to a span of a few thousand-to-one between the darkest detectable signal and the brightest non-saturating signal.  
+The cameras capture 31 \ac{FPS} at a resolution of 4096 $\times$ 2160 pixels.
+
+\subsubsection{Leopard Imaging HDR Camera}
+
+A Leopard Imaging LI-USB30-IMX490-GW5400-GMSL2-065H camera, based on Sony’s IMX490 automotive-grade HDR sensor, provides 65 degrees of forward coverage.  
+The camera delivers a resolution of 2880 $\times$ 1860 pixels at 25 frames per second.  
+Most notably, the IMX490 achieves approximately 120~dB of dynamic range, extending the span of detectable light intensity to nearly one million-to-one.  
+
+This performance is enabled by a digital overlap HDR (DOL-HDR) architecture with in-pixel dual conversion gain.  
+By capturing multiple gain levels within a single frame period, the sensor produces simultaneous multi-gain readouts without relying on sequential multi-exposure stacking.  
+This design eliminates ghosting and motion artifacts, which are common when either the platform or surrounding targets move between exposures.  
+
+\subsubsection{Comparison and Role in Platform Design}
+
+The FLIR Blackfly S 4K cameras satisfy geometric and resolution requirements, but their limited dynamic range makes them prone to over-exposure and loss of highlight detail in high-contrast maritime conditions.  
+In contrast, the IMX490 HDR camera combines comparable field of view with substantially greater dynamic range, enabling detail preservation across bright and shaded regions within the same frame.  
+For these reasons, the HDR camera was designated as the primary forward-facing visual spectrum sensor for \ac{LiDAR}-camera fusion research, while the Blackfly cameras provide supplementary coverage and redundancy.  
+The Blackfly cameras support an effective dynamic range of 69.4~dB.  
+This corresponds to a span of just a few thousand-to-one between the darkest detectable signal and the brightest non-saturating signal.  
+As a result, the cameras are prone to over-exposure in high-brightness maritime conditions, particularly when imaging reflective water surfaces or bright sky backgrounds, leading to loss of highlight detail and reduced contrast.  
+
+These limitations highlighted the need for a true high-dynamic-range (HDR) sensor to complement the Blackfly cameras.  
+Although the FLIR units remain useful for redundancy and context, their restricted dynamic range makes them less suitable as the primary visual spectrum sensor for sensor fusion research on the Minion platform.  
+
+\subsubsection{Leopard Imaging HDR Camera}
+
+To overcome these limitations, a Leopard Imaging LI-USB30-IMX490-GW5400-GMSL2-065H camera was integrated, based on Sony’s IMX490 automotive-grade HDR sensor.  
+This camera provides 65 degrees of forward coverage and achieves approximately 120~dB of dynamic range, enabling preservation of fine image details across extreme lighting conditions, including bright sky, reflective water, and shaded objects.  
+
+The IMX490 accomplishes this performance using a digital overlap HDR (DOL-HDR) architecture with in-pixel dual conversion gain.  
+This method captures multiple effective exposures within a single frame period, producing simultaneous multi-gain readouts from the same scene.  
+Unlike sequential multi-exposure HDR, which stacks separate frames and is prone to ghosting or blurring, DOL-HDR eliminates motion artifacts—a critical capability in maritime operations where both the vessel and surrounding objects are frequently in motion.  
+
+This substantial increase in dynamic range, combined with robust performance under challenging illumination, made the IMX490-based HDR camera the primary visual spectrum sensor for \ac{LiDAR}-camera fusion research in this dissertation.  
+Preliminary results from a comparative study by Liebergall et al.~\cite{liebergall} further supported this decision, showing improved detection consistency with the HDR sensor compared to the FLIR 4K cameras.  
+Although later published results did not fully corroborate the preliminary findings, those results became available only after the dataset for this research had been collected.  
+Accordingly, the IMX490 HDR camera served as the main forward-facing visual spectrum sensor throughout this study.  
 
 \begin{table}[h]
 \centering
@@ -267,7 +314,7 @@ Horizontal Resolution & 2880 pixels \\
 Vertical Resolution & 1860 pixels \\
 Aspect Ratio & 1.55:1 \\
 Maximum Frame Rate & 25 fps \\
-Horizontal Field of View & 65° \\
+Horizontal Field of View & 65 degree \\
 Interface & USB 3.0 (UVC) \\
 HDR Capability & 120 dB \\
 \hline
@@ -277,13 +324,6 @@ HDR Capability & 120 dB \\
 
 The 2880×1860 resolution provides sufficient spatial detail for detecting objects at relevant ranges in autonomous vessel navigation, while the 25 fps frame rate adequately supports typical vessel speeds and maneuvering.
 
-The camera interface architecture, software integration, GStreamer pipeline implementation, and timestamp synchronization infrastructure are discussed in detail in the video pipeline section.
-
-The maritime environment influenced both camera selection and deployment approach.
-The \ac{HDR} capability addresses extreme brightness differences between sky, water, and shadowed structures, while the automotive-grade sensor provides environmental sealing and a temperature range suitable for outdoor operation.
-The USB 3.0 interface enables placement of the camera in weatherproof housing separate from the computing hardware, with the specification supporting cable runs up to 5 meters.
-The three cameras are mounted in individual weatherproof boxes integrated into the camera enclosure assembly described in Section 3.1.2.2, which manages power distribution, environmental protection, and network connectivity while preserving the required geometric relationships.
-
 The IMX490's native \ac{HDR} combines multiple exposures in a single frame period, achieving 120 dB dynamic range without sequential multi-exposure capture.
 This simultaneous approach eliminates motion artifacts associated with temporal bracketing, which is critical when both the platform and targets are in motion.
 Image quality validation and intrinsic calibration are addressed in Section 3.2.1.1, including lens distortion characterization and camera matrix estimation.
@@ -292,7 +332,7 @@ The combination of wide dynamic range, moderate resolution, and calibrated geome
 Thompson et al. \cite{thompson2023} originally developed this camera hardware and integration approach, establishing a foundation for maritime perception research.
 The primary enhancement introduced in this work comprises in-band timestamp embedding and temporal drift correction detailed in Section 3.2.2, which are essential for rigorous multi-modal sensor fusion analysis.
 
-            \subsubsection{LiDAR Systems}
+        \subsection{LiDAR Systems}
 
 The Minion platform features six \ac{LiDAR} units providing both omnidirectional environmental awareness and forward-facing high-density perception.
 The \ac{LiDAR} suite comprises three Velodyne HDL-32E units and three Livox Horizon units.
@@ -303,11 +343,11 @@ One unit is positioned at aft-center, with the other two placed at approximately
 The three Livox Horizon solid-state forward-scanning \ac{LiDAR} sensors provide high-density returns within a 165-degree forward field of view matching the camera array coverage.
 These sensors were selected specifically for \ac{LiDAR}-camera fusion research based on superior point cloud density within the camera field of view and a non-repetitive scan pattern that enhances coverage through temporal aggregation \cite{thompson2023}.
 
-Initial planning considered utilizing the Velodyne HDL-32E sensors already installed on the Minion platform for fusion research.
-However, analysis of point cloud density within the camera field of view revealed fundamental limitations of mechanically rotating \ac{LiDAR} for sensor fusion applications.
-Traditional spinning sensors like the Velodyne HDL-32E employ a fixed vertical array of laser emitters that rotates horizontally at constant speed.
-The HDL-32E incorporates 32 laser channels arranged vertically across approximately 40 degrees of elevation.
-This array rotates at 10 Hz, producing 32 discrete horizontal rings of returns distributed across the full 360-degree plane \cite{thompson2023}.
+% Initial planning considered utilizing the Velodyne HDL-32E sensors already installed on the Minion platform for fusion research.
+% However, analysis of point cloud density within the camera field of view revealed fundamental limitations of mechanically rotating \ac{LiDAR} for sensor fusion applications.
+% Traditional spinning sensors like the Velodyne HDL-32E employ a fixed vertical array of laser emitters that rotates horizontally at constant speed.
+% The HDL-32E incorporates 32 laser channels arranged vertically across approximately 40 degrees of elevation.
+% This array rotates at 10 Hz, producing 32 discrete horizontal rings of returns distributed across the full 360-degree plane \cite{thompson2023}.
 
 While 360-degree coverage provides comprehensive spatial awareness, it presents challenges for camera-\ac{LiDAR} fusion.
 First, sparse azimuthal sampling occurs because on a stationary or slow-moving platform, the 32 lasers strike identical positions on every rotation, yielding no increase in sampling density over time.
@@ -315,8 +355,8 @@ Second, inefficient field of view utilization results from distributing returns 
 These limitations motivated selection of an alternative \ac{LiDAR} technology optimized for forward-facing perception with temporal aggregation.
 
 The Livox Horizon employs a non-repetitive rosette scan pattern that progressively covers its field of view over time rather than repeatedly sampling identical locations.
-The sensor features an 81.7° × 25.1° (horizontal × vertical) field of view, substantially wider in azimuth than the 65-degree cameras.
-Three Livox units deployed together achieve combined coverage of approximately 165° × 25.1°, providing complete horizontal overlap with the camera array and covering approximately 77\% vertically \cite{thompson2023}.
+The sensor features an 81.7 degree × 25.1 degree (horizontal × vertical) field of view, substantially wider in azimuth than the 65-degree cameras.
+Three Livox units deployed together achieve combined coverage of approximately 165 degree × 25.1 degree, providing complete horizontal overlap with the camera array and covering approximately 77\% vertically \cite{thompson2023}.
 Table 3.2 presents the Livox Horizon specifications.
 
 \begin{table}[h]
@@ -329,8 +369,8 @@ Table 3.2 presents the Livox Horizon specifications.
 % \textbf{Parameter} & \textbf{Value} \\
 \hline
 Model & Livox Horizon \\
-Horizontal Field of View & 81.7° \\
-Vertical Field of View & 25.1° \\
+Horizontal Field of View & 81.7 degree \\
+Vertical Field of View & 25.1 degree \\
 Range & 260 m @ 80\% reflectivity \\
 Point Rate (Single Return) & 240,000 pts/sec \\
 Point Rate (Dual Return) & 480,000 pts/sec \\
@@ -375,7 +415,7 @@ Comparison of point cloud density within the camera field of view reveals the Li
 A Velodyne HDL-32E in dual-return mode produces approximately 1.4 million points per second distributed across the full 360-degree plane.
 The camera field of view encompasses approximately 165 degrees, yielding an effective point rate in the region of interest of:
 
-$$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165°}{360°} \approx 641,000 \text{ pts/sec}$$
+$$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165 degree}{360 degree} \approx 641,000 \text{ pts/sec}$$
 
 Three Livox Horizon units in dual-return mode together produce:
 
@@ -424,7 +464,7 @@ Per-point timestamps and \ac{GPS}/\ac{INS} integration enable accurate aggregati
 Factory-configured multi-sensor calibration unifies point clouds from three sensors before transmission, and the 905 nm wavelength reduces maritime clutter by rejecting water returns.
 Combined with the software integration and synchronization infrastructure described in Section 3.2, this configuration enables rigorous \ac{LiDAR} detection evaluation and comparison with vision-based approaches in Chapters 5 and 6.
 
-            \subsubsection{Pinpoint GPS/INS}
+        \subsection{Pinpoint GPS/INS}
 
 The Minion platform features a single Pinpoint \ac{GPS}/\ac{INS} with differential corrections.
 The system performs two critical functions in the perception architecture: providing precise global time for sensor synchronization, and tracking vessel position and orientation for motion correction of \ac{LiDAR} data.
@@ -472,7 +512,7 @@ Second, continuous pose estimates enable transformation of temporally distribute
 Combined with the synchronization verification and drift correction procedures described in Section 3.2.2, these capabilities establish the temporal and spatial foundation for rigorous object detection performance evaluation across sensing modalities.
 The \ac{GPS}/\ac{INS} thus functions not merely as a navigation sensor but as critical infrastructure enabling the multi-modal perception analysis central to this research.
 
-        \subsection{Compute and LAN}
+    \section{Compute and LAN}
         
     \section{Data Collection}
     
