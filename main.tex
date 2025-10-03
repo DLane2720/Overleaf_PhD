@@ -272,7 +272,7 @@ This performance is enabled by a digital overlap HDR (DOL-HDR) architecture with
 By capturing multiple gain levels within a single frame period, the sensor produces simultaneous multi-gain readouts without relying on sequential multi-exposure stacking.  
 This design eliminates ghosting and motion artifacts, which are common when either the platform or surrounding targets move between exposures.  
 
-\subsubsection{Comparison and Role in Platform Design}
+\subsubsection{HDR Selection}
 
 The FLIR Blackfly S 4K cameras satisfy geometric and resolution requirements, but their limited dynamic range makes them prone to over-exposure and loss of highlight detail in high-contrast maritime conditions.  
 In contrast, the IMX490 HDR camera combines comparable field of view with substantially greater dynamic range, enabling detail preservation across bright and shaded regions within the same frame.  
@@ -309,14 +309,18 @@ Accordingly, the IMX490 HDR camera served as the main forward-facing visual spec
 % \textbf{Parameter} & \textbf{Value} \\
 \hline
 % Make & Leopard Imaging \\
-Leopard Imaging & LI-USB30-IMX490-GW5400-GMSL2-065H \\
+Leopard Imaging & LI-IMX490-GW5400-GMSL2-065H \\
+Image Sensor & Sony IMX490 \\
+Pixel Size & $3.0 \times 3.0 \mu m$ \\
 Horizontal Resolution & 2880 pixels \\
 Vertical Resolution & 1860 pixels \\
 Aspect Ratio & 1.55:1 \\
 Maximum Frame Rate & 25 fps \\
-Horizontal Field of View & 65 degree \\
-Interface & USB 3.0 (UVC) \\
-HDR Capability & 120 dB \\
+Dynamic Range & 120 dB \\
+Lens EFL & $7.9 mm$\\
+Aperture F/\# & $2.0$ \\
+Horizontal Field of View & 65 degrees \\
+Vertical Field of View & 37 degrees \\
 \hline
 \end{tabular}
 \label{tab:hdr_camera_specs}
