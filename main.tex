@@ -10,6 +10,8 @@
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{xcolor}
+
+\usepackage{subcaption} % for multiple image figures
 % \usepackage[style=authoryear]{biblatex} % or numeric, apa, etc.
 % \addbibresource{Dissertation.bib}         % your Zotero export
 
@@ -54,7 +56,7 @@ SURFACE VESSELS} % the title should be included here
 	% \raggedright XXxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.  Xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.\\Xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.  Xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx.\\
     \raggedright In addition to any personal statements of acknowledgement, be sure to include any acknowledgement statements required by research sponsors.\\{[Single page limit]} 
 
-    \raggedright This research was sponsored in part by the Department of the Navy, Office of Naval Research through ONR N00014-17-1-2492, and the Naval Engineering Education Consortium (NEEC) through grants N00174-19-1-0018 and N00174-22-1-0012, sponsored by NSWC Carderock and NUWC Keyport respectively. Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the Department of the Navy or Office of Naval Research.
+    \raggedright This research was sponsored in part by the Department of the Navy, Office of Naval Research through ONR N00014-17-1-2492, and the Naval Engineering Education Consortium (NEEC) through grants N00174-19-1-0018 and N00174-22-1-0012, sponsored by NSWC Carderock and NUWC Keyport, respectively. Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the Department of the Navy or Office of Naval Research.
 \end{acknowledgements}
 
 \begin{abstract}
@@ -95,14 +97,14 @@ Current \ac{ASV} development faces a significant knowledge gap regarding the qua
 
 Comprehensive performance analysis requires systematic detection accuracy comparison between \ac{LiDAR}-based systems utilizing \ac{GB-CACHE} processing and vision-based systems implementing \ac{YOLO} object detection algorithms. Additionally, rigorous classification performance evaluation across diverse maritime object types using advanced machine learning algorithms must be conducted to establish performance baselines. Assessment of training requirements for machine learning-based classification systems, particularly focusing on data efficiency and convergence characteristics, represents another critical analytical requirement. Real-time processing capabilities and computational efficiency evaluation under operational constraints must be systematically analyzed to ensure practical deployment feasibility. Moreover, sensor fusion effectiveness evaluation, specifically examining bounding box confidence integration methodologies, requires comprehensive analysis to determine optimal multi-modal processing approaches. Finally, environmental robustness evaluation across varying maritime conditions, including different weather states, lighting conditions, and sea states, must be conducted to ensure reliable operational performance.
 
-\ac{ASV} perception systems must reliably detect and classify a diverse range of maritime objects that are critical for safe autonomous navigation, requiring robust algorithms capable of real-time processing under challenging environmental conditions. The maritime environment presents unique detection challenges due to varying lighting conditions, wave-induced platform motion, and the diverse physical characteristics of navigation-critical objects that must be accurately identified and classified. Navigation buoys, including Polyform A-2 and A-3 buoys available in various colors for channel marking and navigation guidance, represent primary detection targets requiring high accuracy classification. Regulatory markers, specifically Sur-Mark tall buoys designed for navigation reference and hazard identification, present distinct detection challenges due to their geometric characteristics and operational deployment contexts. Light towers serving as active navigation aids provide both visual and electronic guidance signals, requiring detection algorithms capable of handling variable illumination and signaling states. Various vessels, including recreational boats and commercial watercraft, represent dynamic detection targets with diverse size, shape, and motion characteristics that complicate reliable classification. Maritime infrastructure elements, including docks, piers, and other fixed navigational hazards, require robust detection capabilities to ensure safe autonomous navigation in complex harbor and coastal environments.
+\ac{ASV} perception systems must reliably detect and classify a diverse range of maritime objects that are critical for safe autonomous navigation, requiring robust algorithms capable of real-time processing under challenging environmental conditions. The maritime environment presents unique detection challenges due to varying lighting conditions, wave-induced platform motion, and the diverse physical characteristics of navigation-critical objects that must be accurately identified and classified. Navigation buoys, including Polyform A-2 and A-3 buoys available in various colors for channel marking and navigation guidance, represent primary detection targets requiring high accuracy classification. Regulatory markers, specifically Sur-Mark tall buoys designed for navigation reference and hazard identification, present distinct detection challenges due to their geometric characteristics and operational deployment contexts. Light towers serving as active navigation aids provide both visual and electronic guidance signals, requiring detection algorithms capable of handling variable illumination and signaling states. Various vessels, including recreational boats and commercial watercraft, represent dynamic detection targets with diverse sizes, shapes, and motion characteristics that complicate reliable classification. Maritime infrastructure elements, including docks, piers, and other fixed navigational hazards, require robust detection capabilities to ensure safe autonomous navigation in complex harbor and coastal environments.
 
 % \subsection{Problem Statement}
 \subsection{Problem Statement: Performance Comparison Gap}
 
 Despite the growing operational importance of autonomous surface vessels and the significant maturation of individual sensor technologies over the past decade, there exists a critical and well-documented gap in quantitative performance comparison between different sensing modalities specifically applied to maritime object detection and classification tasks. Current \ac{ASV} development efforts lack systematic analytical frameworks for evaluating how \ac{LiDAR}-based systems utilizing advanced point cloud processing algorithms perform relative to vision-based systems implementing state-of-the-art deep learning approaches when deployed in realistic maritime operational environments.
 
-Existing research efforts in maritime object detection and classification have primarily focused on individual sensor implementations and algorithm development without conducting comprehensive comparative analysis that would inform optimal sensor selection and integration strategies for operational \ac{ASV} systems. Contemporary research demonstrates a predominant focus on \ac{LiDAR}-only implementations that emphasize point cloud processing methodologies and clustering algorithms specifically adapted for maritime environments, yet these studies typically lack comparative evaluation against alternative sensing modalities. Similarly, vision-only system research emphasizes deep learning approaches for maritime object recognition, particularly convolutional neural network architectures, but generally operates in isolation without systematic comparison to \ac{LiDAR}-based approaches. The limited cross-modal comparison studies that do exist provide insufficient quantitative performance metrics and lack standardized evaluation frameworks necessary for meaningful comparative analysis. Furthermore, there exists a notable absence of standardized evaluation frameworks specifically designed for maritime perception systems, hindering systematic comparison and technology advancement across research groups and commercial developers.
+Existing research efforts in maritime object detection and classification have primarily focused on individual sensor implementations and algorithm development without conducting a comprehensive comparative analysis that would inform optimal sensor selection and integration strategies for operational \ac{ASV} systems. Contemporary research demonstrates a predominant focus on \ac{LiDAR}-only implementations that emphasize point cloud processing methodologies and clustering algorithms specifically adapted for maritime environments, yet these studies typically lack comparative evaluation against alternative sensing modalities. Similarly, vision-only system research emphasizes deep learning approaches for maritime object recognition, particularly convolutional neural network architectures, but generally operates in isolation without systematic comparison to \ac{LiDAR}-based approaches. The limited cross-modal comparison studies that do exist provide insufficient quantitative performance metrics and lack standardized evaluation frameworks necessary for meaningful comparative analysis. Furthermore, there exists a notable absence of standardized evaluation frameworks specifically designed for maritime perception systems, hindering systematic comparison and technology advancement across research groups and commercial developers.
 
 The absence of comprehensive quantitative performance analysis leaves fundamental technical and operational questions unanswered for \ac{ASV} system designers and engineers responsible for developing reliable autonomous navigation systems. Critical questions regarding detection and classification performance remain inadequately addressed in current research literature. Specifically, the comparative detection accuracy performance of \ac{LiDAR}-based systems utilizing \ac{GB-CACHE} processing versus vision-based systems implementing \ac{YOLO} algorithms for specific maritime object types requires systematic investigation. The precision and recall characteristics of each sensing modality across different object classes under varying environmental conditions need quantitative evaluation to inform sensor selection decisions. Training requirements, including data volume, computational resources, and convergence time, differ significantly between \ac{LiDAR} feature-based approaches and vision-based deep learning methodologies, yet these differences lack systematic quantification. Computational overhead associated with each sensing modality for real-time operation, including processing latency and resource utilization, requires comprehensive analysis to ensure practical deployment feasibility. Additionally, the effectiveness of sensor fusion methodologies, particularly bounding box confidence integration approaches, needs rigorous evaluation to determine optimal multi-modal processing strategies for enhanced detection performance.
 
@@ -111,9 +113,10 @@ The absence of comprehensive quantitative performance analysis leaves fundamenta
 
 Autonomous surface vessels require precise integration of multiple sensing modalities to achieve reliable object detection and classification performance that meets operational safety standards for autonomous navigation. A fundamental and persistent challenge in \ac{ASV} perception system development lies in establishing and maintaining accurate spatial and temporal calibration between \ac{LiDAR} and camera systems under dynamic maritime operational conditions that present unique environmental challenges not encountered in terrestrial applications.
 
-Multi-sensor \ac{ASV} platforms face unique spatial calibration requirements that differ significantly from terrestrial applications due to the dynamic nature of maritime environments and the continuous mechanical stresses imposed by marine operational conditions. Environmental factors affecting calibration present ongoing challenges for maintaining sensor alignment accuracy. Platform motion induced by wave action creates continuous roll, pitch, and yaw movements that affect sensor alignment and require robust calibration maintenance strategies. Vibration and mechanical stress inherent in marine environments cause gradual calibration drift that can degrade sensor fusion performance over extended operational periods. Temperature variations in maritime environments affect sensor mounting structures and optical characteristics, potentially introducing systematic calibration errors that must be compensated through adaptive calibration procedures. Saltwater corrosion presents long-term challenges by potentially altering sensor mounting hardware characteristics over extended deployment periods, requiring regular calibration validation and maintenance protocols.
+Multi-sensor \ac{ASV} platforms face unique spatial calibration requirements that differ significantly from terrestrial applications due to the dynamic nature of maritime environments and the continuous mechanical stresses imposed by marine operational conditions.
+Environmental factors affecting calibration present ongoing challenges for maintaining sensor alignment accuracy. Platform motion induced by wave action creates continuous roll, pitch, and yaw movements that affect sensor alignment and require robust calibration maintenance strategies. Vibration and mechanical stress inherent in marine environments cause gradual calibration drift that can degrade sensor fusion performance over extended operational periods. Temperature variations in maritime environments affect sensor mounting structures and optical characteristics, potentially introducing systematic calibration errors that must be compensated through adaptive calibration procedures. Saltwater corrosion presents long-term challenges by potentially altering sensor mounting hardware characteristics over extended deployment periods, requiring regular calibration, validation, and maintenance protocols.
 
-Precision requirements for effective sensor fusion establish demanding performance specifications for calibration maintenance systems that must operate reliably under dynamic maritime conditions. Sub-pixel accuracy calibration is essential for accurate \ac{LiDAR} point cloud projection onto camera images, enabling effective correlation between sensor modalities for object detection applications and ensuring that spatial relationships between sensors remain consistent across operational scenarios. Millimeter-level precision in spatial calibration is required for effective object detection correlation between \ac{LiDAR} and vision systems, particularly for small maritime objects such as navigation buoys where detection accuracy directly impacts navigation safety. Consistent calibration maintenance across varying operational conditions, including different sea states and weather conditions, requires robust calibration validation procedures that can adapt to changing environmental parameters. Real-time calibration validation capabilities are necessary for detecting calibration degradation during operation and implementing corrective measures to maintain sensor fusion performance without interrupting autonomous navigation operations.
+Precision requirements for effective sensor fusion establish demanding performance specifications for calibration maintenance systems that must operate reliably under dynamic maritime conditions. Sub-pixel accuracy calibration is essential for accurate \ac{LiDAR} point cloud projection onto camera images, enabling effective correlation between sensor modalities for object detection applications and ensuring that spatial relationships between sensors remain consistent across operational scenarios. Millimeter-level precision in spatial calibration is required for effective object detection correlation between \ac{LiDAR} and vision systems, particularly for small maritime objects such as navigation buoys, where detection accuracy directly impacts navigation safety. Consistent calibration maintenance across varying operational conditions, including different sea states and weather conditions, requires robust calibration validation procedures that can adapt to changing environmental parameters. Real-time calibration validation capabilities are necessary for detecting calibration degradation during operation and implementing corrective measures to maintain sensor fusion performance without interrupting autonomous navigation operations.
 
 \subsection{Limitations and Assumptions}
 
@@ -175,7 +178,7 @@ This research focuses on specific maritime object categories that are relevant t
 \acp{USV} have emerged as essential platforms capable of performing dangerous, dirty, and cumbersome tasks that exceed human capability. These vessels are pivotal in various maritime operations, including environmental monitoring, search and rescue missions, and resource exploration \cite{liebergall, eckstein2024}.% [1], [2]. 
 Their ability to operate independently with minimal human intervention has significantly enhanced operational efficiency and safety at sea \cite{bai2022}.%[3].
 
-Autonomous vehicles use a variety of sensors to perceive their surroundings but primarily rely on some combination of visual information through a camera and spatial data provided by \ac{LiDAR} \cite{yeong2021}.%[4].
+Autonomous vehicles use a variety of sensors to perceive their surroundings, but primarily rely on some combination of visual information through a camera and spatial data provided by \ac{LiDAR} \cite{yeong2021}.%[4].
 Each sensing modality offers distinct advantages: visual data provides rich color and texture information, while \ac{LiDAR} delivers precise spatial measurements of the surrounding environment.
 Real-time object detection methods have been developed for both sensing modalities, leveraging deep learning architectures.
 Object detection with visual data often employs transfer learning on pre-trained convolutional neural networks such as ResNet \cite{he2016} and \ac{YOLO} \cite{ultralytics}.%[6].
@@ -202,17 +205,46 @@ Addressing these research gaps will contribute to the advancement of autonomous 
 The Minion autonomous surface vessel features a comprehensive multi-modal sensor suite designed to support maritime perception research across different sensing modalities.
 The vessel's sensor configuration provides omnidirectional coverage provided by three Velodyne HDL-32E units positioned to deliver a 360-degree \ac{LiDAR} point cloud coverage of the vessel's immediate operating environment.
 An additional forward-facing perception array offers a significantly higher fidelity of data.
-This array combines three forward-scanning Livox Horizon \ac{LiDAR}, four high-definition cameras and two \ac{LWIR} cameras that cover a 165-degree field of view which enables robust object detection in the direction of travel.
+This array, henceforth referred to as the camera-enclosure, combines three forward-scanning Livox Horizon \ac{LiDAR}, four high-definition cameras, and two \ac{LWIR} cameras that cover a 165-degree field of view, which enables robust object detection in the direction of travel.
+\textcolor{blue}{The camera enclosure was developed in tandem for the RobotX competition in 2022, as well as the PhD research of \cite{thompson2023}?}
+Figure~\ref{fig:camera_enclosure} indicates the mounting location of the Livox Horizon LiDAR units, as well as each of the six cameras within the waterproof camera enclosure. 
+\textcolor{red}{add labels for FWIR!}
 
-
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{Images/Camera_enclosure2.png}
+\caption{Mounting locations of two LWIR cameras, three FLIR 4k cameras, and a single HDR camera within the camera enclosure, and three Livox Horizon LiDAR units affixed on top.}
+\label{fig:camera_enclosure}
+\end{figure}
         
 \section{Perception Geometry}
 
 While the Velodyne \ac{LiDAR} sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the forward-facing Livox Horizon \ac{LiDAR} units were selected for their superior point cloud density and ability to facilitate a higher resolution for object detection.
 The three Livox units concentrate sampling density in the forward field of view, matching the horizontal coverage of the six cameras.
-Both modalities overlap the field of view of their respective individual senors.
-This sensor arrangement ensures higher density and more uniform point-cloud across the 165-degree forward perception envelope in the case of \ac{LiDAR}, but also make the system more robust to failure.
-Loosing a single sensor will not create a blind spot for either sensing modality in the forward path of motion of the \ac{USV}. 
+Both modalities overlap the field of view of their respective individual sensors.
+This sensor arrangement ensures higher density and more uniform point-cloud across the 165-degree forward perception envelope in the case of \ac{LiDAR}, but also makes the system more robust to failure.
+Losing a single sensor will not create a blind spot for either sensing modality in the forward path of motion of the \ac{USV}. 
+Figures~\ref{fig:fov_cam} and ~\ref{fig:fov_lidar} show how the horizontal \ac{FOV} for each of these sensors overlaps in the direction of travel.
+
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/fov_cam.png}
+    \caption{Blue cones represent FOV from individual FLIR 4K camera; green dashed lines indicate FOV of HDR camera.}
+    \label{fig:fov_cam}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/fov_lidar.png}
+    \caption{LiDAR horizontal FOV overlap.}
+    \label{fig:fov_lidar}
+\end{subfigure}
+\caption{Comparative visualization of horizontal field of view (FOV) overlap for (a) cameras and (b) LiDAR sensors.}
+\label{fig:fov_combined}
+\end{figure}
 
 A Pinpoint \ac{GPS}/\ac{INS} system provides both global time synchronization and platform pose estimation.
 
@@ -221,7 +253,7 @@ The inertial reference frame (\texttt{map}) defines the world-fixed coordinate s
 The platform reference frame (\texttt{base\_link}) represents the vessel body frame defined by the Pinpoint \ac{GPS}/\ac{INS}.
 The center Livox frame (\textcolor{red}{\texttt{livox\_center}}) serves as the primary \ac{LiDAR} reference, with the port Livox frame (\textcolor{red}{\texttt{livox\_port}}) and starboard Livox frame (\textcolor{red}{\texttt{livox\_starboard}}) as child frames.
 Six camera image frames exist within this tree, with \textcolor{red}{camera frame} serving as the primary camera for fusion research.
-Intrinsic calibration parameters including camera specific matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in \textcolor{red}{Appendix \#}.
+Intrinsic calibration parameters, including camera-specific matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in \textcolor{red}{Appendix \#}.
 
 The Livox scan pattern employs a non-repetitive rosette pattern that progressively covers the field of view over time rather than repeatedly sampling fixed positions.
 This characteristic enables temporal aggregation to increase effective spatial resolution, particularly beneficial for a moving platform where \ac{GPS}/\ac{INS} pose data enables motion-compensated point cloud accumulation.
@@ -232,30 +264,32 @@ This configuration enables comparative evaluation of detection performance while
 The sensor suite supports the research objectives of comparing detection performance across modalities and evaluating late fusion approaches.
 The following subsections detail individual sensor specifications and selection rationale.
 
+The primary sensors used for the data collected for this research were from the forward-facing perception module, referred to as the camera enclosure.
+
+
     \section{Sensors}
 
-Six cameras are encased in a waterproof camera enclosure
-\textcolor{red}{[Insert Camera Enclosure Image]}
+This section briefly details the technical specifications of each of the sensors within the camera enclosure's perception suite, as well as a discussion of the visual range sensor selection.
 
 \subsection{LWIR Thermal Cameras}
 Two Teledyne Calibir 640 \ac{LWIR} thermal cameras extend perception to night and low-light conditions. 
-While limited to 640×480 resolution due to bolometer technology, they provide a 165 degree forward field of view when paired, ensuring redundancy with the
+While limited to 640×480 resolution due to bolometer technology, they provide a 165-degree forward field of view when paired, ensuring redundancy with the
 visible and HDR cameras.
 
 \subsection{Visible Spectrum Cameras}
 
 \textcolor{red}{Expand this entire discussion}
-The visible spectrum camera suite on the Minion platform is designed to balance two factors are particularly important for maritime perception: imaging resolution and dynamic range.  
-Resolution determines the ability to resolve small targets at distance.
+The visible spectrum camera suite on the Minion platform is designed to balance two factors that are particularly important for maritime perception: imaging resolution and dynamic range.  
+Resolution determines the ability to resolve small targets at a distance.
 Specific imaging sensors and lenses can be selected by determining the size and distance at which objects need to be resolved:
-\textcolor{red}{Insert equations for pixel density / resolution}
+\textcolor{red}{Insert equations for pixel density/resolution}
 The dynamic range of an imaging sensor refers to the range of signal intensities it can detect, from the faintest signal that can be recorded to the brightest signal before saturation.
 Insufficient dynamic range leads to washed-out highlights or lost detail in shadows.  
 Because maritime environments routinely present both bright sky reflections and deep shadows in the same scene, dynamic range is as critical as resolution when selecting cameras for perception tasks.  
 
 \subsubsection{FLIR Blackfly S 4K Cameras}
 
-Three FLIR Blackfly S 4K visible-light cameras, arranged to provide a combined 165 degrees of forward-facing coverage through overlapping 65 degree lenses.  
+Three FLIR Blackfly S 4K visible-light cameras, arranged to provide a combined 165 degrees of forward-facing coverage through overlapping 65-degree lenses.  
 This configuration provides the requisite resolution of objects while avoiding the distortion that would occur with fewer sensors equipped with ultra-wide lenses, ensuring that objects remain adequately resolved across the vessel's perception envelope.  
 
 Each Blackfly S sensor achieves an effective dynamic range of 69.4~dB.  
@@ -275,7 +309,7 @@ This design eliminates ghosting and motion artifacts, which are common when eith
 \subsubsection{HDR Selection}
 
 The FLIR Blackfly S 4K cameras satisfy geometric and resolution requirements, but their limited dynamic range makes them prone to over-exposure and loss of highlight detail in high-contrast maritime conditions.  
-In contrast, the IMX490 HDR camera combines comparable field of view with substantially greater dynamic range, enabling detail preservation across bright and shaded regions within the same frame.  
+In contrast, the IMX490 HDR camera combines a comparable field of view with substantially greater dynamic range, enabling detail preservation across bright and shaded regions within the same frame.  
 For these reasons, the HDR camera was designated as the primary forward-facing visual spectrum sensor for \ac{LiDAR}-camera fusion research, while the Blackfly cameras provide supplementary coverage and redundancy.  
 The Blackfly cameras support an effective dynamic range of 69.4~dB.  
 This corresponds to a span of just a few thousand-to-one between the darkest detectable signal and the brightest non-saturating signal.  
@@ -334,7 +368,7 @@ Image quality validation and intrinsic calibration are addressed in Section 3.2.
 The combination of wide dynamic range, moderate resolution, and calibrated geometry provides the image quality necessary for training and evaluating vision-based detection models in Chapter 5.
 
 Thompson et al. \cite{thompson2023} originally developed this camera hardware and integration approach, establishing a foundation for maritime perception research.
-The primary enhancement introduced in this work comprises in-band timestamp embedding and temporal drift correction detailed in Section 3.2.2, which are essential for rigorous multi-modal sensor fusion analysis.
+The primary enhancement introduced in this work comprises in-band timestamp embedding and temporal drift correction, detailed in Section 3.2.2, which are essential for rigorous multi-modal sensor fusion analysis.
 
         \subsection{LiDAR Systems}
 
@@ -342,7 +376,7 @@ The Minion platform features six \ac{LiDAR} units providing both omnidirectional
 The \ac{LiDAR} suite comprises three Velodyne HDL-32E units and three Livox Horizon units.
 
 The three Velodyne HDL-32E mechanically rotating 360-degree \ac{LiDAR} sensors are positioned to provide complete omnidirectional point cloud coverage.
-One unit is positioned at aft-center, with the other two placed at approximately one-third intervals around the vessel at forward-port and forward-starboard locations to achieve full 360-degree field of view coverage.
+One unit is positioned at aft-center, with the other two placed at approximately one-third intervals around the vessel at forward-port and forward-starboard locations to achieve a full 360-degree field of view coverage.
 
 The three Livox Horizon solid-state forward-scanning \ac{LiDAR} sensors provide high-density returns within a 165-degree forward field of view matching the camera array coverage.
 These sensors were selected specifically for \ac{LiDAR}-camera fusion research based on superior point cloud density within the camera field of view and a non-repetitive scan pattern that enhances coverage through temporal aggregation \cite{thompson2023}.
@@ -356,11 +390,11 @@ These sensors were selected specifically for \ac{LiDAR}-camera fusion research b
 While 360-degree coverage provides comprehensive spatial awareness, it presents challenges for camera-\ac{LiDAR} fusion.
 First, sparse azimuthal sampling occurs because on a stationary or slow-moving platform, the 32 lasers strike identical positions on every rotation, yielding no increase in sampling density over time.
 Second, inefficient field of view utilization results from distributing returns across 360 degrees, such that only a fraction falls within the forward-facing camera view.
-These limitations motivated selection of an alternative \ac{LiDAR} technology optimized for forward-facing perception with temporal aggregation.
+These limitations motivated the selection of an alternative \ac{LiDAR} technology optimized for forward-facing perception with temporal aggregation.
 
 The Livox Horizon employs a non-repetitive rosette scan pattern that progressively covers its field of view over time rather than repeatedly sampling identical locations.
-The sensor features an 81.7 degree × 25.1 degree (horizontal × vertical) field of view, substantially wider in azimuth than the 65-degree cameras.
-Three Livox units deployed together achieve combined coverage of approximately 165 degree × 25.1 degree, providing complete horizontal overlap with the camera array and covering approximately 77\% vertically \cite{thompson2023}.
+The sensor features an 81.7-degree × 25.1-degree (horizontal × vertical) field of view, substantially wider in azimuth than the 65-degree cameras.
+Three Livox units deployed together achieve a combined coverage of approximately 165 × 25.1 degrees, providing complete horizontal overlap with the camera array and covering approximately 77\% vertically \cite{thompson2023}.
 Table 3.2 presents the Livox Horizon specifications.
 
 \begin{table}[h]
@@ -402,7 +436,7 @@ At the standard 100 Hz output rate, each UDP message contains approximately 10 m
 Over a one-second aggregation period, the rosette pattern provides substantially higher spatial coverage than a spinning sensor's fixed ring geometry.
 
 The non-repetitive forward-scanning nature of the Livox units means that point cloud density is not uniform across the field of view.
-The 81.7-degree horizontal field of view allows for overlap between the three units, achieving more uniform density across the 165-degree field of view matching the 4K FLIR camera coverage.
+The 81.7-degree horizontal field of view allows for overlap between the three units, achieving more uniform density across the 165-degree field of view, matching the 4K FLIR camera coverage.
 
 % Insert figure showing Livox scan pattern here
 \begin{figure}[htbp]
