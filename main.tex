@@ -249,34 +249,165 @@ Temporal synchronization across all sensors and network endpoints is maintained 
 
 The sensor configuration described in this chapter was originally developed by Team Minion for the 2022 and 2024 Maritime RobotX competitions \cite{holland2024, thompson2023}. This chapter presents the technical specifications of Minion's complete hardware complement, with particular emphasis on the \ac{LiDAR} sensors and high-definition cameras housed within the forward camera enclosure. Section~\ref{visual_cameras} provides additional discussion regarding visual spectrum sensor selection and characterization. The primary contribution of this work is a timestamp embedding mechanism (detailed in Section~\ref{video pipeline}) that overcomes network latency issues to maintain precise temporal alignment, essential for rigorous multi-modal sensor fusion analysis.
         
-    \section{Sensors} \label{sensors}
+\section{Sensors} \label{sensors}
 
+The Minion platform integrates multiple sensor modalities to support maritime perception research.
+This section details the specifications and characteristics of the \ac{LiDAR} systems (Section~\ref{sensors_LiDAR}), and visual cameras (Section~\ref{visual_cameras}) used in this research.
+% , thermal cameras (Section~\ref{thermal_cameras}), and navigation sensors (Section~\ref{gps_ins}) 
+
+
+%%%%%%%%%%%%%%%%%
+% \subsection{Livox LiDAR} \label{sensors_LiDAR}
+
+% The Minion platform features six \ac{LiDAR} units providing both omnidirectional environmental awareness and forward-facing high-density perception.
+% The \ac{LiDAR} suite comprises three Velodyne HDL-32E units and three Livox Horizon units.
+
+% The three Velodyne HDL-32E mechanically rotating 360-degree \ac{LiDAR} sensors are positioned to provide complete omnidirectional point cloud coverage.
+% One unit is positioned at aft-center, with the other two placed at approximately one-third intervals around the vessel at forward-port and forward-starboard locations to achieve a full 360-degree \ac{FOV} coverage.
+
+% The three Livox Horizon solid-state forward-scanning \ac{LiDAR} sensors provide high-density returns within a 165-degree forward \ac{FOV} matching the camera array coverage.
+% These sensors were selected specifically for \ac{LiDAR}-camera fusion research based on superior point cloud density within the camera \ac{FOV} and a non-repetitive scan pattern that enhances coverage through temporal aggregation \cite{thompson2023}.
+
+% While 360-degree coverage provides comprehensive spatial awareness, it presents challenges for camera-\ac{LiDAR} fusion.
+% First, sparse azimuthal sampling occurs because on a stationary or slow-moving platform, the 32 lasers strike identical positions on every rotation, yielding no increase in sampling density over time.
+% Second, inefficient \ac{FOV} utilization results from distributing returns across 360 degrees, such that only a fraction falls within the forward-facing camera view.
+% These limitations motivated the selection of an alternative \ac{LiDAR} technology optimized for forward-facing perception with temporal aggregation.
+
+% The Livox Horizon employs a non-repetitive rosette scan pattern that progressively covers its \ac{FOV} over time rather than repeatedly sampling identical locations.
+% The sensor features an 81.7-degree × 25.1-degree (horizontal × vertical) \ac{FOV}, substantially wider in azimuth than the 65-degree cameras.
+% Three Livox units deployed together achieve a combined coverage of approximately 165 × 25.1 degrees, providing complete horizontal overlap with the camera array and covering approximately 77\% vertically \cite{thompson2023}.
+% Table 3.2 presents the Livox Horizon specifications.
+
+% \begin{table}[htpb]
+% \centering
+% \caption{LiDAR Specifications}
+% \begin{tabular}{ll}
+% \hline
+% \multicolumn{2}{c}{Livox Horizon}\\
+% \hline
+% % \textbf{Parameter} & \textbf{Value} \\
+% \hline
+% Model & Livox Horizon \\
+% Horizontal Field of View & 81.7 degree \\
+% Vertical Field of View & 25.1 degree \\
+% Range & 260 m @ 80\% reflectivity \\
+% Point Rate (Single Return) & 240,000 pts/sec \\
+% Point Rate (Dual Return) & 480,000 pts/sec \\
+% Range Precision & ±2 cm \\
+% Wavelength & 905 nm \\
+% Scan Pattern & Non-repetitive rosette \\
+% Interface & Ethernet \\
+% Operating Frequency & 100 Hz \\
+% \hline
+% \end{tabular}
+% \label{tab:livox_horizon_specs}
+% \end{table}
+
+% The 905 nm near-infrared wavelength experiences strong absorption by water, resulting in minimal returns from water surfaces.
+% This characteristic benefits maritime object detection by reducing clutter from waves that would otherwise trigger false positives in clustering algorithms.
+
+% The fundamental distinction between the Livox Horizon and traditional spinning \ac{LiDAR} lies in the scan pattern.
+% A mechanically spinning sensor with N lasers produces N discrete horizontal rings that repeat identically each rotation.
+% For vessels moving at typical speeds (2-5 m/s), platform displacement between rotations remains small relative to object size, resulting in near-perfect overlap of consecutive scans.
+% The Livox operates differently, employing a two-dimensional scanning mechanism that traces a non-repetitive rosette pattern across the \ac{FOV}.
+% Two orthogonal mirrors operating at slightly different frequencies cause the laser beam to trace a complex Lissajous-like path that progressively fills the \ac{FOV} without repetition \cite{thompson2023}.
+
+% Scan pattern coverage accumulates over time, with longer integration periods yielding denser spatial sampling.
+% At the standard 100 Hz output rate, each \ac{UDP} message contains approximately 10 milliseconds of returns.
+% Over a one-second aggregation period, the rosette pattern provides substantially higher spatial coverage than a spinning sensor's fixed ring geometry.
+
+% The non-repetitive forward-scanning nature of the Livox units means that point cloud density is not uniform across the \ac{FOV}.
+% The 81.7-degree horizontal \ac{FOV} allows for overlap between the three units, achieving more uniform density across the 165-degree \ac{FOV}, matching the 4K FLIR camera coverage.
+
+% % Insert figure showing Livox scan pattern here
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.8\textwidth]{Images/Livox_1.png}
+% \caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution from 0.1 to 0.5 seconds.}
+% \label{fig:livox_scan_pattern}
+% \end{figure}
+
+% Figure \ref{fig:livox_scan_pattern} illustrates the non-repetitive rosette scan pattern and resulting point cloud density distribution.
+% This density is critical for the grid-based clustering employed for \ac{LiDAR} object detection in Chapter 5.
+
+% Comparison of point cloud density within the camera \ac{FOV} reveals the Livox advantage.
+% A Velodyne HDL-32E in dual-return mode produces approximately 1.4 million points per second distributed across the full 360-degree plane.
+% The camera \ac{FOV} encompasses approximately 165 degrees, yielding an effective point rate in the region of interest of:
+
+% $$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165 degree}{360 degree} \approx 641,000 \text{ pts/sec}$$
+
+% Three Livox Horizon units in dual-return mode together produce:
+
+% $$\text{Combined Livox rate} = 3 \times 480,000 = 1.44 \times 10^6 \text{ pts/sec}$$
+
+% This represents a 2.25× increase in point returns within the camera view, excluding additional benefits from superior vertical sampling achieved through the non-repetitive pattern compared to fixed 32-ring geometry \cite{thompson2023}.
+
+% The non-repetitive scan pattern demonstrates particular advantage when aggregating multiple scans over time, accumulating points over an integration window to enhance spatial sampling.
+% On a moving platform, motion compensation during the accumulation period becomes necessary.
+% The \ac{LiDAR} aggregation approach, detailed in Chapter 5, employs the \ac{GPS}/\ac{IMU} to track platform pose over time.
+% Each \ac{LiDAR} point is transformed from sensor coordinates to a world reference frame using the platform pose at that point's timestamp.
+% All accumulated points are then transformed from world coordinates to the target camera image frame, enabling overlay of a dense point cloud on the image.
+% A four-second integration period was selected based on empirical evaluation of the tradeoff between point cloud density and motion blur.
+% Each camera image sampled at 1 Hz receives all \ac{LiDAR} points from the preceding four seconds, transformed to the image capture time.
+% This approach provides the spatial resolution necessary for reliable detection while maintaining sufficient motion compensation accuracy for typical vessel speeds.
+
+% The Livox Horizon sensors communicate via \ac{UDP} over Ethernet, transmitting point cloud data as binary messages at 100 Hz.
+% Livox provides an open-source \ac{ROS} SDK that manages network communication, message parsing, and point cloud publication to \ac{ROS} topics.
+% Integration of the Livox SDK into the Minion software required minimal effort, primarily involving network configuration and modification of \ac{ROS} launch files.
+% The SDK operates on the Atlas PC, receiving \ac{UDP} messages from all three \ac{LiDAR} units simultaneously over the local network described in Section 3.1.2.3.
+
+% Accurate fusion of data from multiple \ac{LiDAR} units requires precise knowledge of sensor geometric relationships.
+% The Livox Horizon units feature onboard storage for extrinsic calibration parameters, enabling each sensor to transform its measurements to a common reference frame before transmission.
+% The \ac{LiDAR}-to-\ac{LiDAR} extrinsic calibration presented in Section 3.2.1.3 determines the six-degree-of-freedom transformation (translation and rotation) relating each sensor's local coordinates to the designated primary sensor.
+% These parameters are written to non-volatile memory on each Livox unit, configuring automatic application of the transformation such that all point clouds emerge in the center \ac{LiDAR}'s reference frame \cite{thompson2023}.
+% This onboard configuration simplifies downstream processing by eliminating the need for software-based registration of the three point clouds.
+% The unified cloud is subsequently related to camera coordinates through camera-to-\ac{LiDAR} extrinsic calibration described in Section 3.2.1.2.
+
+% Temporal alignment of \ac{LiDAR} with camera images and \ac{GPS}/\ac{IMU} pose requires all \ac{LiDAR} points to possess timestamps referenced to a common global time base.
+% The Livox Horizon supports IEEE 1588 Precision Time Protocol, providing sub-microsecond clock synchronization with a \ac{PTP} master on the network.
+% In this configuration, the NVIDIA Jetson Xavier in the camera box functions as the \ac{PTP} master, synchronizing the three \ac{LiDAR} units.
+% The Jetson itself synchronizes to \ac{GPS} time via the Network Time Protocol hierarchy detailed in Section 3.2.2.1.
+% This cascaded synchronization ensures \ac{LiDAR} timestamps share the same \ac{GPS}-disciplined time reference as camera frames, enabling frame-accurate alignment for fusion.
+% \ac{PTP} synchronization status is verified using the Livox Viewer software, which displays sync state and time source for each sensor.
+% Proper \ac{PTP} lock is confirmed prior to data collection, ensuring timestamp accuracy.
+
+% An advantageous characteristic of the 905 nm wavelength is its strong absorption by water.
+% This results in minimal \ac{LiDAR} returns from water surfaces, contrasting with vision sensors that clearly image water texture and waves.
+% Absence of water returns reduces point cloud clutter and simplifies object detection by eliminating the need to filter ground plane points for the water surface.
+% Point cloud visualizations overlaid on camera images demonstrate this characteristic: dense \ac{LiDAR} coverage appears on vessels, buoys, and other solid objects, while water surfaces produce few or no returns.
+% For grid-based clustering, this characteristic prevents false positives from wave crests or foam patterns.
+
+% The Livox Horizon configuration provides several capabilities essential for comparing object detection performance.
+% The system achieves 2.25× more points within the camera view compared to omnidirectional spinning sensors, while the non-repetitive scan pattern enhances sampling density through temporal aggregation.
+% Per-point timestamps and \ac{GPS}/\ac{IMU} integration enable accurate aggregation during motion, while \ac{PTP} synchronization provides sub-microsecond timing accuracy relative to cameras and \ac{GPS}.
+% Factory-configured multi-sensor calibration unifies point clouds from three sensors before transmission, and the 905 nm wavelength reduces maritime clutter by rejecting water returns.
+% Combined with the software integration and synchronization infrastructure described in Section 3.2, this configuration enables rigorous \ac{LiDAR} detection evaluation and comparison with vision-based approaches in Chapters 5 and 6.
+
+%%%%%%%%%%%%%%%%%%
 \subsection{LiDAR Systems} \label{sensors_LiDAR}
 
 The Minion platform features six \ac{LiDAR} units providing both omnidirectional environmental awareness and forward-facing high-density perception.
 The \ac{LiDAR} suite comprises three Velodyne HDL-32E units and three Livox Horizon units.
 
-The three Velodyne HDL-32E mechanically rotating 360-degree \ac{LiDAR} sensors are positioned to provide complete omnidirectional point cloud coverage.
-One unit is positioned at aft-center, with the other two placed at approximately one-third intervals around the vessel at forward-port and forward-starboard locations to achieve a full 360-degree field of view coverage.
+The three Velodyne HDL-32E mechanically rotating 360-degree \ac{LiDAR} sensors are positioned at aft-center, with the other two placed at approximately one-third intervals around the vessel at forward-port and forward-starboard locations to achieve full 360-degree \ac{FOV} coverage.
+These sensors provide the spatial awareness necessary for autonomous navigation and collision avoidance.
 
-The three Livox Horizon solid-state forward-scanning \ac{LiDAR} sensors provide high-density returns within a 165-degree forward field of view matching the camera array coverage.
-These sensors were selected specifically for \ac{LiDAR}-camera fusion research based on superior point cloud density within the camera field of view and a non-repetitive scan pattern that enhances coverage through temporal aggregation \cite{thompson2023}.
+The three Livox Horizon forward-scanning \ac{LiDAR} sensors provide high-density returns within the camera's \ac{FOV} and serve as the primary \ac{LiDAR} sensors for this research.
+While the Velodyne units provide adequate omnidirectional awareness for navigation, they present fundamental limitations for camera-\ac{LiDAR} fusion research.
 
-% Initial planning considered utilizing the Velodyne HDL-32E sensors already installed on the Minion platform for fusion research.
-% However, analysis of point cloud density within the camera field of view revealed fundamental limitations of mechanically rotating \ac{LiDAR} for sensor fusion applications.
-% Traditional spinning sensors like the Velodyne HDL-32E employ a fixed vertical array of laser emitters that rotates horizontally at constant speed.
-% The HDL-32E incorporates 32 laser channels arranged vertically across approximately 40 degrees of elevation.
-% This array rotates at 10 Hz, producing 32 discrete horizontal rings of returns distributed across the full 360-degree plane \cite{thompson2023}.
+% MOTIVATION - Why Livox over Velodyne
+LiDAR sensors with fixed 360-degree scan patterns, such as the Velodyne HDL-32E, impose limitations on object-detection research.
+Because the scan maintains a constant elevation and azimuth with each rotation, the sensor repeatedly samples the same positions, resulting in a sparse representation of objects with a low relative velocity to the sensor.
+This parallels the resolution of optical cameras; lower density returns limit the ability to resolve features on small or distant objects, as the sparsity increases linearly with range.
 
-While 360-degree coverage provides comprehensive spatial awareness, it presents challenges for camera-\ac{LiDAR} fusion.
-First, sparse azimuthal sampling occurs because on a stationary or slow-moving platform, the 32 lasers strike identical positions on every rotation, yielding no increase in sampling density over time.
-Second, inefficient field of view utilization results from distributing returns across 360 degrees, such that only a fraction falls within the forward-facing camera view.
-These limitations motivated the selection of an alternative \ac{LiDAR} technology optimized for forward-facing perception with temporal aggregation.
+The Livox Horizon addresses this limitation through a fundamentally different scan architecture.
+Rather than repeatedly sampling fixed positions, the sensor employs a non-repetitive rosette scan pattern that progressively covers its \ac{FOV} over time, as visualized in Figure \ref{fig:livox_scan_pattern}.
+This irregular sampling pattern produces substantially denser point cloud data, critical for the object detection methods described in Section \ref{gbcache}, and motivated their selection for the forward-scanning perception suite \cite{thompson2023}.
 
-The Livox Horizon employs a non-repetitive rosette scan pattern that progressively covers its field of view over time rather than repeatedly sampling identical locations.
-The sensor features an 81.7-degree × 25.1-degree (horizontal × vertical) field of view, substantially wider in azimuth than the 65-degree cameras.
-Three Livox units deployed together achieve a combined coverage of approximately 165 × 25.1 degrees, providing complete horizontal overlap with the camera array and covering approximately 77\% vertically \cite{thompson2023}.
-Table 3.2 presents the Livox Horizon specifications.
+
+Each Livox Horizon sensor features an 81.7-degree (horizontal)\ac{FOV} and are mounted to provide more than 50\% overlap between units.
+This configuration effectively doubles the number of returned points within the 65-degree \ac{FOV} of the primary forward camera and creates a system that is robust to individual sensor failure.
+Table~\ref{tab:livox_horizon_specs} presents the Livox Horizon specifications.
 
 \begin{table}[htpb]
 \centering
@@ -303,23 +434,6 @@ Operating Frequency & 100 Hz \\
 \label{tab:livox_horizon_specs}
 \end{table}
 
-The 905 nm near-infrared wavelength experiences strong absorption by water, resulting in minimal returns from water surfaces.
-This characteristic benefits maritime object detection by reducing clutter from waves that would otherwise trigger false positives in clustering algorithms.
-
-The fundamental distinction between the Livox Horizon and traditional spinning \ac{LiDAR} lies in the scan pattern.
-A mechanically spinning sensor with N lasers produces N discrete horizontal rings that repeat identically each rotation.
-For vessels moving at typical speeds (2-5 m/s), platform displacement between rotations remains small relative to object size, resulting in near-perfect overlap of consecutive scans.
-The Livox operates differently, employing a two-dimensional scanning mechanism that traces a non-repetitive rosette pattern across the field of view.
-Two orthogonal mirrors operating at slightly different frequencies cause the laser beam to trace a complex Lissajous-like path that progressively fills the field of view without repetition \cite{thompson2023}.
-
-Scan pattern coverage accumulates over time, with longer integration periods yielding denser spatial sampling.
-At the standard 100 Hz output rate, each \ac{UDP} message contains approximately 10 milliseconds of returns.
-Over a one-second aggregation period, the rosette pattern provides substantially higher spatial coverage than a spinning sensor's fixed ring geometry.
-
-The non-repetitive forward-scanning nature of the Livox units means that point cloud density is not uniform across the field of view.
-The 81.7-degree horizontal field of view allows for overlap between the three units, achieving more uniform density across the 165-degree field of view, matching the 4K FLIR camera coverage.
-
-% Insert figure showing Livox scan pattern here
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{Images/Livox_1.png}
@@ -327,67 +441,53 @@ The 81.7-degree horizontal field of view allows for overlap between the three un
 \label{fig:livox_scan_pattern}
 \end{figure}
 
-Figure \ref{fig:livox_scan_pattern} illustrates the non-repetitive rosette scan pattern and resulting point cloud density distribution.
-This density is critical for the grid-based clustering employed for \ac{LiDAR} object detection in Chapter 5.
-
-Comparison of point cloud density within the camera field of view reveals the Livox advantage.
-A Velodyne HDL-32E in dual-return mode produces approximately 1.4 million points per second distributed across the full 360-degree plane.
-The camera field of view encompasses approximately 165 degrees, yielding an effective point rate in the region of interest of:
-
-$$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165 degree}{360 degree} \approx 641,000 \text{ pts/sec}$$
-
-Three Livox Horizon units in dual-return mode together produce:
-
-$$\text{Combined Livox rate} = 3 \times 480,000 = 1.44 \times 10^6 \text{ pts/sec}$$
-
-This represents a 2.25× increase in point returns within the camera view, excluding additional benefits from superior vertical sampling achieved through the non-repetitive pattern compared to fixed 32-ring geometry \cite{thompson2023}.
-
-The non-repetitive scan pattern demonstrates particular advantage when aggregating multiple scans over time, accumulating points over an integration window to enhance spatial sampling.
-On a moving platform, motion compensation during the accumulation period becomes necessary.
-The \ac{LiDAR} aggregation approach, detailed in Chapter 5, employs the \ac{GPS}/\ac{IMU} to track platform pose over time.
-Each \ac{LiDAR} point is transformed from sensor coordinates to a world reference frame using the platform pose at that point's timestamp.
-All accumulated points are then transformed from world coordinates to the target camera image frame, enabling overlay of a dense point cloud on the image.
-A four-second integration period was selected based on empirical evaluation of the tradeoff between point cloud density and motion blur.
-Each camera image sampled at 1 Hz receives all \ac{LiDAR} points from the preceding four seconds, transformed to the image capture time.
-This approach provides the spatial resolution necessary for reliable detection while maintaining sufficient motion compensation accuracy for typical vessel speeds.
+% The sensor employs a two-dimensional scanning mechanism that traces a non-repetitive rosette pattern across the \ac{FOV}.
+The sensor employs two orthogonal mirrors operating at slightly different frequencies to trace a complex Lissajous-like path that progressively fills the \ac{FOV} without repetition at a maximum rate of $480000$ points per second per device.
+\textcolor{red}{cite Livox documentation?}.
 
 The Livox Horizon sensors communicate via \ac{UDP} over Ethernet, transmitting point cloud data as binary messages at 100 Hz.
-Livox provides an open-source \ac{ROS} SDK that manages network communication, message parsing, and point cloud publication to \ac{ROS} topics.
-Integration of the Livox SDK into the Minion software required minimal effort, primarily involving network configuration and modification of \ac{ROS} launch files.
-The SDK operates on the Atlas PC, receiving \ac{UDP} messages from all three \ac{LiDAR} units simultaneously over the local network described in Section 3.1.2.3.
+Each point consists of position coordinates (x, y, z), intensity, and timestamp, totaling 16 bytes per point.
+At maximum point rate (480,000 pts/sec per sensor), three sensors generate approximately:
 
-Accurate fusion of data from multiple \ac{LiDAR} units requires precise knowledge of sensor geometric relationships.
+$$\text{Peak bandwidth} = 3 \times 480,000 \times 16 \text{ bytes/sec} \approx 23 \text{ Mbps}$$
+
+In practice, the sensors are configured to suppress null returns (points beyond maximum range or with insufficient reflectivity), reducing actual network traffic below this theoretical maximum.
+% The rosette pattern provides substantially higher spatial coverage compared to a spinning sensor's fixed ring geometry, particularly in the vertical dimension where traditional spinning sensors are limited to discrete horizontal rings.
+% This density characteristic is critical for the grid-based clustering approach employed for \ac{LiDAR} object detection in Chapter 5.
+
+The 905 nm near-infrared wavelength experiences strong absorption by water, resulting in minimal returns from water surfaces.
+This characteristic benefits maritime object detection by reducing clutter from waves that would otherwise trigger false positives in clustering algorithms.
+\textcolor{red}{Figure \#} demonstrates this effect: dense \ac{LiDAR} coverage appearing on vessels, buoys, and other solid objects, while water surfaces produce few or no returns.
+\textcolor{red}{insert figure to compare Velodyne and Livox returns in situ.}
+
+% Comparison of point cloud density within the camera \ac{FOV} quantifies the Livox advantage over traditional spinning sensors.
+% A Velodyne HDL-32E in dual-return mode produces approximately 1.4 million points per second distributed across the full 360-degree plane.
+% The camera \ac{FOV} encompasses approximately 165 degrees, yielding an effective point rate in the region of interest of:
+
+% $$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165°}{360°} \approx 641,000 \text{ pts/sec}$$
+
+% Three Livox Horizon units in dual-return mode together produce:
+
+% $$\text{Combined Livox rate} = 3 \times 480,000 = 1.44 \times 10^6 \text{ pts/sec}$$
+
+% This represents a 2.25× increase in point returns within the camera view, excluding additional benefits from superior vertical sampling achieved through the non-repetitive pattern compared to fixed 32-ring geometry \cite{thompson2023}.
+
+
+
+% Accurate fusion of data from multiple \ac{LiDAR} units requires precise knowledge of sensor geometric relationships.
 The Livox Horizon units feature onboard storage for extrinsic calibration parameters, enabling each sensor to transform its measurements to a common reference frame before transmission.
-The \ac{LiDAR}-to-\ac{LiDAR} extrinsic calibration presented in Section 3.2.1.3 determines the six-degree-of-freedom transformation (translation and rotation) relating each sensor's local coordinates to the designated primary sensor.
-These parameters are written to non-volatile memory on each Livox unit, configuring automatic application of the transformation such that all point clouds emerge in the center \ac{LiDAR}'s reference frame \cite{thompson2023}.
-This onboard configuration simplifies downstream processing by eliminating the need for software-based registration of the three point clouds.
-The unified cloud is subsequently related to camera coordinates through camera-to-\ac{LiDAR} extrinsic calibration described in Section 3.2.1.2.
+These parameters are written to non-volatile memory on each Livox unit and applied before data transmission so that all LiDAR returns are received in the center \ac{LiDAR}'s reference frame, reducing the necessary calculation further down the data pipeline.
+\textcolor{red}{cite Livox documentation?}.
+% enhancing their real-time operational advantage by reducing additional computation later in the pipeline.
+The calibration methodology to determine these extrinsic values is detailed in Section~\ref{lidar_extrinsic}.
 
-Temporal alignment of \ac{LiDAR} with camera images and \ac{GPS}/\ac{IMU} pose requires all \ac{LiDAR} points to possess timestamps referenced to a common global time base.
-The Livox Horizon supports IEEE 1588 Precision Time Protocol, providing sub-microsecond clock synchronization with a \ac{PTP} master on the network.
-In this configuration, the NVIDIA Jetson Xavier in the camera box functions as the \ac{PTP} master, synchronizing the three \ac{LiDAR} units.
-The Jetson itself synchronizes to \ac{GPS} time via the Network Time Protocol hierarchy detailed in Section 3.2.2.1.
-This cascaded synchronization ensures \ac{LiDAR} timestamps share the same \ac{GPS}-disciplined time reference as camera frames, enabling frame-accurate alignment for fusion.
-\ac{PTP} synchronization status is verified using the Livox Viewer software, which displays sync state and time source for each sensor.
-Proper \ac{PTP} lock is confirmed prior to data collection, ensuring timestamp accuracy.
 
-An advantageous characteristic of the 905 nm wavelength is its strong absorption by water.
-This results in minimal \ac{LiDAR} returns from water surfaces, contrasting with vision sensors that clearly image water texture and waves.
-Absence of water returns reduces point cloud clutter and simplifies object detection by eliminating the need to filter ground plane points for the water surface.
-Point cloud visualizations overlaid on camera images demonstrate this characteristic: dense \ac{LiDAR} coverage appears on vessels, buoys, and other solid objects, while water surfaces produce few or no returns.
-For grid-based clustering, this characteristic prevents false positives from wave crests or foam patterns.
-
-The Livox Horizon configuration provides several capabilities essential for comparing object detection performance.
-The system achieves 2.25× more points within the camera view compared to omnidirectional spinning sensors, while the non-repetitive scan pattern enhances sampling density through temporal aggregation.
-Per-point timestamps and \ac{GPS}/\ac{IMU} integration enable accurate aggregation during motion, while \ac{PTP} synchronization provides sub-microsecond timing accuracy relative to cameras and \ac{GPS}.
-Factory-configured multi-sensor calibration unifies point clouds from three sensors before transmission, and the 905 nm wavelength reduces maritime clutter by rejecting water returns.
-Combined with the software integration and synchronization infrastructure described in Section 3.2, this configuration enables rigorous \ac{LiDAR} detection evaluation and comparison with vision-based approaches in Chapters 5 and 6.
-
-\subsection{LWIR Thermal Cameras} \label{sensors_LWIR}
-Two Teledyne Calibir 640 \ac{LWIR} thermal cameras extend perception to night and low-light conditions. 
-While limited to 640×480 resolution due to bolometer technology, they provide a combined 165-degree forward field of view when paired, ensuring redundancy with the
-visible and \ac{HDR} cameras.
-\textcolor{red}{Possibly remove this subsection?}
+%%%%%%%%%%%%%%%%%%
+% \subsection{LWIR Thermal Cameras} \label{sensors_LWIR}
+% Two Teledyne Calibir 640 \ac{LWIR} thermal cameras extend perception to night and low-light conditions. 
+% While limited to 640×480 resolution due to bolometer technology, they provide a combined 165-degree forward \ac{FOV} when paired, ensuring redundancy with the
+% visible and \ac{HDR} cameras.
+% \textcolor{red}{Possibly remove this subsection?}
 
 \subsection{Visible Spectrum Cameras} \label{visual_cameras}
 
@@ -395,52 +495,37 @@ visible and \ac{HDR} cameras.
 The visible spectrum camera suite on the Minion platform is designed to balance two factors that are particularly important for maritime perception: imaging resolution and dynamic range.  
 
 Camera resolution determines the ability to resolve small targets at a distance, and specific imaging sensors and lenses can be selected by determining the size and distance at which objects need to be resolved.
-To ensure adequate object resolution across the operational envelope, cameras must resolve objects to a required resolution when the object is at the maximum detection range.
-
+To ensure adequate object resolution across the operational envelope, cameras must resolve objects to a required resolution when the object is at the maximum detection range. 
+By assuming a pinhole camera model \textcolor{red}{Matlab citation broken}.
+% \cite{matlab_calibration},
+we can determine the necessary optical focal length and resolution for the sensor.
 For an object of physical width $W$ at distance $d$, its width in the image frame $w_{\text{px}}$ is approximated by
 
-  \begin{equation}
-  w_{\text{px}} = \frac{f \, N_x \, W}{S_w \, d}
-  \end{equation}
+\begin{equation}
+w_{\text{px}} = \frac{f \, N_x \, W}{S_w \, d}
+\end{equation}
 
 where $f$ is the \ac{EFL} of the camera and lens (mm), $N_x$ is the horizontal image resolution in pixels, and $S_w$ is the width of the image sensor (mm). 
 
-% For the smallest target class (A-series buoys with a diameter $w_{\text{object}} = 0.61$~m) at maximum detection range $d = 60$~m, using the Blackfly S 4K specifications ($N_{\text{pixels}} = 4096$ pixels, $\theta_{\text{FOV}} = 65^\circ = 1.134$~rad), the expected pixel coverage is
-
-%   \begin{equation}
-%   n_{\text{pixels}} = \frac{0.61 \times 4096}{60 \times 1.134} \approx
-%   36~\text{pixels}
-%   \end{equation}
-
-% This resolution exceeds the minimum requirement of approximately $10 - 15$ pixels for reliable object detection with modern convolutional neural networks, ensuring sufficient feature representation for classification even under degraded visibility conditions.
-% The 4K sensor resolution was selected to maintain this margin across the entire perception envelope without requiring ultra-wide lenses that would introduce significant barrel distortion and reduce effective pixel density at range.
-
-Defining these requirements requires an understanding of the object detection method used with visual cameras as well as the objects being detected, both of which will be discussed in greater detail in sections ~\ref{yolo} and ~\ref{dataset} respectively.
-For now, it is sufficient to know that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters, and that image detection scales each image frame down to a resolution of $\text{max}(640) \times \text{max}(640)$ pixels (preserving the original aspect ratio).
+Defining these requirements requires an understanding of the object detection method used with visual cameras as well as the objects being detected, both of which will be discussed in greater detail in sections ~\ref{yolo} and ~\ref{dataset}, respectively.
+For now, it is sufficient to know that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters, and that we have optical and digital resolution requirements to consider.
+The image detection network scales each image frame down to a resolution of $\text{max}(640) \times \text{max}(640)$ pixels (preserving the original aspect ratio).
 This means that an image captured at $4000 \times 3000$ pixels is reduced to $650 \times 487$ pixels, which is $16.25\%$ of its original size. 
 
-This means that 
+% Insert equation to get the horizontal focal length / horizontal resolution ratio needed for camera selection based upon the equation and information provided above
 
-Consequently, if know that 
-% Consequently, an object that appears to be 100 pixels wide in the image frame will be $16$ pixels wide when scaled down for the detection algorithm.
+Since the detection network downsamples each input frame to a maximum dimension of 640 pixels while preserving aspect ratio, a landscape-oriented image with native resolution $N_x \times N_y$ (where $N_x > N_y$) is scaled such that the horizontal dimension becomes 640 pixels.
+For an object that must occupy at least $w_{\text{net}}$ pixels horizontally in the network input to be reliably detected, the camera system must satisfy
+  \begin{equation}
+  \frac{f}{S_w} = \frac{w_{\text{net}} \, d}{640 \, W}
+  \end{equation}
+where the ratio $f/S_w$ represents the normalized focal length of the camera-lens system.
+Substituting the minimum object dimensions ($W = 0.3683$ m, $d = 60$ m) and assuming a minimum network resolution requirement of $w_{\text{net}}$ pixels, this relationship defines the optical design space for camera selection.
+This makes our equation
 
-% Given a camera with horizontal resolution $N_{\text{pixels}}$ and horizontal field of view $\theta_{\text{FOV}}$, the angular resolution per pixel is
-
-%   \begin{equation}
-%   \theta_{\text{pixel}} = \frac{\theta_{\text{FOV}}}{N_{\text{pixels}}}
-%   \end{equation}
-
-% The number of pixels $n_{\text{pixels}}$ spanning the target object is therefore
-
-%   \begin{equation}
-%   n_{\text{pixels}} = \frac{\theta_{\text{object}}}{\theta_{\text{pixel}}} =
-%    \frac{w_{\text{object}} \cdot N_{\text{pixels}}}{d \cdot
-%   \theta_{\text{FOV}}}
-%   \end{equation}
-
-
-
-
+\begin{equation}
+w_{\text{px}} = \frac{f \, N_x^2 \, W}{(680)S_w \, d}
+\end{equation}
 
 The dynamic range of an imaging sensor refers to the range of signal intensities it can detect, from the faintest signal that can be recorded to the brightest signal before saturation.
 Insufficient dynamic range leads to washed-out highlights or lost detail in shadows.  
@@ -503,7 +588,7 @@ The FLIR Blackfly S 4K cameras satisfy geometric and resolution requirements, bu
 They support an effective dynamic range of 69.4~dB, which corresponds to a span of just a few thousand-to-one between the darkest detectable signal and the brightest non-saturating signal. 
 As a result, the cameras are prone to over-exposure in high-brightness maritime conditions, particularly when imaging reflective water surfaces or bright sky backgrounds, leading to loss of highlight detail and reduced contrast. 
 
-In contrast, the IMX490 \ac{HDR} camera combines a comparable field of view with substantially greater dynamic range, enabling detail preservation across bright and shaded regions within the same frame.  
+In contrast, the IMX490 \ac{HDR} camera combines a comparable \ac{FOV} with substantially greater dynamic range, enabling detail preservation across bright and shaded regions within the same frame.  
 For these reasons, the \ac{HDR} camera was designated as the primary forward-facing visual spectrum sensor for \ac{LiDAR}-camera fusion research.  
  
 As a result, the cameras are prone to over-exposure in high-brightness maritime conditions, particularly when imaging reflective water surfaces or bright sky backgrounds, leading to loss of highlight detail and reduced contrast.  
@@ -614,7 +699,7 @@ Minion is equipped with six \ac{LiDAR} sensors as well as six cameras to perceiv
 Omnidirectional coverage is provided by three Velodyne HDL-32E units positioned to deliver a 360-degree \ac{LiDAR} point cloud coverage of the vessel's immediate operating environment.
 Three additional forward-facing Livox Horizon \ac{LiDAR} units were selected for their superior point cloud density and ability to facilitate a higher resolution for object detection.
 These units are mounted on top of an additional forward-facing perception array, referred to as the camera enclosure, which houses four high-definition cameras, and two \ac{LWIR} cameras.
-% The three Livox sensors and the cameras within the enclosure cover the same 165-degree field of view in the forward direction of travel.
+% The three Livox sensors and the cameras within the enclosure cover the same 165-degree \ac{FOV} in the forward direction of travel.
 The configuration of the camera enclosure provides significantly higher fidelity of sensor data within a 165-degree \ac{FOV} in the direction of travel.
 \textcolor{blue}{The camera enclosure was developed in tandem for the RobotX competition in 2022, as well as the PhD research of \cite{thompson2023}?}
 Figure~\ref{fig:camera_enclosure} indicates the mounting location of the Livox Horizon LiDAR units, as well as each of the six cameras within the waterproof camera enclosure. 
@@ -627,8 +712,8 @@ Figure~\ref{fig:camera_enclosure} indicates the mounting location of the Livox H
 \end{figure}
 
 % While the Velodyne \ac{LiDAR} sensors provide comprehensive 360-degree environmental awareness for navigation and collision avoidance, the three forward-facing Livox Horizon \ac{LiDAR} units mounted to the camera enclosure were selected for their superior point cloud density and ability to facilitate a higher resolution for object detection.
-% The three Livox units concentrate sampling density in the forward field of view, matching the horizontal coverage of the six cameras.
-% Both modalities overlap the field of view of their respective individual sensors.
+% The three Livox units concentrate sampling density in the forward \ac{FOV}, matching the horizontal coverage of the six cameras.
+% Both modalities overlap the \ac{FOV} of their respective individual sensors.
 % This sensor arrangement ensures higher density and more uniform point-cloud across the 165-degree forward perception envelope in the case of \ac{LiDAR}, but also makes the system more robust to failure.
 % Losing a single sensor will not create a blind spot for either sensing modality in the forward path of motion of the \ac{USV}. 
 % Figures~\ref{fig:fov_cam} and ~\ref{fig:fov_lidar} show how the horizontal \ac{FOV} for each of these sensors overlaps in the direction of travel.
@@ -649,17 +734,17 @@ Finally, there is a single HDR camera with a 65-degree horizontal \ac{FOV} that 
 \begin{subfigure}[t]{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Images/fov_cam.png}
-    \caption{Blue cones represent FOV from individual FLIR 4K camera; green dashed lines indicate FOV of HDR camera.}
+    \caption{Blue cones represent \ac{FOV} from individual FLIR 4K camera; green dashed lines indicate \ac{FOV} of HDR camera.}
     \label{fig:fov_cam}
 \end{subfigure}
 \hfill
 \begin{subfigure}[t]{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Images/fov_lidar.png}
-    \caption{LiDAR horizontal FOV overlap.}
+    \caption{LiDAR horizontal \ac{FOV} overlap.}
     \label{fig:fov_lidar}
 \end{subfigure}
-\caption{Comparative visualization of horizontal field of view (FOV) overlap for (a) cameras and (b) LiDAR sensors.}
+\caption{Comparative visualization of horizontal \ac{FOV} (FOV) overlap for (a) cameras and (b) LiDAR sensors.}
 \label{fig:fov_combined}
 \end{figure}
 
@@ -672,11 +757,11 @@ Finally, there is a single HDR camera with a 65-degree horizontal \ac{FOV} that 
 % Six camera image frames exist within this tree, and are referenced to the \texttt{livox\_center} frame.
 % Intrinsic calibration parameters, including camera-specific matrices and distortion coefficients, along with extrinsic transformation parameters relating sensor frames to each other and to the platform frame, are discussed in \textcolor{red}{Appendix \#}.
 
-% The Livox scan pattern employs a non-repetitive rosette pattern that progressively covers the field of view over time rather than repeatedly sampling fixed positions.
+% The Livox scan pattern employs a non-repetitive rosette pattern that progressively covers the \ac{FOV} over time rather than repeatedly sampling fixed positions.
 % This characteristic enables temporal aggregation to increase effective spatial resolution, particularly beneficial for a moving platform where \ac{GPS}/\ac{IMU} pose data enables motion-compensated point cloud accumulation.
 
 % The dual \ac{LiDAR} architecture serves complementary purposes.
-% The Velodyne HDL-32E units provide the omnidirectional awareness required for autonomous navigation, while the Livox Horizon sensors optimize point cloud density specifically within the forward camera field of view for fusion research.
+% The Velodyne HDL-32E units provide the omnidirectional awareness required for autonomous navigation, while the Livox Horizon sensors optimize point cloud density specifically within the forward camera \ac{FOV} for fusion research.
 % The onboard This configuration enables comparative evaluation of detection performance while maintaining operational navigation capabilities.
 % The sensor suite supports the research objectives of comparing detection performance across modalities and evaluating late fusion approaches.
 % The following subsections detail individual sensor specifications and selection rationale.
@@ -895,7 +980,7 @@ These initial values are refined through a manual process by projecting LiDAR da
 The final extrinsic transform is provided in Table~\ref{tbl:extrinsic}.
 
             
-\subsubsection{Livox Extrinsics}
+\subsubsection{Livox Extrinsics} \label{lidar_extrinsic}
 To identify object positions in a different reference frame than it is measured requires an extrinsic transform between the frames. 
 This transform defines the translation and rotation (yaw, pitch, roll, $x,y,z$) to make one frame match another and is represented by quaternions or Euler angles.
 For Minion, an extrinsic transform is used between the port and starboard facing Livox devices to the central forward facing Livox to create a unified point cloud. Each camera also receives an extrinsic transform to the Livox reference frame.
@@ -912,7 +997,7 @@ A flowchart of these transforms is provided in Figure \ref{transform_diagm}.
 LiDAR-to-LiDAR calibration is performed with first-party software Livox Viewer, available through the manufacturer's website.
 This software provides a real-time view of the LiDAR returns and adjustment of the extrinsic calibration for each sensor.
 The large flat surfaces of the laboratory, as well as the larger paved area behind the laboratory, both provide excellent large and flat surfaces that allow them to be easily co-located by manually adjusting the extrinsic values.
-As shown in Fig~\ref{transform_diagm}, the port and starboard Livox Horizons are transformed into the \textcolor{blue}{center livox} frame, and the extrinsic transforms required to do so are stored in the non-volatile memory of each sensor. This means that once calibrated, the raw point cloud data from each sensor is transmitted in the \textcolor{blue}{center livox} frame.
+As shown in Figure~\ref{transform_diagm}, the port and starboard Livox Horizons are transformed into the \textcolor{blue}{center livox} frame, and the extrinsic transforms required to do so are stored in the non-volatile memory of each sensor. This means that once calibrated, the raw point cloud data from each sensor is transmitted in the \textcolor{blue}{center livox} frame.
 
 
 
