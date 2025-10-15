@@ -700,7 +700,228 @@ The \ac{GPS} receiver functions as the master clock for the entire synchronizati
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Compute Hardware and Network Structure}
+\section{Compute Hardware and Network}
+
+The Minion autonomous surface vessel employs a distributed computing architecture that balances real-time processing requirements with operational flexibility and redundancy. The computing infrastructure consists of high-performance workstation computers serving as the primary processing platforms, an embedded computer integrated with the camera sensors for video encoding and edge processing, and a dedicated Gigabit Ethernet local area network interconnecting all platform systems. This architecture distributes computational workloads according to sensor proximity and processing requirements while maintaining centralized coordination through the Robot Operating System middleware. The following subsections detail the hardware specifications, system architecture, and network infrastructure that enable real-time multi-modal perception for maritime object detection and sensor fusion.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Atlas} \label{comp:atlas}
+
+The primary computing infrastructure for the Minion autonomous surface vessel consists of two identical high-performance workstation computers designated Minion A and Minion B. These systems, built on the Nvidia Atlas platform, provide the computational resources necessary for real-time sensor data processing, object detection algorithm execution, and autonomous navigation decision-making. The dual-computer configuration provides operational redundancy, allowing hot-swapping between systems for software development, testing, and failover scenarios without requiring vessel downtime.
+
+Each Atlas PC features enterprise-grade computing hardware selected to meet the demanding requirements of real-time multi-modal perception and machine learning inference. The systems incorporate multi-core processors with sufficient parallel processing capability to handle simultaneous operation of LiDAR point cloud processing, computer vision algorithms, sensor fusion, and navigation planning. Adequate RAM capacity enables loading of large deep learning models and maintenance of temporal buffers for multi-second LiDAR aggregation as described in [[03_Livox_Horizon#Temporal Aggregation and Motion Compensation|Section 3.1.1.3]].
+
+High-speed solid-state storage provides the throughput necessary to record multiple synchronized sensor streams to disk during data collection operations. Recording sessions simultaneously capture raw LiDAR point clouds, compressed video streams from three cameras, GPS/INS pose messages, and timestamped detection results, generating aggregate data rates that can exceed hundreds of megabytes per second. The storage subsystem must sustain these write rates for extended periods without buffer overflow or frame dropping.
+
+The presence of two functionally equivalent Atlas PCs serves multiple operational purposes. During development and testing, one system can run experimental software while the other maintains a stable baseline configuration, enabling rapid testing iteration without compromising the ability to revert to known-good software states. For field operations, one system serves as the active primary while the other remains available as an immediate backup in case of hardware failure or software crashes.
+
+The dual-system configuration also facilitates the ROS ecosystem transition occurring during the timeframe of this research. ROS 1 (Robot Operating System version 1), while mature and well-supported, reached end-of-life for active development, prompting migration to ROS 2 with its improved real-time performance, security features, and inter-process communication architecture. Maintaining one system on ROS 1 while transitioning the other to ROS 2 enabled gradual software migration while preserving operational capability.
+
+**Minion A** operates Ubuntu 22.04 LTS (Long Term Support) with ROS 2 Humble Hawksbill, representing the future software direction for the platform. **Minion B** operates Ubuntu 20.04 LTS with ROS 1 Noetic Ninjemys, providing continuity with existing software packages and maintaining compatibility with legacy sensor drivers and perception algorithms developed over prior research campaigns.
+
+The Atlas platform hosts several software subsystems essential to the perception and autonomy pipeline:
+
+**LiDAR Processing**: The Livox ROS SDK executes on the Atlas PC, receiving UDP message streams from the three [[03_Livox_Horizon|Livox Horizon]] sensors and publishing unified point clouds to ROS topics. Point cloud aggregation and transformation algorithms, which implement the motion compensation methodology detailed in Chapter 5, also execute on this platform.
+
+**Vision Processing**: While H.264/H.265 video encoding occurs on the [[02_Camera_Enclosure|Jetson Xavier]] camera enclosure, the Atlas PC receives and decodes the RTSP video streams, extracting embedded SEI timestamps as described in [[02_Video_Pipeline|Section 3.2.2.2]] and publishing decoded frames as ROS image messages.
+
+**Object Detection**: The YOLOv8 vision-based object detection models and GB-CACHE LiDAR clustering algorithms both execute on the Atlas hardware, leveraging multi-core CPU resources and, where applicable, GPU acceleration for deep learning inference.
+
+**Sensor Fusion**: Late fusion algorithms that combine detections from vision and LiDAR modalities operate on the Atlas platform, accessing synchronized sensor observations via ROS topic subscriptions and temporal alignment procedures detailed in Section 3.2.2.
+
+**Navigation and Control**: Path planning, collision avoidance, and vessel control algorithms utilize the processed perception results to generate navigation commands, though autonomous control implementation falls outside the scope of this dissertation's focus on perception performance analysis.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Camera Enclosure} \label{comp:camera_enclosure}
+
+# Camera Enclosure Computing Platform
+
+The camera enclosure assembly integrates three [[02_HDR_Camera|Leopard Imaging IMX490 HDR cameras]] with dedicated computing hardware housed in a weatherproof enclosure mounted on the vessel superstructure. At the core of this assembly is an NVIDIA Jetson Xavier embedded computer, which performs real-time H.264/H.265 video encoding, manages timestamp embedding for temporal synchronization, and serves critical time distribution functions within the hierarchical clock architecture. This distributed computing approach places video processing at the camera location rather than transmitting raw uncompressed video over the network, substantially reducing bandwidth requirements while enabling sophisticated in-stream timestamp embedding.
+
+## NVIDIA Jetson Xavier Platform
+
+The NVIDIA Jetson Xavier represents an embedded computing platform designed for edge AI and computer vision applications, combining ARM-based CPU cores with a powerful GPU architecture optimized for machine learning inference and media encoding. The system-on-module (SOM) design integrates processor, GPU, memory, and I/O interfaces in a compact form factor suitable for environmentally sealed enclosures.
+
+Key specifications relevant to the camera processing application include:
+
+- **CPU**: 8-core ARM Carmel processor providing sufficient computational capacity for GStreamer pipeline management and network protocol handling
+- **GPU**: 512-core Volta architecture GPU with hardware-accelerated video encoding/decoding
+- **Memory**: Unified memory architecture shared between CPU and GPU, enabling efficient data exchange for media processing pipelines
+- **Video Encoding**: Dedicated hardware encoding engines capable of real-time H.264 and H.265 compression for multiple simultaneous video streams
+- **Network**: Gigabit Ethernet interface for connection to the vessel LAN described in [[03_Network|Section 3.1.2.3]]
+- **Storage**: NVMe SSD for local video recording and operating system hosting
+
+The Jetson Xavier is assigned IP address 201.7.90.147 on the Minion LAN, providing network addressability for NTP synchronization, video streaming, and remote administration.
+
+## Video Processing Pipeline
+
+The primary computational responsibility of the Jetson Xavier is real-time video encoding and streaming of the three HDR camera feeds. Raw video frames from the cameras enter the system via USB 3.0 UVC (Universal Video Class) interfaces, accessed through the Video for Linux (V4L2) kernel subsystem. The GStreamer multimedia framework constructs processing pipelines that capture these raw frames, apply format conversions, encode to H.264 or H.265 compressed formats, embed timestamps as Supplemental Enhancement Information (SEI) NAL units, and transmit the resulting streams via RTSP (Real-Time Streaming Protocol) over the local network.
+
+The video encoding workflow, detailed comprehensively in [[02_Video_Pipeline|Section 3.2.2.2]], exploits the Jetson's dedicated hardware encoding engines to achieve real-time compression of three simultaneous 2880×1860 pixel video streams. Hardware encoding offloads the computationally intensive compression operations from the CPU, enabling sustainable operation without thermal throttling during extended recording sessions.
+
+The compressed video streams are transmitted to the [[01_Atlas|Atlas PC]] main computing platform via RTSP over UDP, where they are decoded and published as ROS image messages for consumption by object detection algorithms. This architecture distributes the encoding burden to the camera enclosure while centralizing detection processing on the more powerful Atlas hardware.
+
+## Timestamp Embedding Implementation
+
+A critical function performed by the Jetson Xavier is the embedding of precise system timestamps directly into the encoded video bitstream. As detailed in [[02_Video_Pipeline|Section 3.2.2.2]], custom GStreamer pipeline elements inject SEI NAL units containing GPS-synchronized timestamps alongside encoded video frames. This in-band metadata approach ensures that timing information persists with the video data through network transmission, recording, and playback, enabling the temporal drift correction methodology described in [[03_Temporal_Drift|Section 3.2.2.3]].
+
+The timestamp embedding process requires that the Jetson's system clock be accurately synchronized before video capture begins. Startup verification procedures, implemented in the camera launch scripts, confirm NTP synchronization with the [[01_Atlas|Atlas PC]] before initiating video streaming. This verification prevents the recording of video with uncalibrated timestamps that would compromise subsequent temporal alignment operations.
+
+## Network Time Protocol Client Role
+
+Within the hierarchical time synchronization architecture detailed in [[01_Clock_Sync|Section 3.2.2.1]], the Jetson Xavier operates as an NTP client receiving GPS-disciplined time from the [[01_Atlas|Atlas PC]], which itself synchronizes to the [[04_PinPoint_GPS|Pinpoint GPS]] receiver. The Chrony NTP daemon executes on the Jetson, periodically querying the Atlas NTP server and adjusting the local system clock to maintain alignment with GPS time.
+
+NTP provides synchronization accuracy on the order of milliseconds over local network connections, which proves sufficient for the video frame timestamps given the 10 frames-per-second capture rate employed during data collection (100 milliseconds between frames). For reference, preliminary analysis documented in technical summaries measured average end-to-end video latency of approximately 127 milliseconds with no dropped or repeated frames, demonstrating adequate temporal stability.
+
+The startup verification scripts check two conditions before launching video encoding:
+
+1. **Chrony synchronization status**: Verification that the NTP daemon has established contact with the upstream Atlas NTP server and completed initial clock adjustment
+2. **System time validity**: Confirmation that the system clock reflects plausible GPS time rather than a default epoch time indicating loss of synchronization
+
+These checks ensure that video timestamps derive from GPS-disciplined time from the moment recording begins.
+
+## Precision Time Protocol Master Role
+
+Beyond serving as an NTP client, the Jetson Xavier operates as a Precision Time Protocol (PTP) master clock providing sub-microsecond synchronization to the three [[03_Livox_Horizon|Livox Horizon LiDAR]] sensors. The IEEE 1588 PTP implementation, provided by the `ptp4l` daemon from the Linux PTP project, transmits periodic timing packets over the Ethernet network carrying hardware-timestamped synchronization messages.
+
+PTP achieves substantially higher timing accuracy than NTP—on the order of microseconds rather than milliseconds—by exploiting hardware timestamping capabilities in network interfaces and accounting for symmetric network propagation delays. This precision proves essential for LiDAR applications where individual laser returns must be timestamped with sub-millisecond accuracy to enable precise spatial reconstruction during vehicle motion.
+
+The Livox sensors discover and synchronize to the PTP master automatically via the Best Master Clock Algorithm (BMCA), which evaluates available PTP sources on the network and selects the optimal time reference. In the Minion configuration, the Jetson Xavier represents the only PTP master on the camera enclosure network segment, ensuring unambiguous selection by the LiDAR units.
+
+Verification of PTP synchronization is performed using the Livox Viewer software application, which connects to each LiDAR unit and displays synchronization status indicators. Proper operation is confirmed by the presence of "1588 signal detected" status and active time synchronization indicators on all three Livox devices. This verification occurs as part of system startup procedures before data collection operations.
+
+## Physical Integration and Environmental Protection
+
+The camera enclosure assembly provides environmental protection for the computing hardware and camera sensors in the maritime operating environment. The weatherproof housing protects against salt spray, rain, and humidity while providing thermal management for the Jetson Xavier and associated electronics. The physical integration effort, originally performed by \cite{thompson2023}, positioned the three cameras to achieve the field of view geometry described in [[01_Perception_Geometry|Section 3.1.1.1]] while maintaining manageable cable runs to the central computing enclosure.
+
+Power distribution within the enclosure provides regulated voltage to the Jetson Xavier, the three cameras, and network equipment. The assembly includes a Power-over-Ethernet (PoE) switch if required for LiDAR power delivery, though the specific power architecture depends on the configuration of the three Livox Horizon units and their placement relative to the camera enclosure.
+
+## Local Recording Capability
+
+While the primary video data path streams compressed video to the [[01_Atlas|Atlas PC]] for ROS recording, the Jetson Xavier possesses local recording capability via its NVMe solid-state storage. This redundancy provides backup recording in case of network disruptions or Atlas PC failures, ensuring that video data can be recovered even if the primary data path fails during a recording session.
+
+Local recording can also serve diagnostic purposes, enabling comparison of locally-saved video files with network-transmitted ROS bag data to validate timestamp accuracy and detect any frame dropping or duplication during network transmission. The temporal drift analysis methodology described in [[03_Temporal_Drift|Section 3.2.2.3]] exploits this local recording capability by comparing locally-saved video frames with network-transmitted ROS messages to quantify systematic timing offsets introduced by the encoding-transmission-decoding pipeline.
+
+## Integration Summary
+
+The camera enclosure computing platform, centered on the NVIDIA Jetson Xavier embedded computer, provides several essential functions:
+
+- Real-time hardware-accelerated video encoding for three simultaneous HDR camera streams
+- Timestamp embedding via SEI NAL unit injection to preserve temporal synchronization information
+- NTP client synchronization to GPS-disciplined time distributed from the Atlas PC
+- PTP master clock services for sub-microsecond LiDAR temporal alignment
+- Weatherproof physical integration of cameras and computing hardware
+- Backup local recording capability for data redundancy
+
+The distributed computing architecture, which places video encoding at the camera location while performing object detection and fusion on the [[01_Atlas|Atlas PC]], optimizes network bandwidth utilization while maintaining frame-accurate temporal synchronization through the hierarchical GPS-NTP-PTP clock distribution system. This infrastructure provides the foundation for the multi-modal perception analysis central to this research, enabling simultaneous capture of temporally-aligned camera and LiDAR observations as detailed in Chapter 5.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Network Structure} \label{comp:network}
+
+# Network Infrastructure
+
+The Minion autonomous surface vessel employs a dedicated Gigabit Ethernet local area network (LAN) to interconnect computing platforms, sensors, and navigation equipment. This network serves multiple critical functions: sensor data transmission, time synchronization protocol distribution, remote administration access, and inter-process communication for the Robot Operating System (ROS) middleware. The network architecture prioritizes reliability and deterministic latency to support real-time perception and control operations in the challenging maritime environment.
+
+## Network Topology and Addressing
+
+The vessel LAN operates on the 201.7.90.0/24 private subnet, providing 254 usable host addresses for platform devices. Static IP address assignment ensures predictable network routing and simplifies configuration of time synchronization services, which require knowledge of specific server addresses. 
+
+Key platform components are assigned the following static IP addresses:
+
+| Device                         | IP Address        | Function                               |
+| ------------------------------ | ----------------- | -------------------------------------- |
+| Pinpoint GPS/INS               | 201.7.90.30       | GPS-disciplined NTP time source        |
+| Atlas PC (Minion A/B)          | 201.7.90.43:17/18 | Main computing, NTP server, ROS core   |
+| Jetson Xavier Camera Enclosure | 201.7.90.147      | Video encoding, NTP client, PTP master |
+| Livox Horizon LiDAR Units (3x) | 201.7.90.43:45    | Point cloud data via UDP, PTP clients  |
+
+The static addressing scheme facilitates configuration of the hierarchical time synchronization architecture described in [[01_Clock_Sync|Section 3.2.2.1]], where the [[04_PinPoint_GPS|Pinpoint GPS]] at 201.7.90.30 serves as the NTP root, the [[01_Atlas|Atlas PC]] operates as an NTP server for downstream clients, and the [[02_Camera_Enclosure|Jetson Xavier]] at 201.7.90.147 functions as both an NTP client and PTP master clock.
+
+## Physical Network Infrastructure
+
+The LAN physical layer employs Cat5 Ethernet cabling supporting single gigabit link speeds. Ruggedized connectors and marine-grade cabling provide environmental protection against moisture, salt spray, and vibration. Cable runs between environmentally sealed enclosures utilize industrial IP67-rated connectors to maintain water ingress protection at connection points.
+
+A central Gigabit Ethernet switch, housed in the main electronics enclosure alongside the [[01_Atlas|Atlas PCs]], provides the network backbone. This managed switch enables Quality of Service (QoS) configuration to prioritize time-critical data streams, though specific QoS policies depend on operational requirements and may prioritize either sensor data or time synchronization traffic depending on application phase.
+
+The camera enclosure assembly includes a secondary Ethernet switch to provide network connectivity for the three [[03_Livox_Horizon|Livox Horizon LiDAR]] units mounted on or near the camera mast. This switch connects to the main vessel switch via a single trunk line, reducing the number of cable runs between the mast and main hull while providing local switching for LiDAR and camera traffic.
+
+## Data Flow Architecture
+
+The network carries several distinct categories of traffic with varying bandwidth and latency requirements:
+
+**Video Streaming**: The three [[02_HDR_Camera|HDR cameras]] generate H.264/H.265 encoded video streams transmitted via Real-Time Streaming Protocol (RTSP) over UDP from the [[02_Camera_Enclosure|Jetson Xavier]] (201.7.90.147) to the [[01_Atlas|Atlas PC]]. At 2880x1860 resolution and 5-15 frames per second with H.264 compression, the RTSP bitrate is calculated before the stream begins dependent upon the requested stream frame-rate (5-15 fps) (INSERT bitrate formula here).
+
+**LiDAR Point Clouds**: The three Livox Horizon sensors transmit point cloud data as UDP packets at 100 Hz. Each sensor operating in dual-return mode at 480,000 points/second generates approximately 15-20 Mbps of network traffic, totaling 45-60 Mbps for the three-sensor array. These UDP streams flow from the LiDAR units through the camera enclosure switch to the Atlas PC, where the Livox ROS SDK receives and publishes them to ROS topics.
+
+**GPS/INS Data**: The [[04_PinPoint_GPS|Pinpoint GPS/INS]] transmits pose solution messages via UDP at 1-10 Hz depending on configuration. These messages, containing position, velocity, and orientation estimates with associated uncertainties, require minimal bandwidth (typically <1 Mbps) but demand low latency to support real-time navigation and control.
+
+
+
+**ROS Inter-Process Communication**: The Robot Operating System middleware employs TCP/IP for initial service discovery and parameter configuration, then establishes direct peer-to-peer TCP or UDP connections for topic publish/subscribe message exchange. ROS traffic patterns depend on the specific nodes and topics active during operation, but can include republication of decoded video frames, detection results, and diagnostic messages.
+
+## Network Bandwidth Utilization
+
+Aggregate network traffic during typical data collection operations totals approximately 60-105 Mbps for sensor data (video + LiDAR) plus nominal overhead for GPS, time synchronization, and ROS messaging. This represents 6-10% utilization of the Gigabit Ethernet infrastructure, providing substantial margin for bursts, protocol overhead, and future expansion.
+
+The network design deliberately over-provisions bandwidth relative to steady-state requirements to ensure that occasional traffic burstssuch as simultaneous high-motion video frames that compress poorly, or retransmission of dropped UDP packetsdo not introduce congestion-induced latency. Maintaining sub-millisecond network latency proves critical for accurate NTP clock synchronization and prevents video frame jitter that would complicate temporal alignment.
+
+## Reliability and Fault Tolerance
+
+Several aspects of the network architecture address reliability concerns:
+
+**Redundant Atlas PCs**: The dual [[01_Atlas|Atlas computer]] configuration enables network continuity if one system fails. ROS nodes can be migrated to the standby system, though operational procedures must ensure that only one system operates as the NTP server to prevent time synchronization conflicts.
+
+**Local Recording**: Both the [[02_Camera_Enclosure|Jetson Xavier]] camera enclosure and [[01_Atlas|Atlas PCs]] possess local storage for recording sensor data. If network connectivity fails during a data collection mission, sensors can continue recording locally for later retrieval, preventing complete data loss.
+
+**UDP Transport**: The use of connectionless UDP for high-bandwidth sensor data (video, LiDAR) avoids the head-of-line blocking and retransmission delays inherent in TCP. While UDP provides no delivery guarantee, the high-bandwidth over-provisioned network rarely experiences packet loss, and perception algorithms prove tolerant to occasional frame drops.
+
+**Managed Switch**: Network diagnostic capabilities of the managed Ethernet switch enable monitoring of port status, bandwidth utilization, and error counters. These diagnostics assist in identifying failing cables, connector corrosion, or electromagnetic interference that might degrade network performance in the marine environment.
+
+## Remote Access and Administration
+
+The vessel network includes provisions for remote access during development and testing, typically via a wireless access point or cellular router that bridges the vessel LAN to external networks. This capability enables:
+
+- Remote monitoring of system status and sensor data during at-sea operations
+- Software updates and configuration changes without requiring physical access to computing hardware
+- Remote debugging and log file retrieval when troubleshooting system issues
+- Off-vessel recording of ROS bag files to remote storage for dataset archival
+
+Security considerations for remote access include firewall configuration to restrict inbound connections, authentication requirements for SSH administrative access, and potential disconnection of external network access during sensitive operations to prevent unauthorized interference.
+
+## Integration with Time Synchronization Architecture
+
+The network infrastructure provides the physical medium for the hierarchical time distribution system detailed in [[01_Clock_Sync|Section 3.2.2.1]]. The quality of clock synchronization achievable depends critically on network characteristics:
+
+**NTP Synchronization**: Network latency and jitter between the [[04_PinPoint_GPS|Pinpoint GPS]] (201.7.90.30) and [[01_Atlas|Atlas PC]], and between Atlas and [[02_Camera_Enclosure|Jetson Xavier]] (201.7.90.147), directly impact achievable NTP accuracy. The dedicated Gigabit infrastructure with minimal competing traffic provides sub-millisecond latency sufficient for millisecond-level NTP synchronization.
+
+**PTP Synchronization**: The IEEE 1588 Precision Time Protocol achieves sub-microsecond accuracy by exploiting hardware timestamping in network interfaces and accounting for symmetric propagation delay. The [[02_Camera_Enclosure|Jetson Xavier]] PTP master and [[03_Livox_Horizon|Livox Horizon]] PTP clients communicate via the camera enclosure switch, benefiting from short cable runs and minimal network hops that reduce timing uncertainty.
+
+**Synchronization Verification**: The network enables remote access to synchronization verification tools, including `chronyc` commands on NTP-synchronized hosts and Livox Viewer software for confirming PTP lock on LiDAR sensors. These diagnostic capabilities prove essential during system startup and troubleshooting.
+
+## Network Performance Validation
+
+Network performance validation procedures employed during system commissioning include:
+
+- **Bandwidth testing**: iperf3 or similar tools verify Gigabit link speeds between key endpoints
+- **Latency measurement**: ping utilities measure round-trip latency for time-critical paths
+- **Packet loss assessment**: Extended ping tests or UDP stream analysis verify zero packet loss under load
+- **Time synchronization quality**: chronyc and PTP monitoring tools confirm clock accuracy meets requirements
+
+These validation procedures ensure that the network infrastructure meets the performance requirements necessary for real-time multi-modal perception and accurate temporal alignment of sensor data.
+
+## Summary
+
+The Minion vessel network infrastructure provides:
+
+- Gigabit Ethernet LAN with 201.7.90.0/24 addressing for all platform systems
+- Static IP assignment for time synchronization server/client relationships
+- Ruggedized marine-grade cabling and connectors for environmental protection
+- Over-provisioned bandwidth (60-105 Mbps used of 1000 Mbps capacity)
+- Managed switch infrastructure for QoS and network diagnostics
+- Support for NTP and PTP time distribution protocols
+- Dual Atlas PC redundancy for network service continuity
+
+The network serves as critical infrastructure enabling the distributed computing architecture that places video encoding on the [[02_Camera_Enclosure|camera enclosure]] while concentrating detection processing on the [[01_Atlas|Atlas PCs]], all while maintaining frame-accurate temporal synchronization through the GPS-NTP-PTP hierarchy. This infrastructure provides the communication foundation for the multi-modal sensor fusion research presented in subsequent chapters.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -745,6 +966,17 @@ The \ac{GPS} receiver functions as the master clock for the entire synchronizati
 % ROS
 %    - image of ROS node structure from RobotX paper
 % table of msgs & rates within each bagfile
+
+%%%% From comp:atlas %%%
+% The ROS ecosystem provides integrated data recording functionality through the `rosbag` utility (ROS 1) and `ros2 bag` (ROS 2), which subscribe to specified ROS topics and serialize all messages to disk in a format that enables precise temporal replay. The Atlas platforms employ this infrastructure to record sensor data during data collection operations, capturing synchronized streams of:
+
+% - Raw LiDAR point clouds from all three Livox sensors
+% - Compressed video streams with embedded timestamps from all three cameras
+% - GPS/INS pose estimates with timestamp and uncertainty information
+% - Detection results from vision and LiDAR object detection algorithms
+% - Platform status messages, network diagnostics, and operator annotations
+
+% The resulting bag files serve as the ground-truth dataset for the detection performance analysis presented in Chapter 6, with temporal drift correction procedures detailed in [[03_Temporal_Drift|Section 3.2.2.3]] ensuring frame-accurate alignment between modalities within the recorded data.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -798,7 +1030,8 @@ The \ac{GPS} receiver functions as the master clock for the entire synchronizati
 
 
 % \printbibliography
-\bibliographystyle{plainnat}
+% \bibliographystyle{plainnat} - Most recent
+\bibliographystyle{IEEEtranN} % natbib-compatible numeric IEEE style
 % \bibliography{References}
 \bibliography{Dissertation}
 

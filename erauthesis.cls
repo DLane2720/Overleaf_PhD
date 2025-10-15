@@ -1062,4 +1062,5 @@
 %
 \renewcommand\bibname{REFERENCES}
 \RequirePackage[nottoc]{tocbibind}
-\RequirePackage[round, sort&compress, authoryear]{natbib}
+% \RequirePackage[round, sort&compress, authoryear]{natbib}
+\RequirePackage[numbers,square,sort&compress]{natbib}
