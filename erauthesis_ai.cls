@@ -512,7 +512,6 @@
 		\@degree in \@department
 	\end{center}%
 	\clearpage}
-
 %
 % Define a page style for the title page, putting the University address in the footer, exactly 1.0in from the bottom.
 %

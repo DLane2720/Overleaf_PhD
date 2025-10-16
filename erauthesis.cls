@@ -815,7 +815,12 @@
 	\end{minipage}}\vskip-\baselineskip
 	\fi
 	\clearpage
-	\tableofcontents}
+	% \tableofcontents
+    \begingroup
+        \singlespacingone
+        \tableofcontents
+    \endgroup
+    }
 \renewcommand{\contentsname}{TABLE OF CONTENTS}
 \renewcommand{\cftbeforetoctitleskip}{-0.in}
 \renewcommand{\cfttoctitlefont}{\hfill\normalsize\bfseries}
