@@ -547,3 +547,207 @@ The video pipeline achieves real-time performance encoding three simultaneous 28
             \subsubsection{Temporal Drift} \label{temporal_drift}
             
     \section{Data Output}
+
+
+\section{Compute Hardware and Network} \label{sec:Atlas_LAN}
+
+The Minion autonomous surface vessel employs a distributed computing architecture that balances real-time processing requirements with operational flexibility and redundancy. 
+The computing infrastructure consists of high-performance workstation computers serving as the primary processing platforms, an embedded computer integrated with the camera sensors for video encoding and streaming, and a \ac{GbE} \ac{LAN} connecting all systems and sensors. 
+% This architecture distributes computational workloads according to sensor proximity and processing requirements while maintaining centralized coordination through the Robot Operating System middleware. 
+The following subsections detail the hardware specifications, system architecture, and network infrastructure that enable real-time multi-modal perception for maritime object detection and sensor fusion.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Atlas} \label{atlas}
+
+The primary computing infrastructure consists of two identical high-performance workstation computers designated Minion A and Minion B.
+These systems, built on enterprise-grade PC hardware, provide the computational resources necessary for real-time sensor data processing, object detection algorithm execution, and autonomous navigation decision-making.
+The dual-computer configuration provides operational redundancy, allowing hot-swapping between systems for software development, testing, and failover scenarios without requiring vessel downtime.
+
+\subsubsection{CPU and Memory}
+Each Atlas PC, designated Minion-A and Minion-B, features computing hardware selected to meet the demanding real-time requirements of multimodal perception and autonomy.
+Table \ref{table:Minion_hardware} presents the key hardware specifications for the Atlas.% computing platform.
+
+The six-core Xeon processor with Hyper-Threading provides twelve logical threads, offering sufficient parallel processing capability to handle simultaneous operation of LiDAR point cloud processing, computer vision algorithms, sensor fusion, and navigational planning.
+Operating at 3.50 GHz base frequency with 15 MB of shared L3 cache, the processor provides substantial single-threaded performance for latency-sensitive perception tasks while enabling multi-threaded parallelism for batch processing operations.
+The processor's support for AVX2 vector instructions accelerates numerical computation common in point cloud transformation and sensor fusion algorithms.
+
+The 16 GB ECC memory capacity, configured in quad-channel DDR4-2133 with four 4 GB modules, provides sufficient capacity to store a large cache of LiDAR and video image data in the form of \ac{ROS} messages (see Section \ref{sensor_data}), enabling rapid access and parsing of large point clouds.% as discussed in Chapter \ref{realtime_object_detection}.
+Error-correcting code memory improves system reliability for long-duration autonomous operations where memory corruption could compromise navigation safety or data integrity.
+The quad-channel memory configuration provides 68 GB/s aggregate memory bandwidth, reducing bottlenecks when multiple perception algorithms access shared sensor data simultaneously.
+
+\subsubsection{GPU}
+The NVIDIA GTX 1080 GPU features 2560 CUDA cores based on the Pascal architecture and 8 GB of GDDR5X memory, accelerating both machine learning inference for object detection and point cloud processing operations.
+The Pascal architecture provides CUDA compute capability 6.1, enabling efficient execution of YOLOv8 convolutional neural networks and GPU-accelerated image preprocessing described in Chapter \ref{realtime_object_detection}.
+Hardware video decode engines offload H.264 video decompression from the CPU, enabling the Atlas PC to receive and process multiple camera streams simultaneously while maintaining CPU resources for perception algorithms.
+
+\subsubsection{Storage}
+High-speed solid-state storage provides the throughput necessary to record multiple synchronized sensor streams to disk during data collection operations.
+Recording sessions simultaneously capture raw LiDAR point clouds, compressed video streams from three cameras, GPS/INS pose messages, and timestamped detection results, generating aggregate data rates that can exceed hundreds of megabytes per second.
+% The storage subsystem must sustain these write rates for extended periods without buffer overflow or frame dropping.
+
+\subsubsection{Network Connectivity}
+The Atlas platform features extensive network connectivity with six \ac{GbE} ports, enabling flexible network architecture design. %plus 802.11ac WiFi
+A PCIe expansion card provides four additional \ac{GbE} interfaces %. with hardware support for IEEE 1588 Precision Time Protocol timestamping, 
+enabling future expansion of sensor networks or integration of additional computing nodes.
+The Intel I210 network controller serves as the primary vessel LAN interface, connecting the Minion PC to the rest of the network, and the Intel I218-LM network card provides additional connectivity for external networks or redundant communication paths.
+
+% at static IP address 201.7.90.17 to the Pinpoint GPS/INS at 201.7.90.30, the Jetson Xavier camera enclosure at 201.7.90.147, and the three Livox LiDAR sensors configured via DHCP.
+% The Broadcom BCM4360 802.11ac WiFi adapter enables remote access and diagnostics during dock-side operations, though WiFi is not used for real-time sensor data transmission due to latency and reliability constraints.
+
+\begin{table}[htpb]
+\centering
+\caption{Minion A/B PC Hardware Specifications}
+\begin{tabular}{ll}
+\hline
+\multicolumn{2}{c}{Minion PC - Hardware Specification} \\
+\hline
+\hline
+Processor (CPU) & Intel Xeon E5-1650 v3 \\
+CPU Cores & 6-core / 12-thread, 3.50 GHz \\
+% CPU Architecture & Haswell-EP, 15 MB L3 Cache \\
+Graphics (GPU) & NVIDIA GeForce GTX 1080 \\
+GPU Memory & 8 GB GDDR5X, 2560 CUDA cores \\
+Memory (RAM) & 16 GB DDR4 (quad-channel) \\
+Storage (Primary) & 256 GB NVMe SSD \\
+Network Interface & (6x) Gigabit Ethernet \\% + 802.11ac WiFi \\
+% Primary Vessel LAN & Intel I210 GbE (201.7.90.17) \\
+% \hline
+% \multicolumn{2}{c}{Minion-A Operating System} \\
+% \hline
+% Primary OS & Ubuntu 22.04 LTS \\
+% ROS Version & ROS 2 Humble\\
+% \hline
+% \multicolumn{2}{c}{Minion-B Operating System} \\
+% \hline
+% Primary OS & Ubuntu 20.04 LTS \\
+% ROS Version & ROS 1 Noetic \\
+\hline
+\end{tabular}
+\label{table:Minion_hardware}
+\end{table}
+
+\subsubsection{Dual-System Architecture}
+
+The presence of two functionally equivalent PCs serves multiple operational purposes.
+During development and testing, one system can run experimental software while the other maintains a stable baseline configuration, enabling rapid testing iteration without compromising the ability to revert to known-good software states.
+For field operations, one system serves as the active primary while the other remains available as an immediate backup in case of hardware failure or software crashes.
+
+This dual-system configuration facilitated the ongoing transition within the \ac{ROS} ecosystem during the period of this research.
+While \ac{ROS} 1 remained the operational framework for all experiments conducted in this study, it had entered end-of-life for active development.
+Consequently, Minion’s software architecture was gradually migrated to \ac{ROS} 2, which introduces substantial improvements in real-time performance, memory management, and inter-process communication.
+In contrast to ROS 1’s reliance on a centralized message broker, ROS 2 employs a Data Distribution Service-based communication layer that reduces latency and memory overhead through zero-copy data handling and improved resource allocation.
+Maintaining one system on ROS 1 while transitioning the other to ROS 2 allowed incremental software migration without interrupting field operations—laying the groundwork for future runtime performance improvements anticipated in Section~\ref{futurework}.
+
+Minion A operates Ubuntu 22.04 LTS with ROS 2 Humble, representing the future software direction for the platform.
+Minion B operates Ubuntu 20.04 LTS with ROS 1 Noetic, providing continuity with existing software packages and maintaining compatibility with legacy sensor drivers and perception algorithms developed over prior research campaigns.
+% Both systems are assigned static IP addresses on the vessel local area network: 201.7.90.17 for Minion A and 201.7.90.18 for Minion B.
+
+% The failover procedure between Atlas systems requires coordination of network time synchronization services to prevent conflicting time sources.
+% When switching the active primary from one Atlas PC to the other, operators must disable the Chrony NTP server on the former primary before enabling it on the new primary, ensuring that downstream clients, including the Jetson Xavier camera enclosure, receive unambiguous time distribution.
+% After enabling NTP services on the new primary, network connectivity and sensor synchronization status are verified before restarting the ROS 2 perception pipeline and resuming data recording operations.
+
+% \subsubsection{Processing Responsibilities}
+
+% The active Atlas PC allocates computational workloads between CPU and GPU resources based on algorithm characteristics and hardware acceleration capabilities.
+% This distribution balances processing throughput, latency requirements, and power efficiency for real-time multi-modal perception.
+% The Robot Operating System middleware, detailed in Section \ref{ROS_architechture}, provides the software infrastructure for coordinating these processing tasks, though the focus here remains on hardware execution characteristics.
+
+The Atlas computing system divides perception workloads between the CPU and GPU according to algorithm characteristics and hardware acceleration capabilities.
+This distribution balances throughput, latency, and efficiency for real-time multi-modal perception.
+While \ac{ROS} manages coordination and communication across processes, the following overview focuses on the hardware-level execution of LiDAR and vision tasks.
+
+\subsubsection{CPU-Based Processing}
+
+% The multi-core processor executes several perception and coordination tasks that benefit from high single-threaded performance. % or require irregular memory access patterns unsuitable for GPU acceleration.
+
+% LiDAR point cloud processing operates on CPU cores, executing the GB-CACHE clustering algorithm described in Chapter \ref{realtime_object_detection}.
+% The spatial indexing and nearest-neighbor search operations central to GB-CACHE exhibit irregular memory access patterns and control flow that map poorly to GPU SIMT execution models.
+% Multi-core parallelism enables concurrent processing of multiple LiDAR sensor streams, with each of the three Livox Horizon point clouds processed on dedicated thread pools.
+
+% Point cloud aggregation and motion compensation algorithms transform individual LiDAR observations into the vessel reference frame using GPS/INS pose data.
+% These operations combine coordinate frame transformations with temporal interpolation of vehicle motion, requiring floating-point matrix operations accelerated by the processor's AVX2 vector instructions.
+% The aggregation process accumulates points from multiple time steps to increase point density in the field of view, improving detection range for distant objects as analyzed in Chapter \ref{realtime_object_detection}.
+
+% Sensor fusion algorithms that combine detections from LiDAR and vision modalities execute on CPU cores, implementing the late fusion methodology presented in Chapter \ref{late_fusion}.
+% These algorithms associate spatially-coincident detections across modalities, requiring geometric transformations, bounding box intersection calculations, and probabilistic association metrics.
+% The irregular branching logic and dynamic memory allocation patterns in association algorithms favor CPU execution over GPU parallelism.
+
+% System coordination tasks including data recording, network service management, and operator interface handling consume modest CPU resources.
+% The ROS 2 middleware manages inter-process communication and distributed service discovery across the perception pipeline, with message serialization and network I/O offloaded to dedicated threads to prevent blocking perception-critical processing.
+
+LiDAR point cloud processing and LiDAR-based object detection are executed on the system’s multi-core CPU.
+These algorithms involve spatial clustering, coordinate transformations, and probabilistic data association—operations that rely on irregular memory access patterns and branching logic.
+Such workloads benefit from the CPU’s high single-threaded performance, cache hierarchy, and flexible memory management.
+The CPU also performs sensor fusion between LiDAR and vision detections, as well as general system coordination tasks such as recording data. %, network management, and operator interface control.
+
+\paragraph{GPU-Based Processing}
+
+% The NVIDIA GTX 1080 GPU accelerates perception tasks that exhibit data parallelism and regular memory access patterns, particularly video processing and deep learning inference.
+
+% Hardware video decoding via the NVDEC engine processes three simultaneous H.264/H.265 video streams at 2880×1860 resolution and 10 frames per second.
+% The dedicated video decode hardware offloads CPU resources by performing entropy decoding, inverse quantization, and motion compensation in fixed-function silicon.
+% Decoded frames are stored in GPU memory, enabling zero-copy access for subsequent image processing and inference operations without CPU involvement or PCIe transfers.
+
+% Deep learning inference for vision-based object detection executes YOLOv8 convolutional neural networks optimized via NVIDIA TensorRT.
+% The TensorRT optimization process fuses network layers, quantizes weights to reduced precision where accuracy permits, and generates CUDA kernels specialized for the Pascal GPU architecture.
+% Inference operates on full-resolution 2880×1860 images at approximately 5-10 frames per second, depending on YOLOv8 model size and post-processing complexity.
+% The massively parallel structure of convolutional operations maps efficiently to GPU SIMT execution, achieving throughput that would require hundreds of CPU cores if executed without GPU acceleration.
+
+% Image preprocessing operations, including color space conversion, resizing, and normalization, execute as CUDA kernels prior to neural network inference.
+% Maintaining image data in GPU memory throughout the preprocessing and inference pipeline eliminates CPU-GPU data transfer overhead, reducing end-to-end detection latency.
+
+The GPU accelerates two perception tasks that exhibit a high degree of data parallelism: video decoding and deep learning inference.
+Its first responsibility is processing video streams received from the camera enclosure. 
+Video decoding and image preprocessing are performed directly in GPU memory, minimizing data transfer overhead and reducing end-to-end latency.
+The second responsibility is image-based object detection using the \ac{YOLO} framework. 
+This algorithm relies on convolutional and tensor operations within neural networks and is implemented to leverage the parallel processing capabilities of NVIDIA’s CUDA architecture.
+
+\paragraph{Workload Allocation Rationale}
+
+The CPU-GPU task distribution reflects algorithm characteristics and hardware capabilities.
+LiDAR processing with irregular spatial queries and dynamic data structures exploits CPU cache hierarchies and branch prediction, while vision processing with regular tensor operations and data parallelism leverages GPU throughput.
+The 6-core CPU handles approximately 3× simultaneous LiDAR processing streams plus sensor fusion logic without saturating computational resources, while the 2560-core GPU processes vision workloads that would overwhelm CPU execution.
+
+This balanced allocation maintains real-time performance with sub-100 millisecond end-to-end latency from sensor observation to fused detection output, meeting the temporal requirements for autonomous navigation decision-making.
+Load monitoring during typical operations indicates approximately 60-70\% CPU utilization across all cores and 70-80\% GPU utilization during simultaneous LiDAR and vision processing, providing margin for computational bursts during high-complexity scenes.
+
+% While H.264/H.265 video encoding occurs on the camera enclosure computer (Section \ref{comp:camera_enclosure}), the Atlas PC receives and decodes the RTSP video streams for processing.
+% The GPU hardware video decode engines, implemented via NVIDIA's NVDEC API, enable simultaneous decoding of three 2880×1860 resolution camera streams at 10 frames per second without consuming significant CPU resources.
+% The decoded frames are published as ROS image messages with GPS-synchronized timestamps extracted from SEI metadata embedded during encoding on the Jetson Xavier.
+
+% The YOLOv8 vision-based object detection models and GB-CACHE LiDAR clustering algorithms both execute on the Atlas hardware, leveraging multi-core CPU resources and GPU acceleration for deep learning inference.
+% YOLO inference exploits CUDA acceleration on the GTX 1080, processing full-resolution camera frames through convolutional neural networks optimized via TensorRT for reduced latency.
+% GB-CACHE LiDAR processing executes on CPU threads, performing spatial indexing, clustering, and geometric feature extraction on aggregated point clouds.
+
+% Late fusion algorithms that combine detections from vision and LiDAR modalities operate on the Atlas platform, accessing synchronized sensor observations via ROS topic subscriptions.
+% The temporal alignment procedures detailed in Section \ref{time_sync} ensure that vision and LiDAR observations can be associated with sub-second temporal accuracy, enabling valid cross-modal detection correlation.
+
+% Navigation and control algorithms utilize the processed perception results to generate navigation commands, though autonomous control implementation falls outside the scope of this dissertation's focus on perception performance analysis.
+% The Atlas systems also provide network infrastructure services, including time distribution protocols detailed in Section \ref{time_sync_lan}, which enable temporal synchronization of all platform sensors.
+% Minion A operates as an NTP server in client-and-server mode, synchronizing its system clock to the Pinpoint GPS/INS at 201.7.90.30 via NTP, then providing NTP time distribution to the Jetson Xavier camera enclosure.
+
+\subsubsection{Data Recording Infrastructure}
+
+The ROS ecosystem provides integrated data recording functionality through the \texttt{rosbag} utility for ROS 1 and \texttt{ros2 bag} for ROS 2, which subscribe to specified ROS topics and serialize all messages to disk in a format that enables precise temporal replay.
+The Atlas platforms employ this infrastructure to record sensor data during data collection operations, capturing synchronized streams of:
+
+\begin{itemize}
+\item Raw LiDAR point clouds from all three Livox Horizon sensors
+\item Compressed video streams with embedded timestamps from all three cameras
+\item GPS/INS pose estimates with timestamp and uncertainty information
+\item Detection results from vision and LiDAR object detection algorithms
+\item Platform status messages, network diagnostics, and operator annotations
+\end{itemize}
+
+The resulting bag files serve as the ground-truth dataset for the detection performance analysis presented in Chapter \ref{dataset}.
+The temporal synchronization procedures detailed in Section \ref{time_sync} ensure frame-accurate alignment between modalities within the recorded data.
+
+The storage subsystem must sustain aggregate write rates exceeding 100 MB/s during recording sessions when all sensor streams are simultaneously active.
+Typical data rates include approximately 10 MB/s per LiDAR sensor for 100 Hz point cloud streams, 5-15 MB/s per camera for H.265 compressed video at 10 fps, and lower bandwidth for GPS/INS pose messages and detection results.
+The NVMe solid-state drive provides sufficient sequential write throughput and IOPS to sustain these aggregate data rates for hours-long recording sessions without frame dropping or buffer overflow.
+
+Post-processing workflows access the recorded bag files to extract synchronized sensor observations for offline analysis.
+The ROS bag format preserves exact message timestamps, enabling the temporal drift correction methodology described in Section \ref{time_sync} to establish sub-second temporal alignment between camera frames recorded locally on the Jetson Xavier and frames transmitted via RTSP and recorded in ROS bags on the Atlas PC.
+This temporal alignment capability proves essential for the rigorous multi-modal detection performance comparison presented in Chapters 5 and 6.
+
+
