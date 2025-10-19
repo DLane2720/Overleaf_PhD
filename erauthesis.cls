@@ -225,7 +225,7 @@
 						\doublespacingone\centering%
 						\parindent\z@\normalfont%
 						\def\\{\protect\linebreak}%
-						\ifnum\c@secnumdepth>\m@ne  {\bfseries\MakeTextUppercase{\@chapapp\ \thechapter} - } \fi%
+						\ifnum\c@secnumdepth>\m@ne  {\bfseries\MakeTextUppercase{\@chapapp\ \thechapter} -} \fi%
 						{\bfseries\MakeTextUppercase{##1}\par}%
 					\end{minipage}}\par\nobreak
 				\vskip5.0ex}%

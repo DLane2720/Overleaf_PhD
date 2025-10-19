@@ -259,11 +259,11 @@ The novel contributions of this paper may be broken down as:
 \section{System Overview}
 % % \textcolor{red}{This intro section should provide an overview of the Minion USV platform and related sub-systems: Atlas, Camera Enclosure}
 % The Minion \Ac{ASV} is a maritime research vessel developed by \ac{ERAU} to provide graduate-level research and undergraduate hands-on learning opportunities, as well as to compete in the Maritime RobotX Challenge, and served as the primary research platform for the research in this paper.
-% The platform is based upon a \ac{WAM-V} equipped with a comprehensive suite of \ac{LiDAR}, infrared and visual spectrum cameras, \ac{GPS}, and \acp{IMU} designed to support navigation and perception research, allowing Minion to operate autonomously within littoral zones and open water.
+% The platform is based upon a \ac{WAMV} equipped with a comprehensive suite of \ac{LiDAR}, infrared and visual spectrum cameras, \ac{GPS}, and \acp{IMU} designed to support navigation and perception research, allowing Minion to operate autonomously within littoral zones and open water.
 
 % A dual-antenna \ac{GPS} is paired with three 360-degree  \ac{LiDAR} units placed around Minion's top deck to provide the omnidirectional awareness required for autonomous navigation.
 % An additional three forward scanning \ac{LiDAR} sensors optimize point cloud density in the forward direction of travel.
-% The same point-dense \ac{FOV} \ac{LiDAR} cloud off of Minion's bow is also spanned by a suite of six cameras mounted within a water-tight camera enclosure.
+% The same point-dense FOV LiDAR cloud off of Minion's bow is also spanned by a suite of six cameras mounted within a water-tight camera enclosure.
 % Camera data is processed within the camera enclosure on an NVIDIA Jetson Xavier, equipped with hardware-accelerated video drivers capable of compressing and streaming all six video feeds over the robot's gigabit \ac{LAN}.
 
 % Atlas is Minion's brain and network back-bone designed in 2018. 
@@ -279,18 +279,19 @@ The novel contributions of this paper may be broken down as:
 % The primary enhancement to the sensor suite introduced by this work is a timestamp embedding mechanism robust to network delay, detailed in Section~\ref{video pipeline}, which is essential for rigorous multi-modal sensor fusion analysis.
 
 % The Minion \Ac{ASV} is a maritime research vessel developed by \ac{ERAU} as a platform for graduate-level research, undergraduate experiential learning, competition in the Maritime RobotX Challenge, as well as the primary research platform for the work presented in this dissertation.
-The Minion \Ac{ASV} serves as a multidisciplinary platform for undergraduate instruction and graduate research at \ac{ERAU}.
-Built on a \ac{WAM-V} hull, the platform integrates a comprehensive sensor suite including \ac{LiDAR}, visual and infrared cameras, \ac{GPS}, and \acp{IMU} to enable autonomous operation in both littoral zones and open-water environments.
+The Minion \ac{USV} serves as a multidisciplinary platform for undergraduate instruction and graduate research at \ac{ERAU}.
+Built on a \ac{WAMV} hull, the platform integrates a comprehensive sensor suite including \ac{LiDAR}, visual and infrared cameras, \ac{GPS}, and \acp{IMU} to enable autonomous operation in both littoral zones and open-water environments.
 Figure \ref{fig:minion} shows a render of the vessel as it was equipped to compete in the 2024 Maritime RobotX Challenge, as well as the data collection necessary to conduct the research presented in this dissertation.
 
 The platform's sensing architecture provides omnidirectional environmental awareness with a dual-antenna \ac{GPS} along with three strategically placed 360-degree \ac{LiDAR} units.
 Three additional forward-scanning \ac{LiDAR} sensors are paired with a suite of six cameras to provide enhanced point cloud density and high-resolution visual data in the vessel's primary direction of travel. 
+This data-dense region defines the operational envelope of the \ac{USV}'s perception hardware, providing a 160-degree \acl{FOV} which is effective to a range of 60 meters.
 % Within this forward-facing \ac{FOV}, a suite of six cameras provides high-resolution visual data housed within a watertight enclosure.
 Video encoding from these cameras occurs locally within the watertight camera enclosure on an NVIDIA Jetson Xavier module.
 This PC performs the hardware-accelerated compression necessary to stream all six feeds over the vessel's \ac{LAN}.
 
 % Minion's main computer, designated Atlas, was designed in 2018 to serve as the vessel's central processing hub and network backbone. 
-The Atlas computing system, developed in 2018, serves as the \acp{USV} central processing unit and network backbone.
+The Atlas computing system, developed in 2018, serves as the \ac{USV}'s central processing unit and network backbone.
 Comprised of a 16-port network switch and a redundant twin-PC architecture, Atlas manages synchronization across all network endpoints and sensors while performing high-level data processing.
 % and facilitating sensor communication.and is capable of processing all of the captured data in near real-time on hardware comparable to a contemporary smartphone.
 % Temporal synchronization across all sensors and network endpoints is maintained via \ac{NTP} and \ac{PTP} protocols referenced to the \ac{GPS} clock signal. 
@@ -301,14 +302,14 @@ The integrated software stack was developed by \ac{ERAU} Faculty and students an
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.8\textwidth]{Images/Minion.png}
-\caption{ERAU's \ac{WAM-V} Research Vessel Minion as configured for the 2024 Maritime RobotX Challenge.}
+\caption{ERAU's \ac{WAMV} Research Vessel Minion as configured for the 2024 Maritime RobotX Challenge.}
 \label{fig:minion}
 \end{figure}
 
 The sensing configuration used in this research and the 2024 competition is described in Section \ref{perception_geometry}.
 % The sensor configuration described in section \ref{perception_geometry} was originally developed by Team Minion for the 2022 and 2024 Maritime RobotX competitions \cite{holland2024, thompson2023}. 
 Section~\ref{sensors} presents the technical specifications of Minion's sensor hardware, with particular emphasis on the \ac{LiDAR} and high-definition camera sensors selected for this study.
-An overview of the CPU and network infrastructure of the system is provided in section~\ref{sec:Atlas_LAN} as background for the computational requirements of the real-time object detection methods presented in Chapter~\ref{object-detection}, as well as the challenges relating to the synchronization of sensors in section~\ref{sec:calibration}.
+An overview of the CPU and network infrastructure of the system is provided in section~\ref{sec:Atlas_LAN} as background for the computational requirements of the real-time object detection methods presented in Chapter~\ref{realtime_object_detection}, as well as the challenges relating to the synchronization of sensors in section~\ref{sec:calibration}.
 % housed within the forward camera enclosure. Section~\ref{visual_cameras} provides additional discussion regarding visual spectrum sensor selection and characterization. 
 Of particular note, the timestamp embedding mechanism described in Section~\ref{time_sync_cam} overcomes network latency issues in the video pipeline to maintain a more precise temporal alignment.
 % , essential for rigorous multi-modal sensor fusion analysis.
@@ -325,7 +326,8 @@ Three additional forward-scanning Livox Horizon \ac{LiDAR} units generate a dens
 The Livox units are directly mounted to a camera enclosure which houses four high-definition visual-spectrum cameras and two \ac{LWIR} cameras.
 The combination of forward-scanning LiDAR and cameras provides a significantly higher fidelity of data within a shared 165-degree \ac{FOV}. % in the direction of travel.
 % The camera enclosure design emphasizes modularity and research flexibility.
-Figure \ref{fig:camera_enclosure} presents the mounting location of the Livox Horizon LiDAR units and each of the six cameras within the waterproof enclosure. 
+Figure~\ref{fig:camera_enclosure} illustrates the mounting arrangement of the Livox Horizon LiDAR units and the six cameras within the waterproof enclosure.
+Together, these sensors define the operational envelope of the perception system, encompassing a horizontal \ac{FOV} of approximately 160~degrees and an effective detection range of up to 60~meters.
 
 \begin{figure}[htbp]
 \centering
@@ -418,7 +420,7 @@ One unit is mounted near the aft-center position, and the other two are position
 Together, these sensors deliver nearly continuous 360° coverage for navigation and obstacle avoidance.
 
 Each VLP-16 employs 16 lasers arranged in a vertical array that scans 16 distinct points elevation over its 30-degree vertical \ac{FOV} continuously over the 360-degree azimuth, producing approximately 300,000 \ac{pps} in single-return mode. 
-The units are installed with a downward declination of \textcolor{red}{roughly 5-10 degrees?} from the plane of the \ac{USV} deck to minimize blind-spots near the vessel's waterline.
+The units are installed with a downward declination of approximately 5 degrees from the plane of the \ac{USV} deck to minimize blind-spots near the vessel's waterline.
 As a result, one-half to one-third of their scanning azimuth is well above the horizon or pointing directly into the vessel and is discarded, drastically reducing the number of points each unit can publish.
 
 % Both of these units are capable of approximately 1.4 million measurements per second.
@@ -437,7 +439,12 @@ As a result, one-half to one-third of their scanning azimuth is well above the h
 In contrast, the three Livox Horizon solid-state \ac{LiDAR} units concentrate their scanning pattern within an $81.7 \times 25.1$ degree \ac{FOV}, generating up to 280,000 \ac{pps}. 
 Although the nominal point rates are comparable, the Livox pattern can return $100 \%$ of its concentrated \ac{FOV} data. 
 This higher spatial sampling density enables detection and classification of objects that may be smaller or further from the sensor.
-A direct comparison of the discrepancy in point density is provided in Figure \ref{fig:lidar_scan_compare}.
+A direct comparison of the discrepancy between the Velodyne and Livox scan patterns and point density is provided in Figure \ref{fig:lidar_scan_compare}.
+The top-right image shows the dense point cloud of the Livox devices.
+The light tower in the foreground and the large dock structure in the background can be seen in the camera view (left) and are both well defined in the red point cloud.
+Two small buoys are also distinctly visible between the two structures.
+In comparison, the point cloud returned by the Velodyne devices is shown in the bottom-right. 
+The general form of the light tower can be seen; however, there are very few points returned from the large dock structure in the background, and the round buoys are undetected.
 
 % The forward-scanning Livox devices operate differently, tracing a non-repetitive pattern across the \ac{FOV}.
 % Two orthogonal mirrors oscillate at slightly different frequencies to cause the laser beam to trace a path that progressively fills the \ac{FOV} without repetition as shown in Figure ~\ref{fig:livox_scan_pattern}.
@@ -445,7 +452,7 @@ A direct comparison of the discrepancy in point density is provided in Figure \r
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{Images/LiDAR_compare.png}
-\caption{\textcolor{red}{place-holder image - A visual comparison of the 360 degree scan pattern of the Velodyne units (left) and the forward-scanning pattern of the Livox units (right)} }
+\caption{A comparison of LiDAR returns from the Livox units (top-right, red) and Velodyne units (bottom-right, white) to the respective HDR camera view (top-left and bottom-left). LiDAR points are viewed from third-person point of view in RVIZ. Green and Blue axes (top-right, top-bottom) represent the origin of the USV frame of reference.}
 \label{fig:lidar_scan_compare}
 \end{figure}
 
@@ -470,13 +477,23 @@ Table~\ref{table:livox_horizon_specs} presents detailed hardware specifications 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{Images/Livox_1.png}
-\caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution from 0.1 to 0.5 seconds.\textcolor{red}{provide img reference}}
+\caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution from 0.1 to 0.5 seconds. Provided by \cite{livox_manual}}
 \label{fig:livox_scan_pattern}
 \end{figure}
 
+
+Each device is capable of returning up to $4.8 \times 10^5$ \ac{pps} in dual return mode, with each return consisting of position coordinates (x, y, z), target reflectivity, and timestamp.
+This operational mode returns two data points for each laser emission and is useful for situations where the sensor scans semi-permeable objects such as windows, thick tree canopies, or water.
+% Instead, each device is operated in single-return mode for two reasons.
+% The first is a consideration of available network bandwidth.
+Each sensor operates in single-return mode, primarily to reduce network load.
+A conservative estimate of 16 bytes per point results in $\approx 23 \text{ Mbps}$ which would quickly overwhelm the \ac{USV}'s network.
+% Luckily, the 905 nm near-infrared wavelength of the emitted laser experiences strong absorption by water. 
+However, The $905 nm$ near-infrared emission is strongly absorbed by water, effectively suppressing subsurface returns.
+This means that only points which are reflected by the water surface are returned with an intensity greater than zero, making it straight forward to filter out points in the ground plane.
+
 \begin{table}[htpb]
 \centering
-\caption{LiDAR Specifications}
 \begin{tabular}{ll}
 \hline
 \multicolumn{2}{c}{Livox Horizon}\\
@@ -496,18 +513,9 @@ Interface & Ethernet \\
 Operating Frequency & 100 Hz \\
 \hline
 \end{tabular}
+\caption{LiDAR Specifications}
 \label{table:livox_horizon_specs}
 \end{table}
-
-Each device is capable of returning up to $4.8 \times 10^5$ \ac{pps} in dual return mode, with each return consisting of position coordinates (x, y, z), target reflectivity, and timestamp.
-This operational mode returns two data points for each laser emission and is useful for situations where the sensor scans semi-permeable objects such as windows, thick tree canopies, or water.
-% Instead, each device is operated in single-return mode for two reasons.
-% The first is a consideration of available network bandwidth.
-Each sensor operates in single-return mode, primarily to reduce network load.
-A conservative estimate of 16 bytes per point results in $\approx 23 \text{ Mbps}$ which would quickly overwhelm the \ac{USV}'s network.
-% Luckily, the 905 nm near-infrared wavelength of the emitted laser experiences strong absorption by water. 
-However, The $905 nm$ near-infrared emission is strongly absorbed by water, effectively suppressing subsurface returns.
-This means that only points that are reflected by the water surface are returned with an intensity greater than zero, making it straight forward to filter out points in the ground plane.
 
 
 %%%%%%% move to sensor calibration %%%%%%%%%%%
@@ -562,22 +570,27 @@ This means that only points that are reflected by the water surface are returned
 
 % \textcolor{red}{Expand this entire discussion}
 % The visible spectrum camera suite on the Minion platform is designed to balance two factors that are particularly important for maritime perception: imaging resolution and dynamic range.
-The visible-spectrum cameras housed in the camera enclosure are designed to balance image resolution and dynamic range, two critical factors for maritime perception.
-A brief discussion of both of these metrics is presented here as a means to justify utilizing data acquired from the \ac{HDR} camera for this research.
 
+For computer vision and perception tasks, system performance is directly influenced by the quality of the visual input.
+The fidelity of an image is determined by a camera's hardware and integrated software; therefore, camera selection is a critical design consideration in any vision-based system. 
+Sensor size and lens characteristics determine the spatial detail captured, while shutter speed, exposure, and onboard processing influence brightness, contrast, and color balance. 
+The visible-spectrum cameras housed within the camera enclosure were selected to balance image resolution and dynamic range, two essential factors for reliable maritime perception.
+A brief discussion of both of these metrics is presented here to justify utilizing data acquired from the \ac{HDR} camera for this research.
+
+\subsubsection{Image Resolution}
 Camera resolution determines the ability to resolve small targets at a distance.
 % , and appropriate imaging sensors and lenses can be selected by determining the maximum distance and minimum size at which objects need to be resolved.
 % Camera resolution dictates the minimum discernible target size at range; lens and sensor parameters are therefore chosen to meet specified detection distances.
 % Camera resolution governs the minimum resolvable target size; lens and sensor parameters are thus selected to ensure detection at required ranges.
-\textcolor{red}{To ensure adequate perception across the operational envelope, cameras must resolve objects to a required minimum resolution when the object is at the maximum detection range.}
+To ensure adequate perception across the operational envelope, cameras must resolve objects to a required minimum resolution when the object is at the maximum detection range.
 % The resolution of an object in the image frame can be determined if the object's width $\mathit{l}$ and distance from the camera $d$ are knownwith
-The relationship between an object's physical width $\mathit{l}$ and pixel width within an image $\mathit{l}_{\text{px}}$ is given by
+The relationship between an object's physical width $\mathit{w}_{obj}$ and pixel width within an image $\mathit{w}_{\text{px}}$ is given by
 % Provided a maximum detection range $d$ and the width of the smallest object to be detected $W$, the camera's focal length and resolution requirements can be determined by assuming a pinhole-camera model \cite{matlab_calibration}, can be derived as:
 % we can determine the necessary optical focal length and resolution for the sensor.
 % For an object of physical width $W$ at distance $d$, its width in the image frame $w_{\text{px}}$ is approximated by
 
 \begin{equation}
-\mathit{l}_{\text{px}} = f \; \frac{N_x}{S_w}\frac{\mathit{l}}{d}
+\mathit{w}_{\text{px}} = f \; \frac{N_x}{S_w}\frac{\mathit{w}_{obj}}{d}
 \end{equation}
 
 % where $\mathit{l}_{\text{px}}$ is the pixel width of an object in the image frame, 
@@ -586,24 +599,110 @@ where $f$ is the \ac{EFL} of the camera and lens, $N_x$ is the horizontal image 
 This equation can be used to determine camera requirements if the true size of the imaged objects is known, or to determine a reasonable expectation of object resolution if the camera values are known.
 This relationship is also critical for determining the distortion present in each camera/lens system, detailed further in section~\ref{HDR_intrinsic}.
 
-\textcolor{red}{add back: ?}
-\textcolor{blue}{
-Given that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters.
-The cameras in our system meet this requirement; the object detection method used will impose a secondary constraint.
-  \begin{equation}
-  w_{\text{px}} = \frac{f \, N_x}{S_w}\frac{(0.3683)}{60}
-  % \frac{S_w}{f} = \frac{W}{d}\frac{N_x}{w_{px}}
-  \end{equation}
-  }
-
-
-Defining the requirement for the minimum resolution of an object in the image frame requires an understanding of the object detection method used with visual cameras, as well as the objects being detected, both of which will be discussed in greater detail in sections ~\ref{yolo} and ~\ref{dataset}, respectively.
+Defining the requirement for the minimum resolution of an object in the image frame requires an understanding of the object detection method used with visual cameras, as well as the objects being detected. both of which will be discussed in greater detail in sections ~\ref{dataset} and ~\ref{yolo}, respectively.
 % For now, it is sufficient to know that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters.
 % , and that we have optical and digital resolution requirements to consider.
-This image detection architecture scales each image frame down to a resolution of $640 \times 640$ pixels for processing efficiency, and must be considered when defining the minimum pixel density of a camera's sensor.
+This image detection architecture is discussed in section ~\ref{yolo}.
+For camera selection, it is sufficient to know that this method scales down each input image to a resolution of $640 \times 640$ pixels for processing efficiency.
+This should be considered when defining the minimum pixel density of a camera's sensor, as it alters our prior equation slightly.
+
+\begin{equation}
+\mathit{w}'_{\text{px}} = f \; \frac{640 \text{px}}{S_w}\frac{\mathit{w}_{obj}}{d}
+\end{equation}
 % This means that an image captured at $4000 \times 3000$ pixels is reduced to $650 \times 487$ pixels, which is $16.25\%$ of its original size.
 % As an example, if the text on waterway signage 60 meters away is legible at a resolution of 100 pixels wide in a 1,000 $\times$ 1,000 pixel image, it would need a resolution of 162 pixels to meet the additional requirements imposed by the image detection algorithm.
-Each camera within the enclosure was selected using these metrics, and object information based on the obstacles commonly associated with the RobotX Maritime Challenge, in addition to other contemporaneous research \cite{thompson2023} \textcolor{red}{(check scholarly commons)}.
+Each camera within the enclosure was selected using these metrics, and object information based on the obstacles commonly associated with the RobotX Maritime Challenge. %, in addition to other contemporaneous research \cite{thompson2023} \textcolor{red}{(check scholarly commons)}.
+
+% \textcolor{red}{add back: ?}
+Given that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters.
+The two visual spectrum camera models within the camera enclosure have a similar focal length, and resolutions of $4000 \times 3000$ px and $2880 \times 1860$ px. Examining the camera with the smaller horizontal resolution of 1880 px (which has a sensor width of $S_{w} = 8.64$ mm), we obtain the width of our object in the image frame as
+% meet this requirement; the object detection method used will impose a secondary constraint.
+\begin{equation*}
+\begin{split}
+    \mathit{w}_{\text{px}} & = 8\;\text{mm} \cdot \frac{2880\;\text{px}}{8.64\;\text{mm}} \cdot \frac{0.3683\;\text{m}}{60\;\text{m}}\\
+     & = 16.36 \approx 16 \;\text{px}
+\end{split}
+\end{equation*}
+
+With the additional scaling required by the visual object detection method, the minimum width of our object becomes 
+\begin{equation*}
+\begin{split}
+    \mathit{w}'_{\text{px}} & = 16\;\text{px} \cdot \frac{640\;\text{px}}{2880\;\text{px}} \\
+     & = 3.\overline{55} \approx 3 \;\text{px}
+\end{split}
+\end{equation*}
+
+Figure \ref{fig:A2_multi_res} shows our smallest object, Polyform A2 round buoy, at a selection of resolutions, and is still recognizable at a resolution of 16 pixels wide. %, and becomes less defined at lower resolutions. 
+This operation is repeated to predict the width of the object in the image frame at a range of distances up to our maximum of 60 meters, and the results are provided in Table \ref{table:buoy_res}.
+From this information, the buoy will be easily recognizable at any range by visual inspection, but will become much less defined when the image is scaled down for the visual object detection method.
+As we will discuss in section \ref{yolo}, this method may struggle to detect this size buoy at distances greater than 20 meters.
+
+\begin{table}[htpb]
+\centering
+\begin{tabular}{c|c|c}
+\hline
+\multicolumn{3}{c}{Polyform A2 Buoy Resolution at Range}\\
+\hline
+% \textbf{Parameter} & \textbf{Value} \\
+\hline
+Object Distance & Image Frame Width & With Detection \\
+\hline
+10 m & 98 px & 21 px \\
+20 m & 49 px & 10 px \\
+30 m & 32 px & 7 px \\
+40 m & 24 px & 5 px \\
+50 m & 19 px & 4 px \\
+60 m & 16 px & 3 px \\
+\hline
+\end{tabular}
+\caption{The predicted resolution of a $\mathit{l} = 0.3683$ meter wide object within the Loepard Imaging HDR camera's image frame at multiple distances.}
+\label{table:buoy_res}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[t]{0.245\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/A2.png}
+    \caption{\raggedright{Polyform A2 Buoy}}
+    \label{fig:A2}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.245\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/A2_16px.png}
+    \caption{
+    16 pixel width,\\  
+    % $\approx$ 60 m with HDR
+    }
+    \label{fig:A2_16px}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.245\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/A2_6px.png}
+    \caption{
+    6 pixel width,\\  
+    % $\approx$ 40 m with HDR \\ 
+    % \& object detection.
+    }
+    \label{fig:A2_6px}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.245\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/A2_3px.png}
+    \caption{
+    3 pixel width,\\  
+    % $\approx$ 60 m with HDR \\ 
+    % \& object detection.
+    }
+    \label{fig:A2_3px}
+\end{subfigure}
+\caption{Polyform A2 Buoy (a), visualized at 16 pixels (b), 6 pixels (c), and 3 pixels wide (d).}
+\label{fig:A2_multi_res}
+\end{figure}
+
 
 % Insert equation to get the horizontal focal length / horizontal resolution ratio needed for camera selection based upon the equation and information provided above
 % Assuming our camera will have a landscape aspect ratio, our equation becomes 
@@ -627,6 +726,7 @@ Each camera within the enclosure was selected using these metrics, and object in
 
 
 % The dynamic range of an imaging sensor refers to the range of signal intensities it can detect, and can be as critical as image resolution when selecting camera sensors.
+\subsubsection{Dynamic Range}
 Dynamic range describes the ratio between the brightest and darkest signal levels a camera sensor can record.
 Light levels that exceed the camera sensor's range cause the image to appear white or "blown-out", while light levels that are too low will appear darker, with detail being indistinguishable from noise.
 % Dynamic range—the span of detectable signal intensities—is equally critical to sensor selection as spatial resolution.
@@ -643,12 +743,21 @@ where $N_{sat}/N_{noise}$ is the ratio of the saturation to the minimum signal a
 % DOL-\ac{HDR} is preferred when precise synchronization of the imagery is required, such as sensor fusion.
 % Because maritime environments routinely present both bright sky reflections and deep shadows in the same scene, dynamic range is as critical as resolution when selecting cameras for perception tasks. 
 High-dynamic-range (HDR) imaging can be achieved in two primary ways. 
-The first is sequential multi-exposure \ac{HDR}, in which multiple frames captured at different exposure settings are combined to extend the tonal range. 
+The first is sequential multi-exposure \ac{HDR}, in which multiple frames captured at different exposure settings are combined to extend the tonal range \cite{Reinhard2010}. An example is provided in Figure \ref{fig:hdr_example}.
+
+
+
 While effective for static scenes, this approach introduces motion-related artifacts such as ghosting and motion-blur as the relative velocity increases between the sensor and objects within the frame.
 The second method uses an in-sensor technique called dual-conversion gain (DCG) that combines multiple light exposure levels within a single frame of exposure. 
 % \textcolor{red}{Coyle: It isn't short and long exposure, but changing the size of the exposure pixel to capture more/less light from my understanding. This is why it doesn't motion blur} By capturing short and long exposure data within a single frame, this method avoids the distortion of multi-exposure \ac{HDR}.
 The two visible sensing technologies considered for this research are described below.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\linewidth]{Images/hdr_example.png}
+    \caption{An example of multi-exposure HDR frame-stacking \cite{Reinhard2010}.}
+    \label{fig:hdr_example}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{FLIR Blackfly S 4K Cameras} \label{sensors_FLIR}
 
@@ -662,7 +771,6 @@ Each FLIR Blackfly has a resolution of 4096 $\times$ 4096 pixel resolution and i
 
 \begin{table}[htbp]
 \centering
-\caption{FLIR 4K SDR Camera Specifications}
 \begin{tabular}{ll}
 \hline
 \multicolumn{2}{c}{FLIR 4K SDR Camera}\\
@@ -689,10 +797,11 @@ Lens \Ac{EFL} & approx. 8 mm\\
 % Vertical Field of View & 37 degrees \\
 \hline
 \end{tabular}
+\caption{FLIR 4K SDR Camera Specifications}
 \label{table:SDR_camera_specs}
 \end{table}
 
-The Blackfly S sensor captures video at 31 \ac{FPS} and achieves a dynamic range of 69.4 dB, which is within the \ac{SDR}.
+The Blackfly S sensor captures video at 31 \ac{fps} and achieves a dynamic range of 69.4 dB, which is within the \ac{SDR}.
 % This corresponds to a span of a few thousand-to-one between the darkest detectable signal and the brightest non-saturating signal.  
 % The cameras capture 31 \ac{FPS} at a resolution of 4096 $\times$ 2160 pixels.
 % \textcolor{red}{Add discussion of pixel density sensor selection in the context of the requirement to resolve specific objects at a minimum resolution at a maximum specific distance. This will require equations.}
@@ -717,7 +826,6 @@ Table \ref{table:hdr_camera_specs} provides detailed specifications for the HDR 
 
 \begin{table}[htpb]
 \centering
-\caption{Leopard Imaging HDR Camera Specifications}
 \begin{tabular}{ll}
 \hline
 \multicolumn{2}{c}{Leopard Imaging HDR Camera}\\
@@ -740,6 +848,7 @@ Horizontal \Ac{FOV} & 65-degrees \\ %(H), 37-degrees (V) \\
 Lens \Ac{EFL} & 7.9 mm\\
 \hline
 \end{tabular}
+\caption{Leopard Imaging HDR Camera Specifications}
 \label{table:hdr_camera_specs}
 \end{table}
 
@@ -930,7 +1039,6 @@ This configuration allows multiple perception modules to access and update share
 
 \begin{table}[htpb]
 \centering
-\caption{Minion A/B PC Hardware Specifications}
 \begin{tabular}{ll}
 \hline
 \multicolumn{2}{c}{Minion PC - Hardware Specification} \\
@@ -945,6 +1053,7 @@ Storage (Primary) & 500 GB NVMe SSD \\
 Network Interface & (6x) Gigabit Ethernet \\% + 802.11ac WiFi \\
 \hline
 \end{tabular}
+\caption{Minion A/B PC Hardware Specifications}
 \label{table:Minion_hardware}
 \end{table}
 
@@ -987,32 +1096,43 @@ Video decoding and image preprocessing are performed directly in GPU memory, min
 The second responsibility is image-based object detection using the \ac{YOLO} framework. 
 This algorithm relies on convolutional and tensor operations within neural networks and is implemented to leverage the parallel processing capabilities of NVIDIA’s CUDA architecture.
 
-\subsubsection{Storage and Data Recording}
+\subsubsection{Storage Media}
 
 High-speed solid-state storage provides the throughput required to record multiple sensor streams during data collection operations.
 Each recording session captures raw \ac{LiDAR} point cloud data, uncompressed video imagery, GPS/INS pose information, and mapped object-detection results, producing aggregate data rates that can easily exceed 200 \ac{MBps}.
-The NVMe SSD provides sufficient sequential throughput to maintain these rates for extended sessions without frame loss or buffer overflow.
+A solid-state NVMe hard drive is used on each Minion system to provide the data throughput that these operations require, and is much more robust to the motion experienced in choppy surf and vibrations experienced while in transport on the \ac{USV}'s trailer.
 % and 5–15MBps per camera for H.265-compressed video at 10~fps, with additional low-bandwidth streams for GPS/INS and detection results.
 % The NVMe solid-state drives provide sufficient sequential throughput and IOPS to maintain these rates for extended sessions without frame loss or buffer overflow.
 
-\textcolor{red}{If time allows, it may be worth mentioning the cooling system.}
+% \textcolor{red}{If time allows, it may be worth mentioning the cooling system.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Camera Enclosure} \label{comp:camera_enclosure}
 
 % # Camera Enclosure Computing Platform
 
-The camera enclosure assembly integrates six camera sensors with dedicated computing hardware housed in a weatherproof enclosure mounted on the vessel's superstructure. At the core of this assembly is an NVIDIA Jetson Xavier embedded computer, which performs real-time H.264/H.265 video encoding, manages timestamp embedding for temporal synchronization, and serves critical time distribution functions within the hierarchical clock architecture. This distributed computing approach places video processing at the camera location rather than transmitting raw uncompressed video over the network, substantially reducing bandwidth requirements while enabling sophisticated in-stream timestamp embedding.
+% for the RobotX competition in 2022, as well as the PhD research of D. Thompson \cite{thompson2023}.
+% Specialized computing hardware is required to manage up to six video streams from the cameras within the enclosure.
+% The camera enclosure assembly integrates six camera sensors with dedicated computing hardware housed in a weatherproof enclosure mounted on the vessel's superstructure. 
 
-The camera enclosure was designed to be a fully-integrated and self-contained perception platform, and was developed in tandem for the RobotX competition in 2022 and the PhD research of D. Thompson \cite{thompson2023}.
+
+% real-time H.264/H.265 video encoding, manages timestamp embedding for temporal synchronization, and serves critical time distribution functions within the hierarchical clock architecture. This distributed computing approach places video processing at the camera location rather than transmitting raw uncompressed video over the network, substantially reducing bandwidth requirements while enabling sophisticated in-stream timestamp embedding.
+
+
+
+
+The camera enclosure houses six cameras and serves as the mount for the three forward Livox LiDAR units, and was designed to be a self-contained perception platform for any maritime vessel or ground vehicle. 
+Integrated into this subsystem is a compact and capable PC designed for video processing, as well as other robotics applications.
+The NVIDIA Jetson AGX Xavier is designed for edge AI and computer vision applications, combining ARM-based CPU cores with a powerful GPU architecture optimized for machine learning inference and media encoding. 
+The system-on-module (SOM) design integrates a processor, GPU, and memory in a compact form factor designed for speed and power efficiency.
+Table \ref{table:Xavier_hardware} provides key hardware specifications.
 
 
 \begin{table}[htpb]
 \centering
-\caption{NVIDIA Jetson Xavier - Hardware Specification}
 \begin{tabular}{ll}
 \hline
-\multicolumn{2}{c}{NVIDIA Jetson Xavier - Hardware Specification} \\
+\multicolumn{2}{c}{NVIDIA Jetson AGX Xavier} \\
 \hline
 % \textbf{Component} & \textbf{Specification} \\
 \hline
@@ -1020,45 +1140,92 @@ Processor (CPU) & 64-bit 8-core NVIDIA Carmel \\
 Graphics (Integrated) & 512-core NVIDIA Volta \\
 Memory (RAM) & 32 GB LPDDR4X \\
 Storage (Primary) & 32 GB eMMC 5.1 \\
+Storage (Secondary) & 500 GB NVMe \\
 Network Interface & Gigabit Ethernet \\
 Operating System & Ubuntu 18.04 LTS (Linux for Tegra / JetPack 4.x) \\
 \hline
 \end{tabular}
+\caption{NVIDIA Jetson Xavier - Hardware and Operating System Specifications}
 \label{table:Xavier_hardware}
 \end{table}
 
 % ## NVIDIA Jetson Xavier Platform
+The 8-core ARM processor provides sufficient computational capacity for multiple video pipelines, network protocol handling, and system services. 
+The 512-core Volta GPU supports hardware-accelerated video encoding, necessary for streaming simultaneous high-resolution video streams.
+The unified memory architecture shared between CPU and GPU facilitates high-throughput data exchange for media processing pipelines.
 
-The NVIDIA Jetson Xavier represents an embedded computing platform designed for edge AI and computer vision applications, combining ARM-based CPU cores with a powerful GPU architecture optimized for machine learning inference and media encoding. The system-on-module (SOM) design integrates processor, GPU, memory, and I/O interfaces in a compact form factor suitable for environmentally sealed enclosures.
+% \subsubsection{Video Processing Architecture}
+The primary computational responsibility of the Jetson Xavier is video encoding and transmission of video from the six cameras.
+% three 4K cameras, two FLIR, and a single HDR camera feeds. 
+The pipeline for each video follows a similar structure: raw video frames are received via USB 3.0, parsed by custom software, and then split into two processing branches. 
+One branch is encoded in H.265 and saved locally to the Jetson's internal storage, while the other branch is down-sampled to a reduced frame rate before being streamed over the \ac{LAN} to one of the Minion PCs in Atlas.
 
-The 8-core ARM processor provides sufficient computational capacity for GStreamer pipeline management, network protocol handling, and system services. The 512-core Volta GPU with hardware video encoding engines enables real-time compression of multiple simultaneous high-resolution video streams without CPU bottlenecks. The unified memory architecture shared between CPU and GPU facilitates efficient data exchange for media processing pipelines.
+This streaming reduction is essential to maintain reliable network performance given limited bandwidth, as discussed in Section \ref{comp:network}. 
+The maximum bitrate $R_{\text{max}}$ of each stream is computed at runtime as a function of the target frame rate, frame resolution, and compression ratio, defined by
 
-\subsubsection{Video Processing Architecture}
+\begin{equation}
+    R_{\text{max}} = N_x N_y b f
+\end{equation}
 
-The primary computational responsibility of the Jetson Xavier is real-time video encoding and streaming of the three HDR camera feeds. Raw video frames from the cameras enter the system via USB 3.0 UVC (Universal Video Class) interfaces, accessed through the Video for Linux (V4L2) kernel subsystem. The GStreamer multimedia framework constructs processing pipelines that capture these raw frames, apply format conversions, encode to H.264 or H.265 compressed formats, and transmit the resulting streams via RTSP (Real-Time Streaming Protocol) over the local network.
+where $N_x$ and $N_y$ are the image width and height in pixels, $f$ is the desired frame rate, and $b$ is the effective bits per pixel after compression.
+For the HDR camera, the image resolution is $2880 \times 1860$ pixels, encoded in YUV 4:2:0 format using H.264 compression.
+An empirically derived constant of $b = 0.14$ bits per pixel captures the combined effects of color subsampling and compression efficiency under typical scene conditions.
+These values yield a bitrate for the HDR camera of
 
-The video encoding workflow exploits the Jetson's dedicated hardware encoding engines to achieve real-time compression of three simultaneous 2880×1860 pixel video streams. Hardware encoding offloads the computationally intensive compression operations from the CPU, enabling sustainable operation without thermal throttling during extended recording sessions. The RTSP bitrate is [INSERT bitrate formula here] dependent upon the requested stream frame rate (typically 5-15 fps).
+\begin{equation*}
+    \begin{split}
+        R_{\text{max}} & = (2880 \times 1860\; \text{px}) (0.14 \;\text{bits/px})(5\;\text{s}^{-1})  \\
+        & \approx 3.75\; \text{Mbps}
+    \end{split}
+\end{equation*}
 
-The compressed video streams are transmitted to the Atlas PC main computing platform via RTSP over UDP, where they are decoded and published as ROS image messages for consumption by object detection algorithms. This architecture distributes the encoding burden to the camera enclosure while centralizing detection processing on the more powerful Atlas hardware.
+and scales linearly with frame rate.
+This adaptive bitrate approach ensures that each video stream remains within the available network bandwidth while maintaining adequate visual fidelity for perception and data logging.
+By default, each camera operates at 5 \ac{fps}, aligning with the data rate of other perception sensors, but this rate can be adjusted as needed. % to accommodate specific mission or testing requirements.
 
-A critical function performed by the Jetson Xavier is the embedding of precise system timestamps directly into the encoded video bitstream. Custom GStreamer pipeline elements inject SEI (Supplemental Enhancement Information) NAL units containing synchronized timestamps alongside encoded video frames. This in-band metadata approach ensures that timing information persists with the video data through network transmission, recording, and playback. The temporal synchronization procedures and timestamp validation methodology are detailed in Section \ref{time_sync_cam}.
 
-\subsubsection{Network Infrastructure Role}
+% Each camera stream defaults to 5 \ac{fps} to match the data rate of other perception data, but can be modified based upon need.
+% This  us a default maintaining each stream below 25–30 Mbps to prevent network saturation.
+% This ensures bandwidth allocation per stream remains within network limits while preserving visual fidelity.
 
-Within the distributed computing architecture, the Jetson Xavier serves several network infrastructure functions. As described in Section \ref{time_sync_lan}, the system participates in the hierarchical time distribution network that provides temporal synchronization for all platform sensors. The Jetson operates as both a client for receiving GPS-disciplined time and a server for providing high-precision timing to the LiDAR sensors.
+While compressed video is streamed to Atlas, the Jetson simultaneously records each feed at its native frame rate to the onboard 500 GB solid-state NVMe drive as redundant backups. 
+Each recording is saved in 120-second segments along with a corresponding \ac{CSV} file pairing every image frame with a timestamp from the system clock. 
+The same system clock provides the \ac{PTP} signal used by the Livox LiDAR units. ensuring consistent temporal alignment across all sensors within the perception suite. 
+Consequently, the timestamps in the recorded \ac{CSV} files are also essential for validating the synchronization of the camera and LiDAR, as discussed in Section \ref{time_sync_cam}.
 
-The Gigabit Ethernet interface connects the camera enclosure to the vessel local area network at IP address 201.7.90.147. This single network connection carries bidirectional traffic including compressed video streams, time synchronization protocols, remote administration access, and platform status monitoring. The camera enclosure may also include a secondary Ethernet switch to provide local network connectivity for the three Livox Horizon LiDAR units mounted on or near the camera mast, as detailed in Section \ref{comp:camera_enclosure}.
+% Local recording also serves diagnostic purposes, enabling comparison of locally-saved video files with network-transmitted ROS bag data to validate timestamp accuracy and detect any frame dropping or duplication during network transmission. The temporal drift analysis methodology described in Section \ref{time_sync_cam} exploits this local recording capability by comparing locally-saved video frames with network-transmitted ROS messages to quantify systematic timing offsets introduced by the encoding-transmission-decoding pipeline.
 
-\subsubsection{Local Recording Capability}
 
-While the primary video data path streams compressed video to the Atlas PC for ROS recording, the Jetson Xavier possesses local recording capability via its eMMC and optional NVMe solid-state storage. This redundancy provides backup recording in case of network disruptions or Atlas PC failures, ensuring that video data can be recovered even if the primary data path fails during a recording session.
+% The video encoding workflow exploits the Jetson's dedicated hardware encoding engines to achieve real-time compression of three simultaneous 2880×1860 pixel video streams. Hardware encoding offloads the computationally intensive compression operations from the CPU, enabling sustainable operation without thermal throttling during extended recording sessions. The RTSP bitrate is [INSERT bitrate formula here] dependent upon the requested stream frame rate (typically 5-15 fps).
 
-Local recording also serves diagnostic purposes, enabling comparison of locally-saved video files with network-transmitted ROS bag data to validate timestamp accuracy and detect any frame dropping or duplication during network transmission. The temporal drift analysis methodology described in Section \ref{time_sync_cam} exploits this local recording capability by comparing locally-saved video frames with network-transmitted ROS messages to quantify systematic timing offsets introduced by the encoding-transmission-decoding pipeline.
+% The compressed video streams are transmitted to the Atlas PC main computing platform via RTSP over UDP, where they are decoded and published as ROS image messages for consumption by object detection algorithms. This architecture distributes the encoding burden to the camera enclosure while centralizing detection processing on the more powerful Atlas hardware.
+
+% A critical function performed by the Jetson Xavier is the embedding of precise system timestamps directly into the encoded video bitstream. Custom GStreamer pipeline elements inject SEI (Supplemental Enhancement Information) NAL units containing synchronized timestamps alongside encoded video frames. This in-band metadata approach ensures that timing information persists with the video data through network transmission, recording, and playback. The temporal synchronization procedures and timestamp validation methodology are detailed in Section \ref{time_sync_cam}.
+
+% \subsubsection{Network Infrastructure Role}
+
+% Within Minion's distributed computing architecture, the Jetson Xavier subscribes to the precise GPS clock provided by the Pinpoint.
+
+% erves several network infrastructure functions. As described in Section \ref{time_sync_lan}, the system participates 
+
+% in the hierarchical time distribution network that provides temporal synchronization for all platform sensors. The Jetson operates as both a client for receiving GPS-disciplined time and a server for providing high-precision timing to the LiDAR sensors.
+
+% The Gigabit Ethernet interface connects the camera enclosure to the vessel local area network at IP address 201.7.90.147. This single network connection carries bidirectional traffic including compressed video streams, time synchronization protocols, remote administration access, and platform status monitoring. The camera enclosure may also include a secondary Ethernet switch to provide local network connectivity for the three Livox Horizon LiDAR units mounted on or near the camera mast, as detailed in Section \ref{comp:camera_enclosure}.
+
+% \subsubsection{Local Recording Capability}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Network Structure} \label{comp:network}
 
-The Minion autonomous surface vessel employs a dedicated Gigabit Ethernet local area network to interconnect computing platforms, sensors, and navigation equipment. This network serves multiple critical functions: sensor data transmission, time synchronization protocol distribution, remote administration access, and inter-process communication for the Robot Operating System middleware. The network architecture prioritizes reliability and deterministic latency to support real-time perception and control operations in the challenging maritime environment.
+Each device on the network is assigned a static IP address within a private subnet, allowing deterministic communication between endpoints.
+Camera streams from the Jetson Xavier, point cloud data from each LiDAR sensor, and other telemetry are transmitted over the LAN to Atlas, which serves as the central computing and data aggregation hub.
+Sensor data are processed locally, and results such as mapped and detected objects, motor control commands are published along with the raw data as \ac{ROS} message topics for system monitoring and data recording.
+
+Under normal operation, the combined data throughput of all sensors remains below 15\% of the Gigabit Ethernet link capacity, leaving sufficient headroom for control traffic, \ac{PTP} synchronization, and administrative functions.
+However, when \ac{ROS} data topics are broadcast across the network for visualization or debugging, bandwidth utilization can temporarily spike and saturate the network.
+For this reason, ROS data is recorded locally, and admin visualization tools such as RVIZ are typically restricted to smaller topics related to object mapping and controls.
+A high-level overview of network utilization is provided in Table \ref{table:network_bandwidth}.
 
 \begin{figure}[htbp]
 \centering
@@ -1067,67 +1234,96 @@ The Minion autonomous surface vessel employs a dedicated Gigabit Ethernet local 
 \label{fig:network_diagram}
 \end{figure}
 
-\subsubsection{Network Topology and Addressing}
+Although the LAN is primarily dedicated to perception and data logging, it also supports administrative access for configuration, diagnostics, and remote operation.
+The Jetson Xavier is configured as a headless device and accessed remotely via Secure Shell (SSH) for camera configuration, operation, and monitoring.
+Each Minion PC can be accessed through SSH, Virtual Network Computing (VNC), or Remote Desktop Protocol (RDP), enabling full graphical or terminal control for development, testing, and troubleshooting.
+Network security is intentionally lightweight for field deployment, relying on standard \texttt{sudo}/root authentication and a secured wireless link protected by a strong \ac{WAN} password.
+Long-range connectivity between the vessel and ground station is provided by a Ubiquiti Bullet omni-directional antenna on the \ac{USV}, paired with a directional antenna and Ubiquiti Dream Machine at the ground station, allowing administrative access without direct physical connection.
 
-The vessel LAN operates on the 201.7.90.0/24 private subnet, providing 254 usable host addresses for platform devices. Static IP address assignment ensures predictable network routing and simplifies configuration of distributed services. 
-Figure \ref{fig:network_diag} presents a block diagram of the connected network endpoints required for sensor fusion.
-% Table 3.X presents the static IP address assignments for key platform components.
 
-The static addressing scheme facilitates configuration of network services including the hierarchical time synchronization architecture described in Section \ref{time_sync_lan}. All computing platforms and sensors maintain fixed addresses throughout system operation, enabling deterministic routing and simplified network administration.
 
-\subsubsection{Physical Network Infrastructure}
 
-The LAN physical layer employs Category 5 Ethernet cabling supporting Gigabit link speeds (1000 Mbps). Ruggedized connectors and marine-grade cabling provide environmental protection against moisture, salt spray, and vibration. Cable runs between environmentally sealed enclosures utilize industrial IP67-rated connectors to maintain water ingress protection at connection points.
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\hline
+Data Source & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
+\hline
+HDR Camera Stream & $3.7$--$11.2$ & $0.4$--$1.2$ \\
+FLIR Camera Streams (2×) & $7.0$--$20.0$ & $0.7$--$2.1$ \\
+Velodyne LiDAR Units (3x) & $43.2$--$57.6$ & $4.3$--$5.8$ \\
+Livox LiDAR Units (3x) & $40.3$--$53.8$ & $4.0$--$5.4$ \\
+GPS / INS Telemetry & $<0.1$ & $<0.01$ \\
+Admin / SSH / Control Traffic & $0.5$--$2.0$ & $0.05$--$0.2$ \\
+\hline
+\textbf{Total Estimated Utilization} & \textbf{95--145 Mbps} & \textbf{9.5--14.5 \%} \\
+\hline
+\end{tabular}
+\caption{Approximate network bandwidth utilization from direct sensor and control data sources relative to a 1 Gbps link ($\sim940$ Mbps usable).}
+\label{table:network_bandwidth}
+\end{table}
 
-A central Gigabit Ethernet switch, housed in the main electronics enclosure alongside the Atlas PCs, provides the network backbone. This managed switch enables Quality of Service (QoS) configuration to prioritize time-critical data streams, though specific QoS policies depend on operational requirements and may prioritize either sensor data or time synchronization traffic depending on application phase.
 
-The camera enclosure assembly includes a secondary Ethernet switch to provide local network connectivity for the three Livox Horizon LiDAR units mounted on or near the camera mast. This switch connects to the main vessel switch via a single trunk line, reducing the number of cable runs between the mast and main hull while providing local switching for LiDAR and camera traffic. The hierarchical switch topology isolates camera enclosure traffic from the main vessel network, preventing congestion from affecting other platform systems.
 
-\subsubsection{Data Flow Architecture}
+% The Minion autonomous surface vessel employs a dedicated Gigabit Ethernet local area network to interconnect computing platforms, sensors, and navigation equipment. 
+% This network serves multiple critical functions: sensor data transmission, \ac{NTP} for system clock synchronization, and remote administration access for communication to the \ac{ROS} middleware. 
+% Figure \ref{fig:network_diagram} presents a block diagram of the connected network endpoints required for sensor fusion.
 
-The network carries several distinct categories of traffic with varying bandwidth and latency requirements. Understanding these traffic patterns informs network design decisions regarding bandwidth allocation, QoS policies, and physical topology.
+% All computing platforms and sensors maintain fixed addresses throughout system operation, enabling deterministic routing and simplified network administration.
 
-**Video Streaming**: The three HDR cameras generate H.264/H.265 encoded video streams transmitted via Real-Time Streaming Protocol (RTSP) over UDP from the Jetson Xavier (201.7.90.147) to the Atlas PC. At 2880×1860 resolution and 5-15 frames per second with H.264 compression, the aggregate RTSP bitrate is [INSERT bitrate formula here] dependent upon the requested stream frame rate. UDP transport avoids the head-of-line blocking inherent in TCP while accepting occasional packet loss, which proves tolerable for real-time video applications.
 
-**LiDAR Point Clouds**: The three Livox Horizon sensors transmit point cloud data as UDP packets at 100 Hz. Each sensor operating in dual-return mode at 480,000 points per second generates approximately 15-20 Mbps of network traffic, totaling 45-60 Mbps for the three-sensor array. These UDP streams flow from the LiDAR units through the camera enclosure switch to the Atlas PC, where the Livox ROS SDK receives and publishes them to ROS topics. The high packet rate demands low-latency switching to prevent buffer overflow and point cloud frame dropping.
 
-**GPS/INS Data**: The Pinpoint GPS/INS transmits pose solution messages via UDP at 1-10 Hz depending on configuration. These messages, containing position, velocity, and orientation estimates with associated uncertainties, require minimal bandwidth (typically <1 Mbps) but demand low latency to support real-time navigation and control. The GPS unit also serves as the authoritative time reference for the platform, distributing time synchronization protocols detailed in Section \ref{time_sync_lan}.
 
-**ROS Inter-Process Communication**: The Robot Operating System middleware employs TCP/IP for initial service discovery and parameter configuration, then establishes direct peer-to-peer TCP or UDP connections for topic publish/subscribe message exchange. ROS traffic patterns depend on the specific nodes and topics active during operation, but can include republication of decoded video frames, detection results, and diagnostic messages. The distributed ROS architecture spans both Atlas PCs and enables migration of processing nodes between systems during development and failover scenarios.
+% The local network architecture connects all major perception and processing nodes within the vessel and provides a unified temporal reference across systems.
+% Time synchronization is managed hierarchically through GPS, Chrony, and PTP, ensuring consistent timestamps for all recorded data streams.
 
-\subsubsection{Network Bandwidth Utilization}
+% At the top of the synchronization hierarchy, the Pinpoint GPS/INS unit provides a GPS-disciplined Network Time Protocol (NTP) reference to both the Atlas PC and the Jetson Xavier via the onboard router. Each device runs the Chrony service (Ubuntu 18.04), which continuously aligns the local system clock to the GPS reference with sub-millisecond accuracy.
 
-Aggregate network traffic during typical data collection operations totals approximately 60-105 Mbps for sensor data (video + LiDAR) plus nominal overhead for GPS, time synchronization, and ROS messaging. This represents 6-10% utilization of the Gigabit Ethernet infrastructure, providing substantial margin for bursts, protocol overhead, and future expansion.
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.8\textwidth]{Images/network_diagram2.png}
+% \caption{Minion's LAN for network end-points related to real-time object detection}
+% \label{fig:network_sync}
+% \end{figure}
 
-The network design deliberately over-provisions bandwidth relative to steady-state requirements to ensure that occasional traffic bursts—such as simultaneous high-motion video frames that compress poorly, or retransmission of dropped UDP packets—do not introduce congestion-induced latency. Maintaining sub-millisecond network latency proves critical for the time synchronization protocols described in Section \ref{time_sync_lan} and prevents video frame jitter that would complicate temporal alignment procedures.
+% The Jetson Xavier, serving as the core perception node, then acts as the PTP master for the Livox LiDAR units. Through the Precision Time Protocol (IEEE 1588), the Jetson broadcasts high-precision timestamps to all connected LiDAR clients, achieving microsecond-level synchronization between video and LiDAR data streams. This configuration ensures that every sensor measurement—image frame, LiDAR scan, or GPS fix—is temporally aligned to a common reference frame, enabling accurate data fusion and calibration as described in Section \ref{time_sync_cam}.
 
-\subsubsection{Reliability and Fault Tolerance}
+% Network bandwidth allocation is carefully managed to prevent congestion during real-time operation.
+% Each Jetson video stream dynamically adjusts its bitrate based on the active frame rate, while LiDAR and telemetry traffic maintain constant low-latency channels.
+% Table \ref{table:network_bandwidth} summarizes the approximate bandwidth usage across major network components.
 
-Several aspects of the network architecture address reliability concerns inherent in the maritime operating environment. The dual Atlas PC configuration described in Section \ref{compute_lan} enables network service continuity if one system fails. ROS nodes can be migrated to the standby system, though operational procedures must coordinate network service configuration to prevent conflicts.
+% \begin{table}[htbp]
+% \centering
+% \begin{tabular}{lcc}
+% \hline
+% \textbf{Data Source} & \textbf{Protocol / Port} & \textbf{Typical Bandwidth (Mbps)} \\
+% \hline
+% HDR Camera Stream (Jetson $\rightarrow$ Atlas) & RTP / UDP & 3.7–11.2 \\
+% FLIR Camera Streams (2x) & RTP / UDP & 7.0–20.0 (total) \\
+% Livox LiDAR Units (3x) & UDP / PTP Client & 15.0–18.0 (total) \\
+% GPS / INS Telemetry & NMEA / TCP & $< 0.1$ \\
+% PTP Synchronization Packets & IEEE 1588 / UDP & $< 0.01 $\\
+% \hline
+% \textbf{Total Estimated Utilization} & — & \textbf{25–50 Mbp/s} \\
+% \hline
+% \end{tabular}
+% \caption{Approximate Network Bandwidth Utilization}
+% \label{table:network_bandwidth}
+% \end{table}
 
-Both the Jetson Xavier camera enclosure and Atlas PCs possess local storage for recording sensor data. If network connectivity fails during a data collection mission, sensors can continue recording locally for later retrieval, preventing complete data loss. This redundancy proved valuable during early system development when network configuration issues occasionally disrupted connectivity during at-sea operations.
+% Security considerations for remote access include firewall configuration to restrict inbound connections, authentication requirements for SSH administrative access, and potential disconnection of external network access during sensitive operations to prevent unauthorized interference. The remote access infrastructure facilitates collaboration between multiple researchers working on different system components, as well as monitoring by shore-based personnel during extended autonomous operations.
 
-The use of connectionless UDP for high-bandwidth sensor data (video, LiDAR) avoids the head-of-line blocking and retransmission delays inherent in TCP. While UDP provides no delivery guarantee, the high-bandwidth over-provisioned network rarely experiences packet loss under normal conditions. Perception algorithms prove tolerant to occasional frame drops, as the high sensor data rates (10 fps video, 100 Hz LiDAR) provide temporal redundancy.
+% \subsubsection{Integration with Distributed Computing Architecture}
 
-Network diagnostic capabilities of the managed Ethernet switch enable monitoring of port status, bandwidth utilization, and error counters. These diagnostics assist in identifying failing cables, connector corrosion, or electromagnetic interference that might degrade network performance in the marine environment. Regular monitoring during system operation provides early warning of developing network issues before they impact data collection.
+% The network infrastructure provides the physical medium for the distributed computing architecture that spans multiple platforms. The Jetson Xavier camera enclosure performs video encoding at the sensor location, transmitting compressed streams to the Atlas PC for object detection processing. This distribution optimizes bandwidth utilization by avoiding transmission of raw uncompressed video while maintaining centralized processing for computationally intensive algorithms.
 
-\subsubsection{Remote Access and Administration}
 
-The vessel network includes provisions for remote access during development and testing, typically via a wireless access point or cellular router that bridges the vessel LAN to external networks. This capability enables remote monitoring of system status and sensor data during at-sea operations, software updates and configuration changes without requiring physical access to computing hardware, and remote debugging and log file retrieval when troubleshooting system issues.
 
-Security considerations for remote access include firewall configuration to restrict inbound connections, authentication requirements for SSH administrative access, and potential disconnection of external network access during sensitive operations to prevent unauthorized interference. The remote access infrastructure facilitates collaboration between multiple researchers working on different system components, as well as monitoring by shore-based personnel during extended autonomous operations.
+% \subsubsection{Network Performance Validation}
 
-\subsubsection{Integration with Distributed Computing Architecture}
+% Network performance validation procedures employed during system commissioning verify that the infrastructure meets requirements for real-time perception and control. These procedures include bandwidth testing using iperf3 or similar tools to verify Gigabit link speeds between key endpoints, latency measurement via ping utilities to measure round-trip latency for time-critical paths, packet loss assessment through extended ping tests or UDP stream analysis to verify zero packet loss under load, and time synchronization quality monitoring to confirm clock accuracy meets requirements as detailed in Section \ref{time_sync_lan}.
 
-The network infrastructure provides the physical medium for the distributed computing architecture that spans multiple platforms. The Jetson Xavier camera enclosure performs video encoding at the sensor location, transmitting compressed streams to the Atlas PC for object detection processing. This distribution optimizes bandwidth utilization by avoiding transmission of raw uncompressed video while maintaining centralized processing for computationally intensive algorithms.
-
-The network also supports the hierarchical time distribution system detailed in Section \ref{time_sync_lan}. The quality of clock synchronization achievable depends critically on network characteristics including latency, jitter, and packet loss. The dedicated Gigabit infrastructure with minimal competing traffic provides sub-millisecond latency sufficient for the time synchronization accuracy required by multi-modal sensor fusion.
-
-\subsubsection{Network Performance Validation}
-
-Network performance validation procedures employed during system commissioning verify that the infrastructure meets requirements for real-time perception and control. These procedures include bandwidth testing using iperf3 or similar tools to verify Gigabit link speeds between key endpoints, latency measurement via ping utilities to measure round-trip latency for time-critical paths, packet loss assessment through extended ping tests or UDP stream analysis to verify zero packet loss under load, and time synchronization quality monitoring to confirm clock accuracy meets requirements as detailed in Section \ref{time_sync_lan}.
-
-These validation procedures ensure that the network infrastructure meets the performance requirements necessary for real-time multi-modal perception and accurate temporal alignment of sensor data. Baseline performance metrics established during commissioning provide reference values for ongoing network health monitoring during field operations.
+% These validation procedures ensure that the network infrastructure meets the performance requirements necessary for real-time multi-modal perception and accurate temporal alignment of sensor data. Baseline performance metrics established during commissioning provide reference values for ongoing network health monitoring during field operations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1253,14 +1449,14 @@ While Minion's camera and LiDAR systems have been spatially calibrated for previ
 If unaddressed, this time lag creates a temporal misalignment between the LiDAR and camera frames while the vessel is in motion.
 
 % While Minion's vision system has been spatially calibrated for previous competitions, the timestamp for each frame in the image was estimated with a constant offset the latency. 
-On Minion, object detection is performed with GB-CACHE \cite{GBCACHE} using LiDAR data.
+On Minion, object detection is performed with GB-CACHE \cite{coyleE} using LiDAR data.
 Before this year's competition, any vision-based object or color detection was performed in parallel to the LiDAR-based perception. 
 Video latency was addressed by adding a constant offset to the video timestamp.
 While this was sufficient for tasks where the USV was stationary, such as detecting the color code sequence, the uncertainty between the time of actual and estimated image capture limited the system's use while in motion.
 
 To remedy this, a custom script was written to record the system time whenever a new video frame was captured by the camera, and simultaneously encode this timestamp with the image frame as supplemental encoded information (SEI) in the video stream.
 An additional script was written as a ROS node which decodes the video frame and timestamp and then publishes that information as a ROS message.
-Figure \ref{block_diag} provides a block diagram of the software and hardware for this synchronization process.
+Figure \ref{video_pipeline} provides a block diagram of the software and hardware for this synchronization process.
 
 %%%%%%%%%%%%%%%
 % The custom "host" script which embeds the timestamps into the video stream was written in C++ and the G-streamer API.
@@ -1299,13 +1495,13 @@ It also monitors the clocks via a network time protocol (NTP) for any drift or e
 
 This approach allows for granular customization of the video stream size, frame rate, network bit rate, and compression method. 
 Additionally, because of the structure of ROS, any ROS module that needs to subscribe to the video stream is able to receive the imagery with the correct timestamp. However, to minimize network load, modules only subscribe to this stream when necessary, such as when a specific task is being conducted. 
-While open-source plugins like GSCam \cite{GSCam} and DeepStream \cite{deepstream} exist to incorporate video into ROS, Minion's solution is flexible and better adapted to address the network latency seen with Minion's specific hardware.
+% While open-source plugins like GSCam \cite{GSCam} and DeepStream \cite{deepstream} exist to incorporate video into ROS, Minion's solution is flexible and better adapted to address the network latency seen with Minion's specific hardware.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Camera Synchronization} \label{time_sync_cam}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=5in]{Images/Video_Block_Diagram.png}
 \caption{Block diagram of the vision system's hardware and video pipeline software.}
@@ -2175,6 +2371,24 @@ Visual inspection of undistorted images provides qualitative validation that str
 
 \subsection{ROS Messages} \label{ROS_mesages}
 
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\hline
+ROS Topic & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
+\hline
+/points\_livox\_front & 35--40 & 3.5--4.0 \\
+/points\_livox\_port  & 35--40 & 3.5--4.0 \\
+/points\_livox\_starboard & 35--40 & 3.5--4.0 \\
+/image\_hdr\_raw  & 60--70 & 6.0--7.0 \\
+\hline
+\textbf{Total Estimated Utilization} & \textbf{165--190} & \textbf{17--19 \%} \\
+\hline
+\end{tabular}
+\label{table:ROS_bandwidth}
+\caption{Approximate \ac{ROS} message bandwidth utilization for the topics used in this research, relative to a 1 Gbps Ethernet link ($\sim$940 Mbps usable).}
+\end{table}
+
 \section{ROS Bags} \label{ROS_bags}
 
 The \ac{ROS} ecosystem provides integrated data recording utilities that subscribe to designated topics and serialize all messages to disk for precise temporal replay.
@@ -2264,7 +2478,8 @@ Maintaining one system on ROS 1 while transitioning the other to ROS 2 allowed i
 
 \backmatter
 
-\chapter{A Test of the Appendix System}
+\chapter{test 1}
+\chapter{test 2}
 
 % Tables of Results
 
