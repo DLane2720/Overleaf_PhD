@@ -341,7 +341,7 @@ Together, these sensors define the operational envelope of the perception system
 % Both modalities overlap the \ac{FOV} of their respective individual sensors.
 % This sensor arrangement ensures higher density and more uniform point-cloud across the 165-degree forward perception envelope in the case of \ac{LiDAR}, but also makes the system more robust to failure.
 % Losing a single sensor will not create a blind spot for either sensing modality in the forward path of motion of the \ac{USV}. 
-% Figures~\ref{fig:fov_cam} and ~\ref{fig:fov_lidar} show how the horizontal \ac{FOV} for each of these sensors overlaps in the direction of travel.
+% Figures~\ref{fig:fov_cam} and ~\ref{fig:fov_LiDAR} show how the horizontal \ac{FOV} for each of these sensors overlaps in the direction of travel.
 
 % Each of these sensors is installed so that the center of their \ac{FOV} is parallel to one of three separate lines of vision.
 % The first of these lines is a vector that points down the centerline of the vessel in the forward direction, and sensors in this orientation receive the moniker of \texttt{sensor\_center}.
@@ -349,8 +349,8 @@ Together, these sensors define the operational envelope of the perception system
 Each sensor’s optical axis is aligned with one of three predefined sight lines: the vessel's centerline and two axes rotated $\pm 40$ degrees from the center.
 % In the case of LiDAR, this sensor arrangement provides a denser point cloud and, in general, means that the loss of signal from any single sensor does not create a blind spot in the forward direction of travel.
 For the LiDAR system, this configuration increases point-cloud density in the forward direction and ensures that loss of any single sensor does not produce a blind spot in the forward direction of travel.
-% Figure~\ref{fig:fov_combined} shows the camera's \ac{FOV} in \ref{fig:fov_cam}, and the the LiDAR \ac{FOV} in \ref{fig:fov_lidar}.
-Each of the three Livox Horizon LiDAR units has an 81.7-degree \ac{FOV}, resulting in more than a 40-degree overlap in the \ac{FOV} between \texttt{livox\_center} and both \texttt{livox\_port} and \texttt{livox\_starboard}, and approximately 3 degrees of overlap between \texttt{livox\_port} and \texttt{livox\_starboard} (figure~\ref{fig:fov_lidar}).
+% Figure~\ref{fig:fov_combined} shows the camera's \ac{FOV} in \ref{fig:fov_cam}, and the the LiDAR \ac{FOV} in \ref{fig:fov_LiDAR}.
+Each of the three Livox Horizon LiDAR units has an 81.7-degree \ac{FOV}, resulting in more than a 40-degree overlap in the \ac{FOV} between \texttt{livox\_center} and both \texttt{livox\_port} and \texttt{livox\_starboard}, and approximately 3 degrees of overlap between \texttt{livox\_port} and \texttt{livox\_starboard} (figure~\ref{fig:fov_LiDAR}).
 Three 4K cameras are configured to point in along each of these three sight lines. 
 While these cameras are equipped with a Theia-TL410P zoom lens, they are currently set at a fixed zoom level that approximates a 65-degree horizontal \ac{FOV}, which provides a 15-degree overlap in their \ac{FOV} (figure~\ref{fig:fov_cam}).
 The two \ac{LWIR} cameras each have a 90-degree \acs{FOV}, and are positioned along the port and starboard vision lines, providing a 10-degree overlap.
@@ -371,9 +371,9 @@ While the \ac{HDR} camera lacks any of the aforementioned sensor redundancy, its
 \hfill
 \begin{subfigure}[t]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Images/fov_lidar.png}
+    \includegraphics[width=\textwidth]{Images/fov_LiDAR.png}
     \caption{LiDAR horizontal \ac{FOV} overlap.}
-    \label{fig:fov_lidar}
+    \label{fig:fov_LiDAR}
 \end{subfigure}
 \caption{Comparative visualization of horizontal \ac{FOV} (FOV) overlap for (a) cameras and (b) LiDAR sensors.}
 \label{fig:fov_combined}
@@ -433,13 +433,13 @@ As a result, one-half to one-third of their scanning azimuth is well above the h
 % These rings are notF
 % % For vessels moving at typical speeds (2-5 m/s), platform displacement between rotations remains small relative to object size, resulting in near-perfect overlap of consecutive scans.
 % At typical vessel speeds between $2 \text{to} 5 m/s$, successive Velodyne rotations overlap almost perfectly, causing sparse sampling of small or distant targets.
-% % This means that small to medium-sized objects may not even be detected when at large distances from the sensor, as illustrated in Figure \ref{fig:lidar_scan_compare}.
-% Consequently, small or distant targets may be undersampled or entirely missed in sequential Velodyne frames (Figure \ref{fig:lidar_scan_compare}).
+% % This means that small to medium-sized objects may not even be detected when at large distances from the sensor, as illustrated in Figure \ref{fig:LiDAR_scan_compare}.
+% Consequently, small or distant targets may be undersampled or entirely missed in sequential Velodyne frames (Figure \ref{fig:LiDAR_scan_compare}).
 
 In contrast, the three Livox Horizon solid-state \ac{LiDAR} units concentrate their scanning pattern within an $81.7 \times 25.1$ degree \ac{FOV}, generating up to 280,000 \ac{pps}. 
 Although the nominal point rates are comparable, the Livox pattern can return $100 \%$ of its concentrated \ac{FOV} data. 
 This higher spatial sampling density enables detection and classification of objects that may be smaller or further from the sensor.
-A direct comparison of the discrepancy between the Velodyne and Livox scan patterns and point density is provided in Figure \ref{fig:lidar_scan_compare}.
+A direct comparison of the discrepancy between the Velodyne and Livox scan patterns and point density is provided in Figure \ref{fig:LiDAR_scan_compare}.
 The top-right image shows the dense point cloud of the Livox devices.
 The light tower in the foreground and the large dock structure in the background can be seen in the camera view (left) and are both well defined in the red point cloud.
 Two small buoys are also distinctly visible between the two structures.
@@ -453,7 +453,7 @@ The general form of the light tower can be seen; however, there are very few poi
 \centering
 \includegraphics[width=0.8\textwidth]{Images/LiDAR_compare.png}
 \caption{A comparison of LiDAR returns from the Livox units (top-right, red) and Velodyne units (bottom-right, white) to the respective HDR camera view (top-left and bottom-left). LiDAR points are viewed from third-person point of view in RVIZ. Green and Blue axes (top-right, top-bottom) represent the origin of the USV frame of reference.}
-\label{fig:lidar_scan_compare}
+\label{fig:LiDAR_scan_compare}
 \end{figure}
 
 % The superior point density of the overlapping forward-scanning  LiDAR is critical for the real-time object detection method that is discussed in \textcolor{red}{Section \#}.
@@ -521,7 +521,7 @@ Operating Frequency & 100 Hz \\
 % These parameters are written to non-volatile memory on each Livox unit and applied before data transmission so that all LiDAR returns are received in the center \ac{LiDAR}'s reference frame, reducing the necessary calculation further down the data pipeline.
 % \textcolor{red}{cite Livox documentation?}.
 % enhancing their real-time operational advantage by reducing additional computation later in the pipeline.
-% The calibration methodology to determine these extrinsic values is detailed in Section~\ref{lidar_extrinsic}.
+% The calibration methodology to determine these extrinsic values is detailed in Section~\ref{LiDAR_extrinsic}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The 905 nm near-infrared wavelength experiences strong absorption by water, resulting in minimal returns from water surfaces.
@@ -1434,7 +1434,7 @@ Finally, all perception data are kept in sync and expressed in the global map fr
 
 Section \ref{spatial_calibration} provides the methods used for intrinsic camera calibration, extrinsic calibration between the camera and LiDAR sensors, and between the individual LiDAR units. 
 This is followed by a discussion of the time synchronization methods implemented across the network, with special detail provided to the timestamps applied to video frames in section \ref{time_sync}
-Finally, the resulting spatial calibration accuracy and temporal alignment obtained are discussed in section \ref{}.
+Finally, the resulting spatial calibration accuracy and temporal alignment obtained are discussed in section \ref{time_sync}.
 
 % % focuses on three primary calibration tasks.
 % % First, the intrinsic parameters of the HDR camera are estimated, followed by the extrinsic alignment between the HDR camera and the center Livox reference frame.
@@ -1450,10 +1450,10 @@ Finally, the resulting spatial calibration accuracy and temporal alignment obtai
 % %     \end{bmatrix},
 % % \end{equation}
 % % where $\mathbf{R}_{A}^{B}$ is a $3\times3$ rotation matrix and $\mathbf{t}_{A}^{B}$ is a translation vector defining the pose of frame $B$ relative to frame $A$.
-% % Therefore, a set of points in reference frame $A$ ($\mathbf{P}_{A}$) can be expressed in reference frame $B$ ($\mathbf{P}_{B}$) through 
+% % Therefore, a set of points in reference frame $A$ ($_{A}\mathbf{P}$) can be expressed in reference frame $B$ ($_{B}\mathbf{P}$) through 
 % % \begin{equation}
-% %     \mathbf{P}_{B} =
-% %     \mathbf{R}_{A}^{B}\mathbf{P}_{A} + \mathbf{t}_{A}^{B}.
+% %     _{B}\mathbf{P} =
+% %     \mathbf{R}_{A}^{B}_{A}\mathbf{P} + \mathbf{t}_{A}^{B}.
 % % \end{equation}
 
 
@@ -1534,26 +1534,26 @@ These practices ensure that the estimated intrinsic parameters are well-constrai
 \subsubsection{Extrinsic Calibration} \label{extrinsic_tform}
 % \subsubsection{Camera–LiDAR Extrinsic Calibration} \label{extrinsic_calib}
 
-% the LiDAR and camera reference frames, consisting of a rotation matrix $\mathbf{R}_{C}^{L}$ and translation vector $\mathbf{t}_{C}^{L}$ that together form the homogeneous transformation $\mathbf{T}_{C}^{L}$.  
+% the LiDAR and camera reference frames, consisting of a rotation matrix $\mathbf{R}_{C}^{L}$ and translation vector $\mathbf{t}_{C}^{L}$ that together form the homogeneous transformation $_{C}^{L}\mathbf{T}$.  
 
 Extrinsic calibration defines the rigid-body transformation between two reference frames.
 The transformation from frame $A$ to frame $B$ is represented as
 \begin{equation}
-    \mathbf{T}_{B}^{A} =
+    _{B}^{A}\mathbf{T} =
     \begin{bmatrix}
-        \mathbf{R}_{B}^{A} & \mathbf{t}_{B}^{A} \\
+        _{B}^{A}\mathbf{R} & _{B}^{A}\mathbf{t} \\
         \mathbf{0}^\mathrm{T} & 1
     \end{bmatrix},
 \end{equation}
 
-where $\mathbf{R}_{B}^{A} \in \mathbb{R}^{3\times3}$ is the rotation matrix describing the orientation of frame $A$ relative to frame $B$, and $\mathbf{t}_{B}^{A} \in \mathbb{R}^{3}$ is the translation vector locating the origin of frame $A$ with respect to frame $B$.  
+where $\mathbf{R}_{B}^{A} \in \mathbb{R}^{3\times3}$ is the rotation matrix describing the orientation of frame $A$ relative to frame $B$, and $_{B}^{A}\mathbf{t} \in \mathbb{R}^{3}$ is the translation vector locating the origin of frame $A$ with respect to frame $B$.  
 The notation convention used here follows that the subscript denotes the destination frame, and the superscript denotes the source frame.
 
-A point $\mathbf{P}_{A}$ expressed in frame $A$ can therefore be transformed into frame $B$ as
+A point $_{A}\mathbf{P}$ expressed in frame $A$ can therefore be transformed into frame $B$ as
 
 \begin{equation}
-    \mathbf{P}_{B} =
-    \mathbf{R}_{B}^{A}\mathbf{P}_{A} + \mathbf{t}_{B}^{A}.
+    _{B}\mathbf{P} =
+    _{B}^{A}\mathbf{R} _{A}\mathbf{P} + _{B}^{A}\mathbf{t}.
 \end{equation}
 
 This formulation provides a unified framework for expressing all spatial relationships among the platform’s sensors, allowing transformations to be composed sequentially through the transform tree illustrated in Figure~\ref{fig:tf_tree}.
@@ -1566,7 +1566,7 @@ This transformation enables points measured in the LiDAR frame to be accurately 
 
 The calibration process begins by co-locating a planar checkerboard target within the LiDAR point cloud and the camera image.  
 The physical extents of the checkerboard observed in the LiDAR frame ($X_L, Y_L, Z_L$) are matched to the corresponding pixel locations in the image frame ($u,v$), yielding an approximate estimate of the relative orientation and position between the two sensors.  
-This initial alignment provides a coarse estimate of $\mathbf{T}_{C}^{L}$ sufficient for projecting LiDAR points into the image plane with moderate accuracy.
+This initial alignment provides a coarse estimate of $_{C}^{L}\mathbf{T}$ sufficient for projecting LiDAR points into the image plane with moderate accuracy.
 
 \begin{figure}[htbp]
 \centering
@@ -1580,9 +1580,9 @@ This initial alignment provides a coarse estimate of $\mathbf{T}_{C}^{L}$ suffic
     \hspace{2em} % horizontal spacing between them
     \begin{subfigure}[t]{0.44\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Images/lidar_calib.png}
+        \includegraphics[width=\textwidth]{Images/LiDAR_calib.png}
         \caption{Composite location of checkerboards within the LiDAR reference frame.}
-        \label{fig:lidar_calib}
+        \label{fig:LiDAR_calib}
     \end{subfigure}
 }
 \caption{Composite images showing the location of the target checkerboard in multiple locations as a representative sample of the intrinsic calibration for the HDR camera (left) and a composite of the same calibration checkerboards spatially located within the LiDAR reference frame (right). Red dots represent the corner points of the checkerboard transformed into the LiDAR reference frame with initial extrinsic calibration values.}
@@ -1596,14 +1596,14 @@ This initial alignment provides a coarse estimate of $\mathbf{T}_{C}^{L}$ suffic
 %     \end{bmatrix},
 % \end{equation}
 % where $\mathbf{R}_{A}^{B}$ is a $3\times3$ rotation matrix and $\mathbf{t}_{A}^{B}$ is a translation vector defining the pose of frame $B$ relative to frame $A$.
-% Therefore, a set of points in reference frame $A$ ($\mathbf{P}_{A}$) can be expressed in reference frame $B$ ($\mathbf{P}_{B}$) through 
+% Therefore, a set of points in reference frame $A$ ($_{A}\mathbf{P}$) can be expressed in reference frame $B$ ($_{B}\mathbf{P}$) through 
 % \begin{equation}
-%     \mathbf{P}_{B} =
-%     \mathbf{R}_{A}^{B}\mathbf{P}_{A} + \mathbf{t}_{A}^{B}.
+%     _{B}\mathbf{P} =
+%     \mathbf{R}_{A}^{B}_{A}\mathbf{P} + \mathbf{t}_{A}^{B}.
 % \end{equation}
 A mapping of three-dimensional points to pixel coordinates in the distorted image frame is provided in Appendix \ref{img_tform}.
 
-This initial calibration is easily performed in packages designed for lidar calibration, such as the MATLAB LiDAR Calibration tool \cite{matlab_calibration}.
+This initial calibration is easily performed in packages designed for LiDAR calibration, such as the MATLAB LiDAR Calibration tool \cite{matlab_calibration}.
 Further refinement is achieved through manual inspection of iterative changes to the extrinsic values, or through an \ac{ICP} method.
 
 The \ac{ICP} algorithm adjusts the transformation parameters in small increments to minimize the distance between corresponding features observed by both sensors when projected into a shared reference frame.
@@ -1858,7 +1858,7 @@ This final adjustment ensures that the extrinsic transformation achieves sub-deg
 
 % The Robot Operating System's \texttt{tf2} library maintains time-varying transformation trees between coordinate frames.
 % Extrinsic calibration parameters are published as static transforms that relate sensor frames to the platform frame.
-% The \texttt{tf2} framework automatically composes transformation chains, enabling queries such as "transform this \ac{LiDAR} point from \texttt{lidar\_frame} to \texttt{camera\_optical\_frame} at timestamp T" without manual transformation matrix multiplication.
+% The \texttt{tf2} framework automatically composes transformation chains, enabling queries such as "transform this \ac{LiDAR} point from \texttt{LiDAR\_frame} to \texttt{camera\_optical\_frame} at timestamp T" without manual transformation matrix multiplication.
 % This capability is essential for the temporal aggregation methodology, which transforms \ac{LiDAR} points from sensor frame to platform frame using extrinsic calibration, then from platform frame to inertial world frame using \ac{GPS}/\ac{INS} pose at point acquisition time, accumulates points from multiple time steps in world frame, transforms aggregated points from world frame through platform frame to camera frame at image capture time, and finally projects to image pixels using camera intrinsics.
 
 % Errors in \ac{LiDAR} extrinsics propagate through this transformation chain, causing spatial misalignment proportional to range and angular error.
@@ -1920,69 +1920,69 @@ Additionally, the video processing pipeline introduces systematic timing offsets
 
 \subsection{Spatial Calibration}
 
-% \begin{figure}[ht]
+% \begin{figure}[htbp]
 %     \centering
 %     \includegraphics[width=0.8\linewidth]{Images/calib_checkers.png}
 %     \caption{Caption}
 %     \label{fig:calib_check}
 % \end{figure}
 
-% \begin{figure}[ht]
+% \begin{figure}[htbp]
 %     \centering
 %     \includegraphics[width=0.8\linewidth]{Images/LiDAR_calib_fence.png}
 %     \caption{Caption}
 %     \label{fig:calib_fence}
 % \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\linewidth]{Images/LiDAR_features.png}
     \caption{Caption}
-    \label{fig:lidar_features}
+    \label{fig:LiDAR_features}
 \end{figure}
 
 
-% \begin{figure}[ht]
+% \begin{figure}[htbp]
 %     \centering
-%     \includegraphics[width=0.8\linewidth]{Images/lidar_overlay.png}
+%     \includegraphics[width=0.8\linewidth]{Images/LiDAR_overlay.png}
 %     \caption{Caption}
-%     \label{fig:lidar_overlay}
+%     \label{fig:LiDAR_overlay}
 % \end{figure}
 
-% \begin{figure}[ht]
+% \begin{figure}[htbp]
 %     \centering
-%     \includegraphics[width=0.8\linewidth]{Images/lidar_overlay3A.png}
+%     \includegraphics[width=0.8\linewidth]{Images/LiDAR_overlay3A.png}
 %     \caption{Caption}
-%     \label{fig:lidar_overlay3A}
+%     \label{fig:LiDAR_overlay3A}
 % \end{figure}
 
-% \begin{figure}[ht]
+% \begin{figure}[htbp]
 %     \centering
-%     \includegraphics[width=0.8\linewidth]{Images/lidar_overlay3B.png}
+%     \includegraphics[width=0.8\linewidth]{Images/LiDAR_overlay3B.png}
 %     \caption{Caption}
-%     \label{fig:lidar_overlay3B}
+%     \label{fig:LiDAR_overlay3B}
 % \end{figure}
 
 
 
-% \begin{figure}[ht]
+% \begin{figure}[htbp]
 %     \centering
-%     \includegraphics[width=0.8\linewidth]{Images/lidar_overlay2.png}
+%     \includegraphics[width=0.8\linewidth]{Images/LiDAR_overlay2.png}
 %     \caption{Caption}
-%     \label{fig:lidar_overlay2}
+%     \label{fig:LiDAR_overlay2}
 % \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\linewidth]{Images/lidar_overlay4.png}
+    \includegraphics[width=0.8\linewidth]{Images/LiDAR_overlay4.png}
     \caption{Caption}
-    \label{fig:lidar_overlay4}
+    \label{fig:LiDAR_overlay4}
 \end{figure}
 
 
 \subsection{Temporal Calibration}
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\linewidth]{Images/time_sync1.png}
     \caption{Caption}
@@ -2275,14 +2275,14 @@ The preserved timestamps enable sub-millisecond temporal alignment between local
 
 Camera-based perception provides rich visual information about the maritime environment, capturing texture, color, and fine geometric detail that can distinguish object types through learned visual features.
 For real-time autonomous navigation, the detection system must process high-resolution imagery at frame rates sufficient to maintain situational awareness while an \ac{USV} maneuvers through dynamic environments.
-I employed the YOLOv8 architecture from Ultralytics for vision-based maritime object detection due to its demonstrated balance between detection accuracy and computational efficiency in real-time applications.
+\textcolor{red}{I employed the YOLOv8 architecture from Ultralytics for vision-based maritime object detection due to its demonstrated balance between detection accuracy and computational efficiency in real-time applications.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{YOLO Architecture } \label{sec:yolo_architecture}
 
 YOLO (You Only Look Once) represents a family of single-stage object detection architectures that frame detection as a regression problem rather than a classification task applied to region proposals.
 The architecture processes an entire image in a single forward pass through a convolutional neural network, directly predicting bounding boxes and class probabilities for objects present in the scene.
-This single-stage approach enables real-time performance by eliminating the computational overhead of region proposal generation and iterative refinement stages required by two-stage detectors such as R-CNN variants.
+This single-stage approach enables real-time performance by eliminating the computational overhead of region proposal generation and iterative refinement stages required by two-stage detectors such as R-CNN variants \cite{ultralytics}.
 
 YOLOv8, released by Ultralytics in 2023, incorporates several architectural improvements over previous YOLO versions that enhance detection performance for small objects and complex scenes.
 The backbone network employs a CSPDarknet architecture with cross-stage partial connections that enable efficient gradient flow during training while maintaining representational capacity.
@@ -2314,7 +2314,7 @@ Implementation employed the Ultralytics Python library, which provides a unified
 The framework handles data loading, augmentation, training loop management, and model export, allowing focus on maritime-specific considerations such as dataset preparation and hyperparameter tuning.
 The library supports export to multiple inference formats including PyTorch, ONNX, and TensorRT, enabling deployment flexibility across different hardware platforms and optimization backends.
 
-For the Minion platform, I configured the model for inference at the native resolution of the Leopard Imaging \ac{IMX490} \ac{HDR} camera (2880×1860 pixels).
+For the Minion platform, I configured the model for inference at the native resolution of the Leopard Imaging IMX490 \ac{HDR} camera (2880×1860 pixels).
 Processing full-resolution imagery preserves fine spatial detail necessary for detecting small distant buoys while avoiding information loss from aggressive downsampling.
 The model input preprocessing pipeline applies standard normalization to [0,1] range and organizes image data in RGB channel order following PyTorch conventions.
 No additional image preprocessing such as histogram equalization or contrast enhancement is performed during inference, as the model learns to handle the natural dynamic range variations present in \ac{HDR} imagery during training.
@@ -2323,7 +2323,7 @@ No additional image preprocessing such as histogram equalization or contrast enh
 \subsection{Training Data} \label{sec:yolo_training data}
 
 The training dataset consists of annotated video frames extracted from ROS bag files recorded during the 2024 Maritime RobotX Challenge and associated training missions.
-Frame extraction occurs at 1 \ac{Hz} to provide temporal diversity while avoiding excessive correlation between consecutive frames that would artificially inflate apparent dataset size without corresponding information gain.
+Frame extraction occurs at 1 Hz to provide temporal diversity while avoiding excessive correlation between consecutive frames that would artificially inflate apparent dataset size without corresponding information gain.
 The resulting dataset contains several thousand annotated images spanning diverse maritime conditions including varying lighting (morning, midday, afternoon), weather (clear, overcast, light rain), and sea states (calm to moderate chop).
 
 Ground truth annotations follow the COCO format with bounding boxes specified as $[x, y, width, height]$ in pixel coordinates along with corresponding class labels.
@@ -2371,8 +2371,8 @@ Small distant objects presented greater detection challenges than large nearby o
 \subsection{Computational Efficiency} \label{sec:yolo_efficiency}
 
 Inference performance on the Minion platform was evaluated using ROS bag playback at real-time rate to simulate operational conditions.
-The YOLOv8s model processing 2880×1860 pixel images achieved inference speeds of approximately 40-50 milliseconds per frame on the NVIDIA RTX 3090 GPU, corresponding to 20-25 \ac{FPS} throughput.
-This performance comfortably exceeds the 10 \ac{FPS} camera frame rate employed during data collection, enabling real-time detection with computational headroom for additional perception processing tasks.
+The YOLOv8s model processing 2880×1860 pixel images achieved inference speeds of approximately 40-50 milliseconds per frame on the NVIDIA RTX 3090 GPU, corresponding to 20-25 \ac{fps} throughput.
+This performance comfortably exceeds the 10 \ac{fps} camera frame rate employed during data collection, enabling real-time detection with computational headroom for additional perception processing tasks.
 
 Inference time breakdown reveals that the forward pass through the neural network consumes the majority of processing time (35-40 ms), with post-processing including non-maximum suppression (NMS) and bounding box decoding requiring the remaining 5-10 ms.
 NMS filters duplicate detections of the same object by suppressing lower-confidence boxes that substantially overlap higher-confidence detections for the same class.
@@ -2480,6 +2480,13 @@ Memory requirements scale with grid dimensions rather than point count, providin
 The grid representation compresses sparse maritime point clouds into compact occupancy structures, reducing memory bandwidth requirements compared to maintaining full point coordinates.
 This compression proves particularly advantageous for maritime environments where objects occupy a small fraction of the sensor's field of view.
 
+Performance analysis of the \ac{GB-CACHE} implementation on the Minion platform demonstrates exceptional computational efficiency compatible with real-time autonomous navigation requirements.
+The spatial filtering and point addition operations execute with sub-millisecond latency, consuming negligible fractions of available processing time at sensor frame rates.
+The map update operation, while more computationally intensive, exhibits strong linear correlation with object geometric complexity, specifically polygon perimeter and surface area.
+This predictable scaling behavior enables reliable worst-case execution time estimation for safety-critical autonomous systems.
+Hardware resource utilization remains minimal during typical operation, with both processor and memory consumption well below capacity thresholds, providing substantial computational headroom for concurrent navigation and control processes.
+Detailed performance characterization across diverse maritime object encounters validates the algorithm's suitability for sustained real-time operation under operational constraints.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Multivariate Classification} \label{sec:gbcache_mvg_classification}
 
@@ -2495,7 +2502,7 @@ The feature-based classification approach contrasts with end-to-end deep learnin
 While deep learning offers potential for learning complex discriminative patterns, feature-based methods provide interpretability and require substantially less training data.
 For maritime applications with limited labeled datasets, the feature engineering approach yields practical classification performance while maintaining computational efficiency compatible with real-time constraints.
 
-Classification of detected maritime objects employs a \ac{MvGC} framework that models the joint probability distribution of extracted features for each object class.
+Classification of detected maritime objects employs a \ac{MGC} framework that models the joint probability distribution of extracted features for each object class.
 Under the assumption that features follow multivariate Gaussian distributions within each class, the classifier computes class likelihoods using covariance matrices and mean vectors estimated from labeled training data.
 This parametric approach provides computational efficiency during inference while capturing correlations among features that enhance discriminative power.
 
@@ -2503,10 +2510,34 @@ The Gaussian assumption simplifies the classification problem to estimating clas
 For a feature vector representing an observed object, the classifier evaluates the probability density under each class-specific Gaussian model and assigns the class yielding maximum posterior probability.
 This framework naturally accommodates multiple object classes and provides confidence estimates through the posterior probability values.
 
-Feature selection for the \ac{MvGC} focuses on geometric descriptors and intensity statistics that exhibit discriminative power across maritime object categories.
-Geometric features including object height, width, depth, volume, and boundary complexity capture shape characteristics that differentiate buoys from vessels and distinguish marker types.
+Feature selection for the \ac{MGC} focuses on geometric descriptors and intensity statistics that exhibit discriminative power across maritime object categories.
+The classifier employs ten features comprising both intensity-based and geometric measurements:
+
+\begin{itemize}
+    \item \textit{Intensity features:} maximum intensity, minimum intensity, average intensity, and standard deviation of intensity across object \ac{LiDAR} returns
+    \item \textit{Geometric features:} maximum object height, total number of filled grid cells, polygon perimeter, polygon area, 2D minor axis length, and 2D major axis length
+\end{itemize}
+
 Intensity features derived from \ac{LiDAR} return strength distributions reflect surface material properties and orientation, providing complementary information to geometric descriptors.
-The selection of ten features balances classification accuracy against computational overhead and the risk of overfitting with limited training data.
+Geometric features capture shape characteristics that differentiate buoys from vessels and distinguish marker types, including dimensional extent, boundary complexity, and aspect ratios.
+This feature set balances classification accuracy against computational overhead and the risk of overfitting with limited training data.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Mutual Information Analysis of Features} \label{sec:gbcache_MI_features}
+
+While the ten-feature set provides comprehensive object characterization, not all features contribute equally to classification performance, and some features exhibit redundancy through correlation.
+I applied information-theoretic feature selection methodology to identify the optimal feature subset that maximizes classification accuracy while minimizing computational burden and correlation-induced instability.
+
+The minimum Redundancy Maximum Relevance (mRMR) criterion provides a principled framework for feature selection by simultaneously considering two competing objectives: maximizing the mutual information between selected features and class labels (relevance) while minimizing the mutual information among selected features themselves (redundancy).
+Mutual information quantifies the reduction in uncertainty about one variable given knowledge of another, providing a model-agnostic measure of statistical dependence applicable to both linear and nonlinear relationships.
+
+Analysis of feature-class mutual information reveals varying discriminative power across the ten features, with intensity-based and geometric features exhibiting complementary strengths for different object classes.
+Pairwise feature redundancy analysis identifies multiple correlated feature pairs that provide overlapping information, suggesting opportunities for dimensionality reduction without classification performance degradation.
+The mRMR optimization procedure balances these considerations, progressively selecting features that contribute novel discriminative information while avoiding redundant measurements.
+
+Information-theoretic analysis identified an optimal feature subset substantially smaller than the complete ten-feature set, demonstrating that effective maritime object classification can be achieved with reduced feature dimensionality.
+This finding has practical implications for computational efficiency, as feature extraction and Gaussian density evaluation scale with feature dimensionality.
+The reduced feature set maintains robust classification performance while decreasing processing requirements and reducing the risk of overfitting when training data is limited.
 
 The classifier requires training data comprising labeled examples of each object class with corresponding feature vectors.
 Training involves computing maximum likelihood estimates of Gaussian distribution parameters for each class, specifically the mean vector and covariance matrix that characterize the feature space distribution.
@@ -2515,6 +2546,71 @@ These parameters fully specify the class models, enabling rapid inference throug
 Classification performance depends critically on the separability of object classes in the chosen feature space and the validity of the Gaussian distribution assumption.
 When classes exhibit significant overlap in feature space or when feature distributions deviate substantially from Gaussian, classification accuracy degrades.
 However, for maritime objects with distinct geometric profiles and size ranges, the feature-based Gaussian approach provides robust classification with minimal training requirements.
+
+\begin{figure}[htbp]
+\centering
+\makebox[\textwidth][c]{
+    \begin{subfigure}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/gbcache/filter_points_scatter.png}
+        \caption{Scatter plot of duration of \texttt{filter\_points} against number of LiDAR points}
+        \label{fig:gbcache_filter_points_scatter}
+    \end{subfigure}
+    \hspace{2em} % horizontal spacing between them
+    \begin{subfigure}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/gbcache/filter_points_hist.png}
+        \caption{Histogram of duration of \texttt{filter\_points} against number of LiDAR points}
+        \label{fig:gbcache_filter_points_hist}
+    \end{subfigure}
+}
+\caption{Scatter (a) and histogram (b) plots of \texttt{filter\_points} process plotted against number of LiDAR points}
+\label{fig:gbcache_filter_points}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\makebox[\textwidth][c]{
+    \begin{subfigure}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/gbcache/Add_points_scatter.png}
+        \caption{Scatter plot of duration of \texttt{add\_points} against number of LiDAR points}
+        \label{fig:gbcache_add_points_scatter}
+    \end{subfigure}
+    \hspace{2em} % horizontal spacing between them
+    \begin{subfigure}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/gbcache/Add_points_hist.png}
+        \caption{Histogram of duration of \texttt{add\_points} against number of LiDAR points}
+        \label{fig:gbcache_add_points_hist}
+    \end{subfigure}
+}
+\caption{Scatter (a) and histogram (b) plots of \texttt{add\_points} process plotted against number of LiDAR points}
+\label{fig:gbcache_add_points}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    % Subfigure (a)
+    \begin{subfigure}[b]{0.44\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Images/gbcache/Update_Map_hist.png}
+        \caption{Histogram of duration of \texttt{map\_update} against number of LiDAR points}
+        \label{fig:gbcache_update_map_hist}
+    \end{subfigure}
+    \vspace{1em} % vertical spacing between subfigures
+    % Subfigure (b)
+    \begin{subfigure}[b]{0.8\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Images/gbcache/Update_Map_scatter.png}
+        \caption{Two scatter plot of duration of \texttt{map\_update} against average perimeter length of polygon (left), and against average area of polygon (right). The line of best-fit is shown in red for each, with associated polynomial values of: $x^2 = -0.0727, x^1 = -0.0151, x^0 = -0.0151$ (left) and $x^2 = 0.2556, x^1 = -0.00913, x^0 = -0.00913$ (right) }
+        \label{fig:gbcache_update_map_scatter}
+    \end{subfigure}
+
+    \caption{Histogram (a) and scatter (b) plots of \texttt{map\_update} process plotted against number of LiDAR points}
+    \label{fig:gbcache_update_map}
+\end{figure}
+
 
 
 
@@ -2581,23 +2677,29 @@ Maintaining one system on ROS 1 while transitioning the other to ROS 2 allowed i
 
 \chapter{Image Transform} \label{img_tform}
 
-To obtain the two-dimensional pixel coordinates of the distorted image ($u, v$) in the camera frame $C$ from a three-dimensional coordinate ($X_L, Y_L, Z_L$) in the LiDAR frame $L$:
+To obtain the two-dimensional pixel coordinates of the distorted image ($u, v$) in the camera frame $C$ from a three-dimensional coordinate ($X_{L}, Y_L, Z_L$) in the LiDAR frame $L$:
 
 % 3D LiDAR point to distorted image pixel
 % \paragraph{Projection from LiDAR to image.}
-Let $\mathbf{P}_L = [X_L, Y_L, Z_L, 1]^T$, and $\mathbf{P}_C$ are these points rotated and translated about $\mathbf{T}_{C}^{L}$, such that  
-$\mathbf{P}_C = \mathbf{T}_{C}^{L}\mathbf{P}_L$:
-
-:
+Let $\mathbf{R}\in \mathbb{R}^{3\times3}$, $\mathbf{t}\in \mathbb{R}^{3\times1}$, $_L\mathbf{P} = [X_L, Y_L, Z_L, 1]^T$,  and $_C\mathbf{P} = \;_{C}^{L}\mathbf{T} \; _L\mathbf{P}$, then:
 \begin{equation*}
-[X_C, Y_C, Z_C, 1]^T \;= \; \mathbf{T}_{C}^{L} \;[X_L, Y_L, Z_L, 1]^T
+_C\mathbf{P} = [X_C, Y_C, Z_C, 1]^T \;= \; _{C}^{L}\mathbf{T} \;[X_L, Y_L, Z_L, 1]^T,
 % ,\qquad
-% \mathbf{T}_{C}^{L} =
+% _{C}^{L}\mathbf{T} =
 % \begin{bmatrix}
 % \mathbf{R}_{C}^{L} & \mathbf{t}_{C}^{L} \\
 % \mathbf{0}^T & 1
 % \end{bmatrix}.
-% \label{eq:lidar_to_cam_frame}
+% \label{eq:LiDAR_to_cam_frame}
+\end{equation*}
+
+such that:
+\begin{equation*}
+    _{L}^{C}\mathbf{T} =
+    \begin{bmatrix}
+        _{L}^{C}\mathbf{R} & _{L}^{C}\mathbf{t} \\
+        \mathbf{0}^\mathrm{T} & 1
+    \end{bmatrix},
 \end{equation*}
 
 We obtain the pixel coordinates ($x_n, y_n$) in the undistorted image frame by pinhole projection:
