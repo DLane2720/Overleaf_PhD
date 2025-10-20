@@ -751,3 +751,440 @@ The ROS bag format preserves exact message timestamps, enabling the temporal dri
 This temporal alignment capability proves essential for the rigorous multi-modal detection performance comparison presented in Chapters 5 and 6.
 
 
+
+
+\subsection{Spatial Calibration} \label{spatial_calibration}
+
+Multi-sensor perception systems require precise geometric relationships between sensors to enable data fusion and coordinate frame transformations.
+Before data from camera and LiDAR sensors can be combined, each device must be spatially calibrated through intrinsic and extrinsic transformations.
+Intrinsic calibration characterizes the internal optical and geometric properties of individual sensors, while extrinsic calibration establishes the six-degree-of-freedom transformations relating each sensor's coordinate system to a common platform reference frame.
+These calibrations ensure that the scale and position of objects observed by either sensor type can be accurately placed into a unified spatial representation.
+
+The Minion platform employs six cameras and three LiDAR units, requiring comprehensive calibration of all sensor pairs.
+The calibration framework follows established computer vision methodologies, adapted for maritime autonomous vehicle applications.
+Camera intrinsic parameters quantify lens distortion, focal length, principal point location, and sensor pixel geometry.
+Extrinsic parameters define the translation and rotation transforming observations from sensor-specific coordinate frames to the vessel platform frame.
+LiDAR-to-LiDAR calibration unifies the three Livox Horizon point clouds into a common reference frame, while LiDAR-to-camera calibration enables projection of three-dimensional point cloud data onto two-dimensional image planes.
+
+The following subsections detail the calibration methodologies, mathematical formulations, validation procedures, and integration with the Robot Operating System transformation framework that provides automated coordinate frame conversions throughout the perception pipeline.
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{LiDAR Extrinsic Transform} \label{lidar_extrinsic}
+
+
+The Minion platform employs three Livox Horizon LiDAR units positioned to provide overlapping forward-facing coverage.
+Extrinsic calibration establishes the geometric relationships between these three sensors and between the unified LiDAR reference frame and the platform coordinate system, enabling aggregation of point clouds from multiple sensors and projection of LiDAR observations onto camera images.
+
+% ### Calibration Requirements and Architecture
+
+The multi-LiDAR configuration requires two levels of extrinsic calibration.
+
+**LiDAR-to-LiDAR Calibration** determines the six-degree-of-freedom transformations relating each of the three Livox Horizon units to a common LiDAR reference frame.
+This calibration enables merging point clouds from all three sensors into a unified coordinate system, increasing effective field-of-view coverage and point density in overlap regions.
+
+The Livox Horizon sensors provide a significant operational advantage through onboard calibration storage.
+Extrinsic parameters can be written to non-volatile memory within the sensor, configuring the LiDAR units to automatically apply coordinate transformations before broadcasting point cloud data over the network.
+This factory-configured capability simplifies downstream processing by presenting pre-registered point clouds to the perception pipeline, eliminating the computational overhead of runtime point cloud transformation.
+
+**LiDAR-to-Platform Calibration** establishes the transformation from the unified LiDAR reference frame to the vessel platform reference frame, enabling integration with other sensors including cameras and GPS/INS and transformation to world coordinates accounting for vehicle motion.
+
+% ### LiDAR-to-LiDAR Calibration Methodology
+
+The three Livox Horizon units are designated as **left**, **center**, and **right** based on their positions in the forward-facing sensor array.
+The **center sensor** is selected as the reference frame, with left and right sensors calibrated relative to the center unit.
+
+% #### Target-Based Calibration Approach
+
+LiDAR-to-LiDAR calibration exploits the observation of common planar surfaces by multiple sensors.
+A planar calibration target with high LiDAR reflectivity, or alternatively a large planar surface such as a building wall, serves as the reference geometry.
+
+The calibration environment for the Minion platform consisted of the research laboratory interior, providing large flat walls and right-angle corners that enable both initial alignment and subsequent cross-validation of calibration quality.
+
+Calibration data is collected by positioning the sensor platform such that all three LiDAR units simultaneously observe shared planar surfaces.
+Point clouds from each sensor are recorded over a 10-second duration while the platform remains stationary, generating dense point coverage of the calibration environment.
+
+% #### Iterative Closest Point Registration
+
+The Iterative Closest Point algorithm provides a robust method for aligning partially-overlapping point clouds by estimating the rigid transformation that minimizes point-to-point distances between clouds.
+
+The ICP algorithm proceeds iteratively:
+
+1. **Correspondence Establishment**: For each point in the source cloud, identify the closest point in the target cloud.
+2. **Transformation Estimation**: Compute the rotation matrix $\mathbf{R}$ and translation vector $\mathbf{t}$ that minimize the sum of squared distances between corresponding point pairs.
+3. **Point Cloud Transformation**: Apply the estimated transformation to the source point cloud.
+4. **Convergence Evaluation**: Compute the mean-square error $E = \sum \left\| \mathbf{p}_{\text{target}} - (\mathbf{R} \mathbf{p}_{\text{source}} + \mathbf{t}) \right\|^2$ and terminate if error reduction falls below a threshold or a maximum iteration count is reached.
+
+The ICP algorithm refines an initial transformation estimate, typically derived from geometric mounting measurements or manual rough alignment, to achieve sub-centimeter registration accuracy.
+
+CloudCompare, an open-source point cloud processing application, provides mature ICP implementations suitable for LiDAR calibration workflows.
+The software enables visualization of point cloud overlap, manual refinement of initial alignment, and quantitative assessment of registration quality through residual error metrics.
+
+For the Minion platform, ICP alignment of 10-second aggregated scans from the port and starboard LiDAR units to the center unit provided correction terms that were applied to the nominal geometric mounting assumptions.
+
+An example correction for the port LiDAR yielded rotation angles of 0.006 radians yaw, 0.035 radians pitch, and 0.060 radians roll, with translation offsets of 0.051 meters, 0.004 meters, and 0.001 meters in the X, Y, and Z directions respectively.
+These corrections, while small in absolute magnitude, are essential for achieving sub-pixel alignment when projecting LiDAR points onto high-resolution camera images at long range.
+
+Manufacturing tolerances of even one degree in angular mounting produce 2.6 meter position errors at 150 meter range, underscoring the necessity of calibration beyond nominal mechanical specifications.
+
+% #### Livox Calibration Tool
+
+Livox provides proprietary calibration software that automates the plane-based calibration procedure for multi-sensor configurations.
+
+The tool captures point clouds from all three sensors simultaneously, performs automatic plane segmentation to identify large flat surfaces, estimates rotation and translation parameters via optimization, validates calibration quality through residual error metrics, and uploads the final calibration parameters to sensor onboard non-volatile memory.
+
+The Minion platform calibration, originally performed by Thompson, utilized the Livox calibration tool following manufacturer-recommended procedures.
+Calibration results stored in sensor firmware ensure that all three Livox units broadcast point clouds in the common reference frame defined by the center sensor, eliminating the need for software-based point cloud registration in the real-time perception pipeline.
+
+% ### Calibration Validation
+
+LiDAR-to-LiDAR calibration quality is validated through several complementary methods.
+
+% #### Plane Alignment Residuals
+
+After applying estimated transformations, points from all three sensors observing the same physical plane should lie in a common fitted plane with minimal scatter.
+The residual standard deviation quantifies alignment quality:
+
+$$\sigma_{\text{residual}} = \sqrt{\frac{1}{N}\sum_{i=1}^{N} (n^T \mathbf{p}_i + d)^2}$$
+
+where $n$ is the unit normal vector to the fitted plane, $d$ is the plane offset parameter, $\mathbf{p}_i$ are the transformed point positions, and $N$ is the total number of points from all sensors.
+
+Acceptable residual standard deviation is typically below 5 millimeters for well-calibrated sensors observing planes at 5-10 meter range.
+Residuals exceeding 10-20 millimeters indicate calibration deficiencies requiring refinement.
+
+% #### Overlap Region Consistency
+
+In regions where sensor fields of view overlap, the same physical features should produce closely aligned point returns from multiple sensors.
+Visual inspection of merged point clouds in overlap regions, examining structural features such as corners, edges, and vegetation, provides qualitative confirmation of alignment quality.
+
+Discontinuities or offsets at overlap boundaries, where points from one sensor exhibit systematic displacement relative to points from another sensor observing the same feature, indicate calibration errors.
+
+% #### Edge Alignment
+
+Vertical edges, such as poles, building corners, and buoy surfaces, should produce continuous linear features when point clouds from all three sensors are merged into the common reference frame.
+Discontinuities, angular kinks, or lateral offsets at the boundaries where coverage from one sensor transitions to coverage from another sensor reveal rotational or translational calibration errors.
+
+Quantitative edge alignment assessment segments linear features spanning multiple sensor fields of view and measures the residual distances from points to the fitted line.
+Sub-centimeter residuals confirm adequate calibration for fusion applications.
+
+% ### LiDAR-to-Platform and LiDAR-to-Camera Calibration
+
+After establishing unified LiDAR coordinates via sensor-to-sensor calibration, the LiDAR reference frame must be related to the platform frame and camera frames to enable multi-sensor fusion and world-frame coordinate transformations.
+
+% #### Geometric Measurement Approach
+
+The transformation from the center LiDAR sensor to the platform origin can be determined via direct geometric measurement using precision measurement tools.
+
+The calibration procedure establishes a mechanical datum defining the platform coordinate origin, typically selected at the vessel center of gravity or GPS antenna mounting point for convenience in GPS/INS integration.
+Physical measurements using calipers, laser distance meters, or coordinate measurement machines determine the XYZ offset from the platform origin to the LiDAR sensor origin.
+Angular orientation, describing the roll, pitch, and yaw of the LiDAR sensor relative to platform axes, is determined using inclinometers or precision alignment jigs.
+
+This approach provides transformation estimates accurate to approximately ±10 millimeters in translation and ±1 degree in rotation, typically sufficient for maritime perception applications where object dimensions range from tens of centimeters to meters.
+
+For the Minion platform, the platform frame origin was established at the center LiDAR sensor position, simplifying the LiDAR-to-platform transformation to an identity transformation for the center sensor.
+The left and right LiDAR sensors relate to the platform frame through the previously-established LiDAR-to-LiDAR calibrations.
+
+% #### Validation and Refinement Through Target Observation
+
+More precise calibration can be achieved by observing calibration targets with known positions in both LiDAR and camera coordinate systems.
+
+A retroreflective calibration board is positioned at a precisely-measured location in the platform frame.
+LiDAR observation of the calibration board provides plane parameters extracted via point cloud plane fitting.
+Camera observation of a checkerboard pattern on the board surface, combined with intrinsic and camera extrinsic calibration, computes the board pose in the camera frame.
+
+Given the board pose in the platform frame from physical measurement, the board pose in the camera frame from vision-based estimation, and the board pose in the LiDAR frame from plane fitting, the system of transformations can be solved to determine the LiDAR-to-platform and refine the LiDAR-to-camera transformations.
+
+Multi-position refinement, repeating this procedure with the board at multiple positions and orientations, averages out measurement noise and validates consistency across geometric configurations.
+
+% ### Integration with ROS tf2 Framework
+
+The calibrated transformations are published as static transforms in the ROS coordinate frame tree, enabling automated multi-sensor coordinate conversions.
+
+% ```xml
+% <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_center_to_base">
+%   <arg name="x" value="0.0"/>
+%   <arg name="y" value="0.0"/>
+%   <arg name="z" value="0.0"/>
+%   <arg name="qx" value="0.0"/>
+%   <arg name="qy" value="0.0"/>
+%   <arg name="qz" value="0.0"/>
+%   <arg name="qw" value="1.0"/>
+%   <arg name="frame_id" value="platform_base"/>
+%   <arg name="child_frame_id" value="livox_center"/>
+% </node>
+% ```
+
+The tf2 library composes these static transformations with camera extrinsics and time-varying GPS/INS pose transformations to enable queries such as "transform LiDAR point from `livox\_center` frame to `camera\_optical\_frame` at timestamp $T$," automatically accounting for vehicle motion during the time interval between LiDAR point acquisition and camera image capture.
+
+% ### Application to Temporal Aggregation and Motion Compensation
+
+The temporal aggregation methodology employed for LiDAR data processing relies critically on accurate LiDAR-to-platform extrinsics.
+
+LiDAR point clouds are acquired over extended time intervals, during which the vessel undergoes translation and rotation due to motion through the water.
+To produce geometrically-consistent aggregated point clouds, individual points must be transformed from the sensor frame at their acquisition time to an inertial world frame, accounting for vehicle pose at the precise moment of point measurement.
+
+The transformation chain proceeds as follows:
+
+1. **Sensor to Platform**: Transform LiDAR points from the sensor frame to the platform frame using the calibrated extrinsic transformation.
+2. **Platform to World**: Transform from the platform frame to the inertial world frame using the GPS/INS pose estimate at the point acquisition timestamp.
+3. **Temporal Aggregation**: Accumulate points from multiple time steps in the common world frame.
+4. **World to Camera**: When projecting aggregated points onto a camera image, transform from world frame through the platform frame at image capture time to the camera frame.
+5. **Image Projection**: Project camera-frame points to pixel coordinates using intrinsic calibration.
+
+Errors in LiDAR extrinsics propagate through this transformation chain, causing spatial misalignment proportional to range and angular error magnitude.
+A one-degree rotation error, for example, produces approximately 17 millimeters lateral offset per meter of range, negligible at close range but exceeding tens of centimeters for observations beyond 10 meters.
+
+This error propagation underscores the importance of sub-degree calibration accuracy for long-range maritime perception applications.
+
+% ### Calibration Persistence and Maintenance
+
+The Livox Horizon's onboard calibration storage ensures that sensor-to-sensor transformations persist across power cycles, firmware updates, and system reconfigurations.
+This eliminates calibration drift that would occur with software-only transformations applied at runtime, improving long-term system reliability.
+
+However, onboard storage also implies that recalibration requires access to Livox proprietary calibration tools.
+Field modifications or validation cannot be performed through standard ROS or open-source software tools alone.
+
+% #### Validation Schedule
+
+A systematic validation schedule maintains calibration quality throughout the system lifecycle.
+
+**Initial commissioning** requires full calibration with multi-position target observations and comprehensive validation of plane alignment residuals, overlap consistency, and edge alignment quality.
+
+**Periodic validation** at quarterly intervals checks calibration persistence through target observations and overlap consistency assessment, detecting gradual degradation from mechanical wear or thermal cycling.
+
+**Event-triggered recalibration** is required after mechanical impact from collisions or hard grounding, sensor remounting due to maintenance or upgrades, or observed point cloud misalignment during operation.
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{HDR Extrinsic Transform} \label{HDR_extrinsic}
+
+Extrinsic calibration determines the six-degree-of-freedom transformation, comprising three-dimensional translation and three-dimensional rotation, relating each camera's coordinate system to a common platform reference frame.
+Combined with intrinsic calibration, extrinsic parameters enable transformation of observations between sensor coordinate systems, projection of LiDAR points onto camera images, and registration of multi-modal sensor data for fusion applications.
+
+% ### Coordinate Frame Definitions
+
+The multi-sensor platform employs several coordinate frames that must be precisely related through calibrated transformations.
+
+The **camera frame** has its origin at the camera's optical center, with the Z-axis pointing along the optical axis into the scene, the X-axis pointing right, and the Y-axis pointing down, following standard computer vision convention.
+
+The **LiDAR frame** has its origin at the primary LiDAR sensor location, with coordinate axes defined by the sensor manufacturer's specification.
+For the Livox Horizon sensors, the manufacturer defines a Z-up, X-forward coordinate system.
+
+The **platform frame** is a vessel-fixed reference frame with origin at a convenient mechanical datum.
+For the Minion platform, the platform frame origin is located at the center LiDAR sensor position, with axes aligned with vessel principal directions: X-forward along the vessel longitudinal axis, Y-starboard along the lateral axis, and Z-down along the vertical axis.
+
+The **world frame** is an inertial reference frame defined by the GPS/INS system, with position expressed in WGS84 geographic coordinates and orientation relative to true north and local gravity.
+
+Extrinsic calibration establishes the transformation from camera frames to the platform frame, which can then be related to LiDAR and world frames via additional calibration steps.
+
+% ### Extrinsic Transformation Model
+
+The transformation from camera coordinates to platform coordinates combines rotation and translation:
+
+\begin{equation}
+    \mathbf{p}_{\text{platform}} = \mathbf{R}_{\text{cam}}^{\text{plat}} \mathbf{p}_{\text{camera}} + \mathbf{t}_{\text{cam}}^{\text{plat}}    
+\end{equation}
+
+
+where $\mathbf{R}_{\text{cam}}^{\text{plat}}$ is the three-by-three rotation matrix, $\mathbf{t}_{\text{cam}}^{\text{plat}}$ is the three-by-one translation vector, $\mathbf{p}_{\text{camera}}$ is a point expressed in camera coordinates, and $\mathbf{p}_{\text{platform}}$ is the same point expressed in platform coordinates.
+
+The rotation can be parameterized as a rotation matrix, Euler angles describing roll, pitch, and yaw, axis-angle representation, or quaternion.
+For calibration estimation, the axis-angle parameterization, also known as Rodrigues representation, is commonly used due to its minimal three-parameter representation that avoids the singularities inherent in Euler angle formulations.
+
+% ### Calibration Methodology
+
+Camera-to-platform extrinsic calibration employs target-based approaches where a calibration pattern with known geometry is observed simultaneously by the camera and a reference measurement system.
+
+% #### Target-Based Calibration with LiDAR Reference
+
+The calibration methodology exploits simultaneous observation of a checkerboard calibration target by both camera and LiDAR sensors.
+The same checkerboard pattern used for intrinsic calibration serves as the extrinsic calibration target.
+
+The calibration procedure begins with data collection, capturing synchronized camera images and LiDAR point clouds with the checkerboard positioned at multiple locations within the overlapping sensor fields of view.
+For each camera-LiDAR pair, multiple checkerboard positions are recorded, providing geometric diversity that improves calibration robustness.
+
+Feature extraction identifies checkerboard corners in the camera image using the intrinsically-calibrated camera model.
+OpenCV's `findChessboardCorners` function detects corner locations with sub-pixel refinement, establishing two-dimensional image coordinates corresponding to known three-dimensional positions on the calibration board.
+
+Simultaneously, the LiDAR point cloud is processed to extract the planar surface of the calibration board.
+Points corresponding to the checkerboard are segmented based on spatial proximity and planarity constraints.
+The three-dimensional positions of checkerboard corners are extracted by intersecting the fitted calibration board plane with the known corner spacing and grid topology.
+
+Pose estimation solves the Perspective-n-Point problem to determine the camera-to-checkerboard transformation.
+OpenCV's `solvePnP` algorithm estimates the rotation and translation that best align the three-dimensional checkerboard corner positions with their observed two-dimensional image projections, given the intrinsic camera parameters.
+
+The LiDAR-to-checkerboard transformation is similarly computed by expressing the checkerboard corner positions, extracted from the LiDAR point cloud, in the LiDAR coordinate frame.
+
+Transformation composition combines the camera-to-checkerboard transformation with the inverse of the LiDAR-to-checkerboard transformation to obtain the camera-to-LiDAR extrinsic transformation:
+
+\begin{equation}
+    \mathbf{T}_{\text{cam}}^{\text{lidar}} = \mathbf{T}_{\text{target}}^{\text{lidar}} \cdot \left(\mathbf{T}_{\text{target}}^{\text{cam}}\right)^{-1}    
+\end{equation}
+
+where $\mathbf{T}$ denotes four-by-four homogeneous transformation matrices combining rotation and translation.
+
+Multi-position refinement repeats this process with the checkerboard at multiple locations and orientations.
+Averaging the resulting transformations reduces the impact of measurement noise and individual position estimation errors.
+Consistency across multiple positions validates the calibration quality; significant variation between position-specific estimates indicates inadequate corner detection, insufficient checkerboard planarity, or systematic errors requiring investigation.
+
+% #### Direct Camera-LiDAR Optimization
+
+An alternative formulation directly optimizes the camera-to-LiDAR transformation by minimizing reprojection error when LiDAR points are transformed to the camera frame and projected onto the image plane.
+
+The optimization minimizes:
+
+\begin{equation}
+    E = \sum_{i=1}^{N} \left\| \mathbf{u}_i - \pi(\mathbf{K}, \mathbf{R}, \mathbf{t}, \mathbf{X}_i) \right\|^2
+\end{equation}
+
+
+where $\mathbf{u}_i$ represents observed two-dimensional feature locations in the image, $\mathbf{X}_i$ represents corresponding three-dimensional points in the LiDAR frame, $\pi()$ is the projection function applying rotation $\mathbf{R}$, translation $\mathbf{t}$, and camera intrinsic matrix $\mathbf{K}$, and $N$ is the number of correspondences.
+
+This formulation directly estimates the transformation that best explains the observed camera-LiDAR correspondences, avoiding the intermediate step of independent pose estimation for each checkerboard position.
+Non-linear optimization algorithms, such as Levenberg-Marquardt, iteratively refine the rotation and translation parameters to minimize the sum of squared reprojection errors.
+
+% #### Affine Transformation for Intrinsic Error Compensation
+
+Thompson's calibration methodology for the Minion platform employed affine transformations rather than rigid transformations for camera-to-LiDAR calibration.
+While rigid transformations constrain the transformation to rotation and translation only, preserving distances and angles, affine transformations additionally permit uniform scaling and shear.
+
+The rationale for employing affine transformations stems from the observation that checkerboard dimensions appeared to increase with distance when measured in image space, suggesting residual errors in the intrinsic calibration that were not fully captured by the radial distortion model.
+By allowing scale and shear in the extrinsic transformation, the affine approach compensates for systematic intrinsic modeling errors, improving alignment quality for objects at varying distances.
+
+However, this approach conflates intrinsic and extrinsic parameter estimation, potentially masking intrinsic calibration deficiencies that should be addressed through improved intrinsic calibration data collection or refined distortion modeling.
+For production systems, iterative refinement of intrinsic parameters to minimize distance-dependent scale errors is preferable to absorbing intrinsic errors into extrinsic transformations.
+
+% ### Calibration Validation
+
+Extrinsic calibration quality is validated through multiple complementary criteria.
+
+% #### Reprojection Error Analysis
+
+Reprojection error quantifies the pixel-space discrepancy between observed feature locations and the locations predicted by projecting three-dimensional calibration points through the estimated extrinsic and intrinsic transformations:
+
+\begin{equation}
+    \text{RMS reprojection error} = \sqrt{\frac{1}{N}\sum_{i=1}^{N} \left\| \mathbf{u}_i - \hat{\mathbf{u}}_i \right\|^2} 
+\end{equation}
+
+where $\mathbf{u}_i$ is the observed image location of feature $i$ and $\hat{\mathbf{u}}_i$ is the predicted location obtained by projecting the corresponding three-dimensional LiDAR point through the calibrated camera model.
+
+Well-calibrated systems achieve RMS reprojection errors below 1-2 pixels.
+Errors exceeding 2-3 pixels suggest calibration inadequacy, requiring investigation of intrinsic parameter quality, extrinsic estimation robustness, or systematic modeling errors.
+
+% #### Visual Overlay Inspection
+
+Visual inspection of LiDAR point clouds overlaid on camera images provides intuitive validation of calibration quality.
+LiDAR returns are transformed from the LiDAR frame to the camera frame using the estimated extrinsic parameters, then projected onto the image plane using the intrinsic camera model.
+
+Accurate calibration produces alignment between LiDAR returns and corresponding image features.
+Vertical structures such as poles, buoys, and building edges should exhibit precise alignment between LiDAR points and image intensity gradients.
+Horizontal surfaces should demonstrate consistent depth agreement between LiDAR range measurements and image-derived structure.
+
+Systematic offsets, where LiDAR points consistently appear displaced from corresponding image features, indicate translation errors in the extrinsic calibration.
+Rotational misalignments manifest as distance-dependent offsets, where alignment quality degrades with increasing range from the camera optical center.
+
+% #### Cross-Validation with Known Geometry
+
+Quantitative validation compares measurements of distances and angles to features visible in both camera and LiDAR against ground truth.
+
+Distance validation measures the range to a target at a known position.
+Camera-derived depth, computed by projecting the target's image location through the intrinsic and extrinsic models, is compared with the direct LiDAR range measurement.
+Discrepancies exceeding 5% of the true range suggest calibration error requiring refinement.
+
+Angular validation compares the angular separation between features as measured in image space, accounting for intrinsic parameters, with the angular separation computed from LiDAR-derived three-dimensional positions.
+Angular measurement errors exceeding 2-3 degrees indicate rotational calibration deficiencies.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Camera Intrinsic Calibration} \label{HDR_intrinsic}
+
+% # Camera Intrinsic Calibration
+
+Intrinsic calibration characterizes the internal geometric and optical properties of the Leopard Imaging IMX490 cameras, quantifying lens distortion, focal length, principal point location, and sensor pixel geometry.
+Accurate intrinsic parameters are essential for projecting three-dimensional world coordinates into two-dimensional image coordinates, enabling LiDAR point cloud overlay on camera images for sensor fusion and enabling geometric measurements from image observations.
+
+Camera intrinsics refer to a camera's unique properties which define the path of light through its optical system.
+These properties functionally define the path of any ray of light through the camera lens to the exact location on the camera sensor and provide a geometric translation from a position in the three-dimensional camera frame to a two-dimensional pixel location in the image frame.
+The intrinsic parameters are generally represented as a three-by-three matrix:
+
+\begin{equation} \label{eq:K_matrix}
+\begin{split}
+    \mathbf{K} = \begin{bmatrix} f_x & s & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix}
+    \end{split}
+\end{equation}
+
+where $(f_x, f_y)$ represents the focal length of the camera lens in pixels, $(c_x, c_y)$ represents the $(x, y)$ position measured in pixels in the image frame that is centered in the optical path, known as the principal point, and $s$ is the skew representing the angle between the vertical and horizontal axes of the image frame.
+For modern camera sensors with orthogonal pixel arrays, skew is generally assumed to be $s = 0$.
+
+Lens distortion introduces nonlinear deviations from the ideal pinhole camera model.
+Radial distortion, caused by spherical aberration in the camera lens, is the dominant distortion component and is represented as a polynomial with coefficients $k_1$, $k_2$, $k_3$:
+
+\begin{equation} \label{eq:spherical_distortion}
+\begin{split}
+x_d &= x_n(1 + k_1 r^2 + k_2 r^4 + k_3 r^6) \\
+y_d &= y_n(1 + k_1 r^2 + k_2 r^4 + k_3 r^6)
+\end{split}
+\end{equation}
+
+where $(x_n, y_n)$ are normalized image coordinates, $(x_d, y_d)$ are distorted coordinates, and $r = \sqrt{x_n^2 + y_n^2}$ is the radial distance from the principal point.
+While camera manufacturers generally publish nominal intrinsic values as part of sensor specifications, calibration is required to account for manufacturing tolerances and individual lens variations.
+
+% ### Calibration Methodology
+
+Camera intrinsic calibration employs the standard checkerboard pattern approach, widely adopted in computer vision due to its well-defined geometry and the availability of mature implementations in OpenCV, MATLAB, and other computer vision libraries.
+
+% #### Calibration Target
+
+A planar checkerboard pattern with known physical dimensions serves as the calibration target.
+The pattern consists of alternating black and white squares arranged in a grid, with corner points providing precisely-defined feature locations for correspondence establishment between three-dimensional target geometry and two-dimensional image observations.
+
+For the Minion platform calibration, a six-by-nine checkerboard pattern with 100 mm square dimensions was employed.
+The calibration board was hand-marked using calipers and compass to ensure dimensional accuracy, then painted with high-contrast colors to maximize corner detection reliability under varying maritime lighting conditions.
+
+% #### Data Collection Procedure
+
+Calibration images are captured with the checkerboard pattern positioned at multiple locations and orientations throughout the camera field of view.
+Comprehensive spatial coverage is essential for robust parameter estimation across the full operational range of the sensor.
+
+Coverage requirements include images with the calibration pattern at varying depths, spanning the range from 0.5 meters to 60 meters for maritime perception applications.
+Angular diversity is achieved by varying the roll, pitch, and yaw orientation of the calibration board relative to the camera optical axis.
+Spatial position diversity ensures that calibration features appear at the center, edges, and corners of the image frame, providing constraint on distortion parameters across the full sensor area.
+
+Twenty to fifty images per camera provide sufficient geometric diversity for robust parameter estimation.
+Camera focus is locked at the operational setting used during data collection, typically set to infinity focus for long-range maritime detection applications.
+Exposure is adjusted to ensure clear visibility of checkerboard corners without saturation or shadow artifacts that would degrade corner detection accuracy.
+
+Calibration was performed indoors with controlled lighting to avoid shadows and glare that would degrade corner detection reliability.
+For the Minion platform, 23 simultaneous LiDAR scans and camera recordings were captured with the checkerboard placed at various locations and distances within each camera's field of view.
+While only camera sensor data are required for intrinsic calibration, LiDAR data was captured simultaneously to support subsequent extrinsic calibration procedures.
+
+% #### Calibration Algorithm
+
+The checkerboard-based calibration approach estimates intrinsic parameters by minimizing the error between observed checkerboard corner locations in captured images and projected corner locations predicted by a pinhole camera model with distortion.
+
+MATLAB's Camera Calibration Toolbox implements Zhang's method, a widely-adopted calibration algorithm that identifies intersecting points formed by checkerboard squares and measures their pixel distances.
+This information is cross-referenced with the physical dimensions of the checkerboard pattern to establish correspondences between three-dimensional world coordinates and two-dimensional image coordinates.
+
+The calibration optimization minimizes reprojection error:
+
+\begin{equation}
+    E = \sum_{i=1}^{N} \sum_{j=1}^{M} \left\| \mathbf{u}_{ij} - \pi(\mathbf{K}, \mathbf{k}, \mathbf{R}_i, \mathbf{t}_i, \mathbf{X}_j) \right\|^2
+\end{equation}
+
+
+where $\mathbf{u}_{ij}$ represents the observed pixel location of checkerboard corner $j$ in image $i$, $\mathbf{X}_j$ represents the known three-dimensional position of corner $j$ on the calibration board, $\pi()$ is the projection function applying intrinsic matrix $\mathbf{K}$, distortion coefficients $\mathbf{k}$, and the rotation $\mathbf{R}_i$ and translation $\mathbf{t}_i$ of the calibration board in image $i$.
+
+The optimization iteratively refines estimates of focal length $(f_x, f_y)$, principal point $(c_x, c_y)$, and distortion coefficients $(k_1, k_2, k_3)$ to minimize the sum of squared reprojection errors across all observed checkerboard corners in all calibration images.
+
+% #### Calibration Validation
+
+Calibration quality is assessed through reprojection error analysis.
+Root-mean-square reprojection error quantifies the average pixel-space discrepancy between observed checkerboard corners and corners predicted by projecting the known calibration board geometry through the estimated camera model:
+
+$$\text{RMS error} = \sqrt{\frac{1}{NM}\sum_{i=1}^{N} \sum_{j=1}^{M} \left\| \mathbf{u}_{ij} - \hat{\mathbf{u}}_{ij} \right\|^2}$$
+
+where $\hat{\mathbf{u}}_{ij}$ represents the projected pixel location of corner $j$ in image $i$ using the estimated intrinsic parameters.
+
+Acceptable reprojection error varies with image resolution and application requirements.
+For the Minion's 2880-by-1860 pixel IMX490 cameras, RMS reprojection errors below 1-2 pixels indicate well-calibrated systems suitable for multi-sensor fusion applications.
+Reprojection errors exceeding 2-3 pixels suggest inadequate calibration data coverage, suboptimal corner detection, or systematic modeling errors requiring investigation.
+
+Visual inspection of undistorted images provides qualitative validation that straight lines in the physical world appear straight after distortion correction, confirming the adequacy of the radial distortion model.
+% Matlab used for Intrinsic calculation - uses pinhole camera Approach \cite{matlab_calibration} \cite{matlab_vision}
