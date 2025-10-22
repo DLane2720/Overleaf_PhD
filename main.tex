@@ -22,6 +22,13 @@
 % acronyms
 \usepackage[nolist]{acronym} 
 
+% preamble for Lit-review tables:
+\usepackage{tabularx,ragged2e,makecell}
+\renewcommand\theadfont{\bfseries}
+\renewcommand\cellalign{tl} % top-left for makecell
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+
 \title{A STUDY IN OBJECT DETECTION AND CLASSIFICATION
 PERFORMANCE BY SENSING MODALITY FOR AUTONOMOUS
 SURFACE VESSELS} % the title should be included here
@@ -208,26 +215,158 @@ This research focuses on specific maritime object categories that are relevant t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Literature Review} \label{litReview}
 
-% \section{Autonomous Perception} \label{LR:Perception}
+% # Chapter 2: Literature Review
+% ## Sensor Fusion for Autonomous Maritime Object Detection
 
-% \section{Object Detection} \label{LR:Detection}
-% \subsection{Camera} \label{LR:Detection_Cam}
-% \subsection{LiDAR} \label{LR:Detection_LiDAR}
-% \subsection{Fusion} \label{LR:Detection_Fusion}
+% \section{Autonomous Surface Vessel Perception}
 
-% \subsection{Object Classification} \label{LR:Classification}
+% Autonomous Surface Vessels (ASVs) represent a promising frontier in marine robotics, with applications ranging from search and rescue operations to environmental monitoring and maritime security. Unlike terrestrial autonomous systems that operate in relatively controlled environments, ASVs must navigate complex, dynamic maritime environments characterized by challenging lighting conditions, water reflections, and dynamic platform motion. Understanding the perceptual capabilities required for safe autonomous navigation is therefore fundamental to ASV development.
 
-% \section{Autonomous Ground Systems} \label{LR:AGS}
+% Maritime robotics has experienced significant growth in recent years, driven by both academic research initiatives and government-funded programs. \cite{li2023a,bai2022} provide comprehensive surveys of USV applications and current research directions, highlighting the increasing sophistication of autonomous maritime systems. Recent initiatives such as DARPA's Sea Hunter program and the Maritime RobotX Challenge have accelerated the development of functional ASV platforms and fostered collaboration between academic and industry researchers. \cite{eckstein2024,holland,lachguar} document these significant milestones and the evolution of competition platforms, which have become important testbeds for autonomous maritime perception and control algorithms.
 
-% \subsection{Camera} \label{LR:AGS_Cam}
-% \subsection{LiDAR} \label{LR:AGS_LiDAR}
-% \subsection{Fusion} \label{LR:AGS_Fusion}
+% For ASVs to operate autonomously, they must be equipped with perception systems capable of reliably detecting, tracking, and classifying objects of interest in real time. This capability must extend across a wide range of environmental conditions, from clear weather to fog and rain, and must handle the unique challenges posed by water-based operation. \cite{huang2024a} introduces the NIST Autonomy Levels for Unmanned Systems (ALFUS) framework, which provides a formal taxonomy for characterizing autonomy levels in unmanned systems. This framework is particularly valuable for ASV applications, as it establishes common terminology for discussing the degree of autonomous decision-making and intervention required in maritime contexts.
 
-% \section{Autonomous Surface Vessels} \label{LR:ASV}
+% \section{Sensing Modalities for Environmental Perception}
 
-% \subsection{Camera} \label{LR:ASV_Cam}
-% \subsection{LiDAR} \label{LR:ASV_LiDAR}
-% \subsection{Fusion} \label{LR:ASV_Fusion}
+% The foundation of any autonomous system is its sensory apparatus. Modern autonomous vehicles, including ASVs, typically employ multiple complementary sensors to achieve robust environmental perception. The three primary sensing modalities in contemporary autonomous systems are monocular and stereo cameras, LiDAR (Light Detection and Ranging), and radar. Each modality offers distinct advantages and limitations.
+
+% \cite{yeong2021a} presents a comprehensive end-to-end review of sensors and sensor fusion technologies in autonomous vehicles, covering cameras, LiDAR, and radar with detailed analysis of their characteristics, operational ranges, and performance under various conditions. \cite{roriz2022} provides an in-depth survey specifically focused on automotive LiDAR technology, examining the underlying physics, hardware implementations, and signal processing challenges. For maritime applications, \cite{clunie2021} documents a practical perception system for ASVs incorporating monocular camera, LiDAR, and marine radar, demonstrating the feasibility of multi-modal sensing in maritime environments. \cite{carthel2007} presents foundational work in maritime multi-sensor tracking and fusion from the early 2000s, establishing baseline approaches for maritime surveillance.
+
+% Camera-based perception offers high spatial resolution and semantic richness, making it particularly valuable for fine-grained object recognition and scene understanding. However, cameras are sensitive to lighting conditions and struggle in low-light or highly reflective environments common in maritime settings. LiDAR provides precise 3D geometric information and performs consistently across lighting conditions, but produces sparse point clouds in maritime environments due to water reflections and reduced point cloud density at long ranges. Radar offers all-weather sensing capabilities and measures radial velocity, but provides lower angular resolution than optical sensors.
+
+% A critical consideration for maritime environments is the challenge of high dynamic range imaging. \cite{liebergall2024,landaeta2024} present empirical studies comparing standard and high dynamic range (HDR) imagery for maritime object detection, demonstrating that HDR imaging can significantly improve detection performance in the challenging lighting conditions characteristic of maritime environments. \cite{wang2019} shows the benefits of HDR imaging for object detection in other challenging lighting scenarios, suggesting broad applicability of this approach.
+
+% \section{Object Detection with Visual and LiDAR Data}
+
+% \subsection{Vision-Based Object Detection}
+
+% Modern visual object detection has been revolutionized by deep convolutional neural networks (CNNs). The field developed progressively from foundational architectures to highly specialized and efficient models. \cite{lecun1998} introduced the original CNN architecture (LeNet) for document recognition, establishing the core principles of convolutional feature extraction. \cite{krizhevsky2017} achieved a breakthrough in 2012 with AlexNet, winning the ImageNet competition and demonstrating the power of deep learning for visual recognition. This success inspired the development of increasingly sophisticated architectures designed for efficient feature extraction at multiple scales.
+
+% For object detection specifically, the R-CNN family of methods represents a crucial development. \cite{girshick2014} introduced R-CNN (Region-based CNN), which demonstrated that combining region proposals with CNN feature extraction could achieve state-of-the-art object detection. This seminal work established the two-stage detection paradigm that continues to influence modern architectures.
+
+% Transfer learning and domain adaptation techniques have proven essential for adapting general-purpose visual detectors to specialized domains such as maritime environments. \cite{tzeng2017} presents adversarial domain adaptation methods that enable models trained on one distribution to generalize effectively to different distributions. \cite{guo2023} specifically investigates the transferability of YOLOv5-based water surface object detection models, demonstrating that practical transfer learning strategies can effectively adapt general-purpose detectors to maritime applications.
+
+% Maritime vision-based detection presents unique challenges distinct from terrestrial autonomous driving. Recent surveys document these challenges comprehensively. \cite{yang2024} reviews intelligent ship marine object detection methods based on RGB cameras, focusing on maritime-specific detection approaches. \cite{zhang2022a} specifically addresses object detection in foggy maritime environments, investigating the performance degradation caused by atmospheric effects. \cite{prasad2017} surveys video processing techniques for maritime object detection and tracking from electro-optical sensors, documenting classical and contemporary approaches. \cite{zhang2021} presents a survey on deep learning-based marine object detection, analyzing the application of neural networks to maritime detection tasks. \cite{rekavandi2022} provides a practical guide to maritime small object detection using deep learning, addressing the particular challenge of detecting small vessels at distance.
+
+% Efficient detection architectures have become increasingly important as computational constraints tighten on autonomous platforms. \cite{tan2020} introduces EfficientDet, which provides scalable object detection at multiple efficiency-accuracy tradeoffs. \cite{shao2022} develops a multi-scale object detection model specifically optimized for autonomous ship navigation, demonstrating the value of architecture specialization for maritime applications.
+
+% \subsection{LiDAR-Based Object Detection}
+
+% LiDAR point clouds present a different representation of the 3D world compared to images, requiring fundamentally different feature extraction approaches. Early work established two main paradigms for point cloud processing: point-based methods that process individual points, and voxel-based methods that discretize point clouds into volumetric grids.
+
+% \cite{garcia-garcia2016} presented PointNet, an influential 3D CNN architecture for point cloud classification that pioneered end-to-end point cloud processing. Building on this foundation, \cite{shi2019} developed PointRCNN, which combines region proposal generation with point cloud feature extraction for 3D object detection, establishing a two-stage detection pipeline analogous to image-based R-CNN methods.
+
+% Voxel-based approaches discretize point clouds into 3D grids, enabling efficient convolution operations. \cite{yan2018} introduced SECOND (Sparsely Embedded Convolutional Detection), which improved upon earlier voxel-based methods through sparse convolution operations that reduce computational burden while maintaining detection accuracy.
+
+% Hybrid methods that combine point and voxel representations achieve complementary benefits. \cite{shi2021} presents PV-RCNN (Point-Voxel RCNN), which integrates voxel-based feature extraction for high-level scene understanding with point-based feature extraction for fine-grained localization, advancing the state-of-the-art in 3D object detection.
+
+% Maritime LiDAR applications face distinct challenges compared to terrestrial autonomous driving. \cite{thompson2017} provides a comprehensive treatment of maritime object detection, tracking, and classification using LiDAR and vision-based sensor fusion, establishing foundational approaches for maritime LiDAR processing. \cite{thompson2019} specifically addresses efficient LiDAR-based object segmentation and mapping for maritime environments. \cite{kunz2005} presents early work on detecting small targets in marine environments using laser radar, documenting the particular challenges of water reflections and sparsity. \cite{xie2024} addresses the contemporary challenge of reliable LiDAR-based ship detection and tracking for ASVs in busy maritime environments, incorporating practical considerations such as platform motion and dynamic scenes.
+
+% LiDAR SLAM (Simultaneous Localization and Mapping) techniques complement object detection by providing robust ego-motion estimation. \cite{shan2020} presents LIO-SAM, a tightly-coupled LiDAR-inertial odometry system that leverages both sensor modalities for accurate trajectory estimation and mapping. \cite{biasutti2019} introduces LU-Net for efficient 3D LiDAR point cloud semantic segmentation, contributing to the broader challenge of understanding maritime scenes beyond object detection.
+
+% \section{Sensor Fusion Paradigms}
+
+% While individual sensors provide valuable information, the integration of multiple complementary modalities through sensor fusion offers superior perception capabilities. Recent years have witnessed significant advances in fusion methodologies, supported by comprehensive taxonomies and extensive empirical validation.
+
+% \subsection{Fusion Surveys and Frameworks}
+
+% \cite{huang2024a} presents the most recent comprehensive survey of multi-modal sensor fusion for autonomous driving perception, proposing an innovative taxonomy that organizes fusion methods by fusion stage rather than traditional categorizations. This framework clarifies the fundamental question of "what to fuse, when to fuse, and how to fuse," providing a valuable analytical structure for understanding fusion approaches. \cite{feng2021} addresses these same questions systematically, analyzing the methodological choices in designing fusion networks for object detection and semantic segmentation in autonomous driving. \cite{cui2022} provides another detailed review of deep learning-based fusion methods for image and point cloud data, with emphasis on autonomous driving applications. \cite{yeong2021a} contributes a general fusion overview that situates sensor fusion within the broader context of sensor characteristics, calibration, and system design. \cite{tufekci2023} offers a focused review specifically examining LiDAR-image fusion methods in 3D object detection.
+
+% \subsection{Early Fusion Approaches}
+
+% Early fusion methods concatenate raw or minimally processed sensor data before feature extraction. This approach enables the neural network to learn complex cross-modal patterns from the earliest stages. \cite{chen2017} presents MV3D (Multi-View 3D Object Detection Network), an influential early fusion method that combines bird's-eye view LiDAR features with front-view and top-view image features. \cite{geiger2012} established the KITTI benchmark, which has become foundational for 3D object detection research and demonstrates baseline early fusion approaches.
+
+% \subsection{Mid-Level Fusion Approaches}
+
+% Mid-level fusion integrates features extracted from different modalities before final detection heads. This approach balances the flexibility of late fusion with the information richness of early fusion. \cite{xu2023} presents FusionRCNN, a feature-level fusion approach for 3D object detection combining LiDAR and camera data. \cite{ma2024} develops a multi-modal fusion framework emphasizing mid-level integration of LiDAR and camera features.
+
+% \subsection{Late Fusion Approaches}
+
+% Late fusion processes each modality independently and fuses the resulting detection candidates. This approach offers modularity and computational efficiency, as each modality can be processed on separate hardware if desired. \cite{pang2020} introduces CLOCs (Camera-LiDAR Object Candidates Fusion), a late fusion approach that operates on detection candidates before Non-Maximum Suppression, demonstrating effective fusion of independently trained 2D and 3D detectors. \cite{liu2023} presents a real-time late fusion system combining LiDAR and camera data for autonomous driving.
+
+% \subsection{Transformer-Based Fusion Approaches}
+
+% Recent advances have demonstrated that transformer architectures, which excel at modeling long-range dependencies and global context, offer significant advantages for multi-modal fusion. \cite{vaswani2017} introduced the transformer architecture based on attention mechanisms, establishing the foundation for attention-based fusion methods.
+
+% \cite{bai2022a} presents TransFusion, a transformer-based approach to robust LiDAR-camera fusion for 3D object detection. TransFusion demonstrates particular advantages in handling robust fusion under challenging conditions such as bad illumination and sensor misalignment, problems that are especially acute in maritime environments. \cite{chitta2023} develops TransFuser, which applies transformers to end-to-end autonomous driving by fusing image and LiDAR representations using self-attention mechanisms at multiple resolutions. The reported 48\% reduction in average collisions per kilometer compared to geometry-based fusion approaches demonstrates the practical impact of transformer-based fusion. \cite{prakash2021} presents another multi-modal fusion transformer for end-to-end autonomous driving, achieving 76\% collision reduction relative to baseline fusion methods.
+
+% \cite{xiang2023} introduces FusionViT, a pure vision transformer-based framework for hierarchical 3D object detection via LiDAR-camera fusion. By implementing the entire fusion pipeline using ViT components, FusionViT demonstrates state-of-the-art performance on KITTI and Waymo benchmarks. \cite{gu2024} presents CLFT (Camera-LiDAR Fusion Transformer) for semantic segmentation in autonomous driving, employing a progressive-assemble strategy and cross-fusion approach. Notably, CLFT demonstrates robust performance even in challenging conditions such as rain and low illumination, suggesting particular promise for maritime applications where environmental robustness is critical.
+
+% \subsection{Maritime-Specific Fusion Approaches}
+
+% While the autonomous driving literature provides valuable insights, maritime-specific fusion considerations require dedicated attention. \cite{thompson2023} presents neural network-based fusion of multi-modal sensor data specifically designed for ASVs, addressing maritime-specific challenges such as platform dynamics and water reflections. \cite{farahnakian2020} analyzes multi-modal fusion architectures specifically for maritime vessel detection. \cite{haghbayan2018} addresses the particular challenge of efficient multi-sensor fusion in maritime environments, recognizing computational constraints on maritime platforms. \cite{farahnakian2018} develops object detection methods based on multi-sensor proposal fusion optimized for maritime environments. \cite{norbye} investigates camera-LiDAR sensor fusion in real-time for autonomous surface vessels, addressing practical system design considerations. \cite{subedi2020} demonstrates multi-modal fusion for a specific maritime application—autonomous mooring operations—illustrating the value of sensor fusion for precise maritime maneuvers.
+
+% \section{Temporal and Spatial Alignment in Fusion Systems}
+
+% The effectiveness of sensor fusion depends critically on accurate temporal and spatial alignment between sensors. Misalignment corrupts the information fusion process and can degrade performance below that of single-modality baselines. This section addresses calibration (spatial alignment) and synchronization (temporal alignment).
+
+% \subsection{Calibration Methodologies}
+
+% Sensor calibration establishes the spatial transformation (extrinsic parameters) between sensor coordinate frames. Classical approaches rely on calibration targets and manual intervention; however, these are burdensome in production systems. Recent years have witnessed significant progress in learning-based, target-less calibration.
+
+% \cite{schneider2017} presents RegNet, the first CNN-based approach to 6-DOF extrinsic calibration between LiDAR and camera. RegNet achieves mean calibration errors of 0.28° in rotation and 6 cm in translation, providing a practical alternative to target-based approaches. \cite{iyer2018} introduces CalibNet, a geometrically supervised self-supervised approach that requires neither calibration targets nor manual intervention. By training the network to maximize geometric and photometric consistency between images and point clouds, CalibNet enables automatic calibration without domain-specific annotations.
+
+% \cite{shi2020} develops CalibRCNN, which employs LSTM-based temporal feature extraction across consecutive frames to improve calibration accuracy. By leveraging temporal consistency, CalibRCNN refines the 6-DOF transformation estimates beyond what single-frame methods can achieve. \cite{yuan2020} presents RGGNet, which applies Riemannian geometry to tolerance-aware LiDAR-camera calibration with online adaptation. This approach is particularly valuable as it models the tolerance in calibration parameters, recognizing that perfect calibration is neither achievable nor necessary for effective fusion.
+
+% \cite{wu2021} addresses automatic calibration for stereo-camera and LiDAR systems designed for self-driving cars, contributing practical approaches to multi-modal calibration. \cite{xiao2024} presents CalibFormer, a transformer-based automatic calibration network achieving state-of-the-art performance with mean translation error of 0.8751 cm and rotation error of 0.0562° on the KITTI dataset. The substantial improvement over prior CNN-based methods suggests that attention mechanisms are particularly suited to the geometric reasoning required in calibration tasks.
+
+% The foundational work of \cite{furgale2013} presents a unified framework for joint temporal and spatial calibration of multi-sensor systems, enabling simultaneous estimation of time offsets and spatial transformations through continuous-time batch estimation. This work establishes the mathematical foundations for handling temporal and spatial misalignment as a unified optimization problem.
+
+% \subsection{Synchronization Approaches}
+
+% Beyond spatial calibration, temporal synchronization ensures that sensor measurements are accurately registered in time. This is particularly challenging in maritime environments where platform motion and dynamic scenes create rapidly changing environmental conditions.
+
+% \cite{zhu2024} discusses temporal synchronization in the context of camera, LiDAR, and IMU based multi-sensor fusion SLAM. \cite{liu2021} presents practical hardware synchronization systems for robotic computing, recognizing that software-based synchronization often achieves inadequate precision. \cite{ieee2008} documents the IEEE 1588-2008 Precision Time Protocol (PTP) standard, which provides network-based clock synchronization suitable for distributed sensor systems.
+
+% \subsection{Calibration and Synchronization in Maritime Contexts}
+
+% Maritime sensor fusion presents particular calibration and synchronization challenges due to platform dynamics, salt-water corrosion of precision hardware, and the three-dimensional nature of vessel motion. \cite{thompson2017} addresses these challenges in the context of maritime LiDAR and vision-based fusion, incorporating platform dynamics into calibration procedures. Careful attention to practical implementation of calibration and synchronization is essential for maritime systems, as the moving platform creates additional challenges beyond those addressed in terrestrial autonomous vehicle literature.
+
+% \section{Challenges in Maritime Perception}
+
+% Maritime autonomous systems must address environmental challenges distinct from those faced by terrestrial vehicles. Understanding these challenges is essential for effective perception system design.
+
+% \subsection{Water Reflections and Environmental Factors}
+
+% Water surfaces create specular reflections that corrupt both camera images and LiDAR measurements. \cite{kunz2005} identified water reflections as a primary challenge for LiDAR-based detection in marine environments, noting that LiDAR returns from water surfaces interfere with target detection. Contemporary maritime perception systems must address these reflections through either hardware design, signal processing, or learned robustness. \cite{xie2024} addresses the challenge of reliable LiDAR-based ship detection and tracking in busy maritime environments, where reflections, dynamic agents, and environmental variability create particularly difficult conditions. \cite{ahmed2024} presents the Seal Pipeline, a comprehensive approach to maritime object detection that incorporates IMU-based tilt correction and specialized Kalman filtering to achieve 25-30\% improvement in detection accuracy in maritime environments.
+
+% \subsection{Challenging Lighting Conditions}
+
+% Maritime environments present extreme lighting challenges ranging from bright sun reflections off water to dense fog and overcast conditions. \cite{zhang2022a} specifically investigates object detection in foggy maritime environments, documenting the severe performance degradation caused by atmospheric effects. \cite{liebergall2024} and \cite{landaeta2024} demonstrate that high dynamic range imaging offers substantial benefits for maritime object detection by capturing the full range of brightness values present in maritime scenes. \cite{wang2019} shows more broadly that HDR imaging benefits object detection in challenging lighting scenarios, suggesting wide applicability of this approach to maritime scenarios.
+
+% \subsection{Dynamic Platform Motion}
+
+% Unlike terrestrial vehicles with relatively stable orientations, maritime vessels experience continuous motion in all six degrees of freedom due to waves and currents. This dynamic motion creates unique challenges for both perception and control. \cite{shan2020} presents motion compensation techniques through LiDAR-inertial odometry that address platform dynamics. \cite{clunie2021} documents practical ASV perception system challenges including those posed by platform motion. \cite{ahmed2024} specifically incorporates IMU measurements for tilt correction in maritime object detection, demonstrating practical approaches to compensating for dynamic platform motion.
+
+% \subsection{Maritime Datasets and Benchmarks}
+
+% Development and validation of maritime perception systems requires representative datasets. \cite{su2023} provides a comprehensive survey of maritime vision datasets, analyzing their characteristics, applicability, and suitability for different research tasks. This survey is essential for understanding available resources and identifying gaps in maritime perception research. \cite{kim2022} documents the Singapore Maritime Dataset and YOLO-based detection methods. \cite{thompson2023} contributes a specialized dataset of multi-modal maritime sensor measurements collected from functional ASVs.
+
+% \section{Research Gaps and Motivation for Late Fusion Approaches}
+
+% While significant progress has been made in multi-modal perception for autonomous driving, several research gaps remain particularly acute in maritime contexts. Traditional fusion approaches optimize for terrestrial autonomous vehicles, which may not be optimal for maritime ASVs.
+
+% \subsection{Robust Late Fusion for Maritime Environments}
+
+% Late fusion approaches offer several advantages particularly relevant to maritime systems. By processing each modality independently and fusing only detection outputs, late fusion provides modularity, enabling independent optimization and hardware acceleration of each processing pipeline. This modularity is valuable for maritime systems that may operate under varying computational constraints.
+
+% \cite{pang2020} demonstrates effective late fusion through CLOCs, showing that carefully designed late fusion can match or exceed early fusion performance while maintaining computational efficiency. \cite{xu2023} provides comparative analysis of mid-level fusion approaches, enabling assessment of fusion methodology tradeoffs. \cite{feng2021} systematically addresses the question of "when to fuse," providing insights into fusion stage selection that are applicable to maritime contexts.
+
+% \subsection{Computational Efficiency for Embedded Platforms}
+
+% Maritime platforms operate under significant computational constraints. Unlike terrestrial autonomous vehicles with access to substantial computational resources, ASVs typically employ embedded processors such as NVIDIA Jetson platforms with limited power budgets. \cite{das2022} examines sensor fusion approaches considering computational constraints. \cite{kumar2020} addresses efficiency in LiDAR-camera distance estimation for embedded systems. \cite{haghbayan2018} specifically focuses on efficient multi-sensor fusion in maritime environments, recognizing that computational efficiency is critical for maritime system feasibility. \cite{liu2023} demonstrates real-time object detection combining LiDAR and camera fusion, achieving the temporal performance requirements for autonomous systems. \cite{tan2020} presents EfficientDet, offering scalable efficient architectures suitable for embedded deployment.
+
+% \subsection{Robustness to Sensor Misalignment and Degradation}
+
+% Maritime environments expose sensors to harsh conditions—salt spray, extreme temperatures, and vibration—that can degrade sensor performance and calibration. \cite{bai2022a} specifically addresses robustness of LiDAR-camera fusion to poor illumination and sensor misalignment. This robustness is particularly important in maritime contexts where sensor recalibration may be difficult and environmental conditions are more severe than terrestrial settings.
+
+% \subsection{Maritime Dataset and Algorithm Development}
+
+% The maritime perception literature, while growing, remains substantially smaller than the autonomous driving literature. \cite{su2023} documents available maritime datasets and highlights gaps. Continued development of maritime-specific perception algorithms and datasets is essential to advance the field. \cite{thompson2023} and \cite{thompson2017} contribute valuable maritime-specific work, but the overall maritime perception research effort remains limited compared to terrestrial autonomous vehicle research.
+
+% \section{Summary}
+
+% This literature review has established the foundation for multi-modal sensor fusion in autonomous maritime systems. Autonomous surface vessels require robust perception systems capable of operating in challenging maritime environments. Multiple complementary sensing modalities—cameras, LiDAR, and radar—offer different strengths and limitations. Recent advances in deep learning have revolutionized both single-modality object detection and multi-modal sensor fusion. Transformer-based fusion approaches represent a cutting-edge development offering improved handling of long-range dependencies and global context. However, the application of these advances to maritime contexts remains an active research area, with particular challenges relating to water reflections, platform dynamics, computational constraints, and environmental variability. Late fusion approaches offer computational efficiency and modularity particularly relevant to maritime platforms, yet limited work has specifically optimized late fusion for maritime perception tasks. The following chapters address this gap by developing and evaluating a late fusion approach specifically designed for robust maritime object detection under challenging environmental conditions.
 
 
 % Note: All in-text citations should appear as \cite{einstein}
@@ -313,7 +452,7 @@ An overview of the CPU and network infrastructure of the system is provided in s
 % housed within the forward camera enclosure. Section~\ref{visual_cameras} provides additional discussion regarding visual spectrum sensor selection and characterization. 
 Of particular note, the timestamp embedding mechanism described in Section~\ref{time_sync_cam} overcomes network latency issues in the video pipeline to maintain a more precise temporal alignment.
 % , essential for rigorous multi-modal sensor fusion analysis.
-Finally, section~\ref{sensor_data} discusses the \ac{ROS} software architecture responsible for recording and processing sensor data.
+Finally, section~\ref{sec:sensor_data_dataset} discusses the \ac{ROS} software architecture responsible for recording and processing sensor data.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -596,7 +735,7 @@ where $f$ is the \ac{EFL} of the camera and lens, $N_x$ is the horizontal image 
 This equation can be used to determine camera requirements if the true size of the imaged objects is known, or to determine a reasonable expectation of object resolution if the camera values are known.
 This relationship is also critical for determining the distortion present in each camera/lens system, detailed further in section~\ref{spatial_calibration}.
 
-Defining the requirement for the minimum resolution of an object in the image frame requires an understanding of the object detection method used with visual cameras, as well as the objects being detected. both of which will be discussed in greater detail in sections ~\ref{dataset} and ~\ref{yolo}, respectively.
+Defining the requirement for the minimum resolution of an object in the image frame requires an understanding of the object detection method used with visual cameras, as well as the objects being detected. both of which will be discussed in greater detail in sections ~\ref{sec:object_classes} and ~\ref{yolo}, respectively.
 % For now, it is sufficient to know that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters.
 % , and that we have optical and digital resolution requirements to consider.
 This image detection architecture is discussed in section ~\ref{yolo}.
@@ -1014,10 +1153,10 @@ Key hardware specifications are provided in table \ref{table:Xavier_hardware}.
 Its 8-core ARM processor provides ample computational capacity for handling multiple video pipelines, network protocols, and system-level services, while the integrated 512-core Volta GPU performs hardware-accelerated video encoding required for concurrent high-resolution streams.  
 A unified memory architecture shares 32 GB between the CPU and GPU and supports a memory bandwidth of 136.5 GBps, which minimizes latency and improves overall pipeline efficiency.
 
-Each video feed follows a two-branch processing pipeline.  
+Each video feed follows a two-branch processing pipeline before being transmitted to Atlas.  
 % Raw frames are captured over USB~3.0 and parsed by custom software before being distributed to parallel encoding tasks. 
 Raw video frames are received via USB 3.0, parsed by custom software, and then split into two processing branches. 
-One branch is encoded in H.265 and saved locally to the Jetson's internal storage, while the other branch is down-sampled to a reduced frame rate before being streamed over the \ac{LAN} to one of the Minion PCs in Atlas.
+One branch is compressed and saved locally to the Jetson's internal storage, while the other branch is down-sampled to a reduced frame rate before being streamed over the \ac{LAN}.% to one of the Minion PCs in Atlas.
 
 
 
@@ -1115,8 +1254,8 @@ Built with enterprise-grade components, these systems provide the computational 
 Table~\ref{table:Minion_hardware} summarizes the key system specifications.
 The dual-computer configuration enables parallel software development and operational redundancy, with one system dedicated to production tasks while the other supports software testing or serves as a backup.
  
-Minion A was configured with Ubuntu 22.04 for the development and migration of Minion's software to ROS 2 Humble, while 
-Minion B served as the only device used for data-recording and object-detection processing performed for the research of this dissertation, and ran Ubuntu 20.04 with ROS 1 Noetic.
+% Minion A was configured with Ubuntu 22.04 for the development and migration of Minion's software to ROS 2 Humble, while 
+% Minion B served as the only device used for data-recording and object-detection processing performed for the research of this dissertation, and ran Ubuntu 20.04 with ROS 1 Noetic.
 
 % While ROS manages sensor data and transforms between reference frames, the focus in this section relates to the underlying hardware responsible for real-time, multi-modal perception.  
 % The object-detection methods described in Chapter \ref{realtime_object_detection} are optimized for the computational characteristics of the CPU and GPU.  
@@ -1203,7 +1342,6 @@ Each GTX~1080 features 2,560 CUDA cores built on NVIDIA’s Pascal architecture 
 Incoming video streams from the camera enclosure are first decoded using hardware-accelerated video codecs, enabling efficient processing of multiple high-resolution feeds.
 The resulting frames are again passed to the GPU for accelerated tensor calculations and neural network based algorithms described in Chapter \ref{realtime_object_detection} for object detection.
 % NVIDIA's CUDA architecture has long been the industry standard for efficient execution of convolutional neural networks such as YOLOv8.
-
 Executing both video decoding and inference workloads on the GPU frees up valuable system resources for LiDAR processing and sensor fusion tasks.
 
 % \subsubsection{Workload Allocation}
@@ -1233,7 +1371,7 @@ Executing both video decoding and inference workloads on the GPU frees up valuab
 % \subsubsection{Storage Media}
 
 High-speed solid-state storage provides the throughput required to record multiple sensor streams during data collection operations.
-Each recording session captures raw \ac{LiDAR} point cloud data, uncompressed video imagery, GPS/INS pose information, and mapped object-detection results, producing aggregate data rates that can easily exceed 200 \ac{MBps}.
+Each recording session captures raw \ac{LiDAR} point cloud data, streamed video imagery, GPS/INS pose information, and mapped object-detection results, producing aggregate data rates that can easily exceed 200 \ac{MBps}.
 A solid-state NVMe hard drive is used on each Minion system to provide the data throughput that these operations require, and is much more robust to the motion experienced in choppy surf and vibrations experienced while in transport on the \ac{USV}'s trailer.
 % and 5–15MBps per camera for H.265-compressed video at 10~fps, with additional low-bandwidth streams for GPS/INS and detection results.
 % The NVMe solid-state drives provide sufficient sequential throughput and IOPS to maintain these rates for extended sessions without frame loss or buffer overflow.
@@ -1245,13 +1383,14 @@ A solid-state NVMe hard drive is used on each Minion system to provide the data 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Network Structure} \label{comp:network}
 
-Each device on the network is assigned a static IP address on the network, allowing deterministic communication between endpoints.
+% Each device on the network 
+Each device is assigned a static IP address on the network, allowing deterministic communication between endpoints.
 Camera streams from the Jetson Xavier, point cloud data from each LiDAR sensor, and other telemetry are transmitted over the LAN to Atlas, where sensor data are processed locally.
 Data of mapped and detected objects and other system commands, such as motor control commands, are published along with the raw data as \ac{ROS} message topics for system monitoring and data recording.
 
 Under normal operation, the combined network traffic only utilizes about 15\% of the Gigabit Ethernet capacity, 
 leaving sufficient headroom for motor control, system services, and remote access for administrative functions.
-However, when \ac{ROS} data topics are broadcast across the network for visualization or debugging, bandwidth utilization can temporarily spike and saturate the network.
+However, when \ac{ROS} data-dense topics such as point clouds or imagery are broadcast across the network for visualization or debugging, bandwidth utilization can temporarily spike and saturate the network.
 For this reason, ROS data is recorded locally, and admin visualization tools such as RVIZ are typically restricted to smaller topics related to object mapping and system controls.
 A high-level overview of network utilization is provided in Table \ref{table:network_bandwidth}.
 
@@ -1274,6 +1413,7 @@ Long-range connectivity between the vessel and ground station is provided by a U
 \hline
 Data Source & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
 \hline
+\hline
 HDR Camera Stream & $3.7$--$11.2$ & $0.4$--$1.2$ \\
 FLIR Camera Streams (2×) & $7.0$--$20.0$ & $0.7$--$2.1$ \\
 Velodyne LiDAR Units (3x) & $43.2$--$57.6$ & $4.3$--$5.8$ \\
@@ -1282,7 +1422,7 @@ GPS / INS Telemetry & $<0.1$ & $<0.01$ \\
 Admin / SSH / Control Traffic & $0.5$--$2.0$ & $0.05$--$0.2$ \\
 \hline
 \textbf{Total Estimated Utilization} & \textbf{95--145 Mbps} & \textbf{9.5--14.5 \%} \\
-\hline
+% \hline
 \end{tabular}
 \caption{Approximate network bandwidth utilization from direct sensor and control data sources relative to a 1 Gbps link ($\sim940$ Mbps usable).}
 \label{table:network_bandwidth}
@@ -1482,8 +1622,16 @@ Finally, the resulting spatial calibration accuracy and temporal alignment obtai
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Spatial Calibration} \label{spatial_calibration}
 
-Before the data from the camera and \ac{LiDAR} sensors can be combined, each device needs to be spatially calibrated through extrinsic and intrinsic transforms.
-Calibration between the two sensors begins by determining the camera's intrinsic parameters so that the LiDAR data can be accurately projected onto the image plane.
+Before data from the camera and \ac{LiDAR} sensors can be combined, each device must be spatially calibrated through intrinsic and extrinsic transformations.  
+This process establishes the geometric relationships required to express all sensor measurements in a unified coordinate frame, enabling accurate projection of \ac{LiDAR} points onto the camera image plane.
+
+An initial calibration of the camera enclosure was performed during earlier work by Thompson~\cite{thompson2023}, which provided baseline extrinsic parameters between the HDR camera and the three Livox LiDAR units.  
+However, due to the enclosure’s mechanical design, the lid assembly that supports the LiDAR sensors must be removed whenever the module is relocated or serviced.  
+This operation physically severs the previously established rigid-body transformations between sensors, invalidating the prior calibration.  
+Because the camera enclosure was detached and reinstalled on multiple vessels and test platforms between Thompson’s campaign and the present work, the full spatial calibration procedure was repeated to ensure geometric consistency. % across all modalities.
+
+Calibration between the two sensor types begins with the determination of the camera’s intrinsic parameters, after which the LiDAR data can be accurately projected into the camera frame for calibration of the extrinsic transform between sensor frames.  
+The following subsections describe the methods and results of this recalibration process for both intrinsic and extrinsic alignment.
 
 \subsubsection{Camera Intrinsics} \label{camera_intrinsics}
 
@@ -1530,6 +1678,26 @@ For effective calibration, the sequence of captured images should include dozens
 Additionally, the checkerboard should have physical dimensions comparable to the scale of objects expected in the environment. This ensures that the selected camera has the pixel density necessary (as described in Section~\ref{camera_selection}) to resolve the checkerboard corners.
 These practices ensure that the estimated intrinsic parameters are well-constrained and remain valid across the camera’s operational envelope.
 
+\begin{figure}[htbp]
+\centering
+\makebox[\textwidth][c]{%
+    \begin{subfigure}[t]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/cam_calib_1.png}
+        \caption{Corner detection is performed on multiple images taken of the checkerboard test-pattern}
+        \label{fig:cam_calib_1}
+    \end{subfigure}
+    \hspace{2em} % horizontal spacing between them
+    \begin{subfigure}[t]{0.625\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/cam_calib_2.png}
+        \caption{Checkerboard locations from each captured image in the set is presented in the camera world frame.}
+        \label{fig:cam_calib_2}
+    \end{subfigure}%
+}
+\caption{Multiple images of checkerboards are processed with MATLAB's camera calibration app, where the checkerboard corners are located (left) to estimate the camera intrinsics, and the positions of the test patterns are represented in the camera world frame (right).}
+\label{fig:cam_calib}
+\end{figure}
 
 \subsubsection{Extrinsic Calibration} \label{extrinsic_tform}
 % \subsubsection{Camera–LiDAR Extrinsic Calibration} \label{extrinsic_calib}
@@ -1611,6 +1779,9 @@ In this application, ICP minimizes the point-to-plane error between the checkerb
 
 Alternatively, manual refinement can be conducted by visually matching large-scale environmental features—such as walls, trees, fences, or other clearly defined structures—present in both modalities.  
 This final adjustment ensures that the extrinsic transformation achieves sub-degree rotational accuracy and centimeter-level translation precision, suitable for sensor fusion and object-detection applications.
+In practice, this manual refinement sometimes required minor adjustments to the intrinsic camera parameters, as small inaccuracies in focal length or principal point estimation can propagate into the extrinsic solution.
+
+
 
 % \subsubsection{HDR Calibration} \label{sec:HDR_calib}
 
@@ -1873,6 +2044,8 @@ This final adjustment ensures that the extrinsic transformation achieves sub-deg
 % \ac{LiDAR} extrinsic calibration unifies three Livox Horizon point clouds into a common reference frame with sub-centimeter alignment at typical operating ranges and relates the \ac{LiDAR} reference frame to the platform coordinate system.
 % The integration of these calibrations with the ROS \texttt{tf2} framework enables automated coordinate frame transformations essential for temporal aggregation and \ac{LiDAR}-camera projection, providing the spatial precision required for the object detection performance comparison analysis.
 
+\subsubsection{LiDAR–LiDAR Extrinsic Calibration} \label{lidarLidar_calib}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Temporal Calibration}\label{time_sync}
 
@@ -1919,6 +2092,16 @@ Additionally, the video processing pipeline introduces systematic timing offsets
 \section{Calibration Results} \label{sec:calib_results}
 
 \subsection{Spatial Calibration}
+
+\subsubsection{Camera} \label{sec:camera_intriniscs_results}
+
+Following the automated ICP optimization, additional manual refinement was performed using the MATLAB LiDAR–Camera Calibration App~\cite{matlab_calibration}.  
+This step involved visually aligning large-scale environmental features—such as walls, trees, fences, and other planar structures—visible in both the image and point cloud.  
+Manual adjustment was necessary to achieve fine alignment beyond the automated optimization and to correct small residual errors introduced by noise, limited overlap, or non-ideal target geometry.
+
+The resulting calibration achieved sub-degree rotational accuracy and translation precision on the order of centimeters, sufficient for reliable sensor fusion and object-detection applications.
+
+\subsubsection{Camera-LiDAR Extrinsic} \label{sec:camera-lidar_results}
 
 % \begin{figure}[htbp]
 %     \centering
@@ -2191,75 +2374,220 @@ Despite these limitations, the methodology achieves the sub-second temporal alig
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section{Sensor Data} \label{sensor_data}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sensor Data and Dataset}
+\label{sec:sensor_data_dataset}
 
-% ROS
-%    - image of ROS node structure from RobotX paper
-% table of msgs & rates within each bagfile
+% This section describes the multimodal data produced by the Minion sensing platform, 
+% the \ac{ROS}-based framework used for data acquisition and synchronization, 
+% and the construction of the dataset used for training and evaluating perception algorithms.
+% Together, these processes establish the bridge between hardware-level sensing and 
+% machine-learning-based object detection methods discussed in Chapter~\ref{realtime_object_detection}.
 
-%%%% From atlas %%%
-% The ROS ecosystem provides integrated data recording functionality through the `rosbag` utility (ROS 1) and `ros2 bag` (ROS 2), which subscribe to specified ROS topics and serialize all messages to disk in a format that enables precise temporal replay. The Atlas platforms employ this infrastructure to record sensor data during data collection operations, capturing synchronized streams of:
+This section describes the collected sensor data, ROS node architecture used to record it, 
+and the organization of the resulting dataset used throughout this research.  
+It integrates over three hours of multi-sensor maritime data collected aboard the Minion between October 2023 and May 2025.
 
-% - Raw LiDAR point clouds from all three Livox sensors
-% - Compressed video streams with embedded timestamps from all three cameras
-% - GPS/INS pose estimates with timestamp and uncertainty information
-% - Detection results from vision and LiDAR object detection algorithms
-% - Platform status messages, network diagnostics, and operator annotations
 
-% The resulting bag files serve as the ground-truth dataset for the detection performance analysis presented in Chapter 6, with temporal drift correction procedures detailed in [[03_Temporal_Drift|Section 3.2.2.3]] ensuring frame-accurate alignment between modalities within the recorded data.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{ROS Node Architecture for Data Collection}
+\label{sec:ros_architecture}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Sensor Data and Dataset} \label{dataset}
+Data were collected using the ROS 1 \texttt{Noetic} framework on Ubuntu 20.04, 
+leveraging custom C++ packages developed for LiDAR–camera fusion and object detection.  
+% Figure \ref{fig:ros_architecture} outlines the software architecture.  
 
-\section{ROS Architecture} \label{ROS_architechture}
+\subsubsection{Vision Pipeline}  
+Five nodes handled image acquisition, fusion, ROI extraction, and color classification.  
+The \texttt{image\_lidar\_fusion} node projected LiDAR points into camera space using stored calibration transforms,  
+while \texttt{roi\_color\_classifier} performed HSV-based color classification of maritime objects such as buoys and light towers.  
+The \texttt{roi\_logger} node recorded cropped regions of interest for offline dataset construction.  
 
-\subsection{ROS Messages} \label{ROS_mesages}
+\subsubsection{LiDAR Pipeline}  
+Four nodes implemented object detection, filtering, and 3-D clustering.  
+The \texttt{fusing\_node} merged multiple Livox point clouds into a unified global frame, 
+and \texttt{point\_cloud\_module\_node} applied occupancy-grid mapping and DBSCAN clustering with multivariate-Gaussian (MVG) classification.  
+Typical update rates were 5 Hz for LiDAR and 10 Hz for vision nodes.  
 
-\begin{table}[htbp]
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{Images/ros_architecture.pdf}
+%     \caption{ROS node architecture for synchronized LiDAR–camera data collection.}
+%     \label{fig:ros_architecture}
+% \end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Data Collection Overview}
+\label{sec:data_overview}
+
+A total of 122 ROS bag files were recorded over 13 collection days, 
+containing more than 52 million sensor messages and 3.67 hours of synchronized data.  
+Table \ref{tab:rosbag_stats} summarizes the aggregate statistics.  
+
+% \begin{table}[h]
+% \centering
+% \caption{Overall Data Collection Statistics}
+% \label{tab:overall_stats}
+% \begin{tabular}{lr}
+% \hline
+% % \textbf{Metric} & \textbf{Value} \\
+% \multicolumn{2}{c}{Data Collection Overview} \\
+% \hline
+% \hline
+% Total ROS Bags & 122 \\
+% Total Messages & 52,233,109 \\
+% % Total Duration (hours) & 3.67 \\
+% Total Duration (minutes) & 220.12 \\
+% Collection Days & 12 \\
+% First Collection Date & 2024-09-22 \\
+% Last Collection Date & 2025-05-29 \\
+% Average Messages per Bag & 428,140 \\
+% Average Duration per Bag (min) & 1.80 \\
+% \hline
+% \end{tabular}
+% \label{tab:overall_stats}
+% \end{table}
+
+\begin{table}[h]
 \centering
-\begin{tabular}{lcc}
+\caption{Overall Data Collection Statistics}
+\label{tab:rosbag_stats}
+\begin{tabular}{llrr}
 \hline
-ROS Topic & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
+% \textbf{Period} & \textbf{Date Range} & \textbf{Bags} & \textbf{Messages} \\
+\multicolumn{2}{c}{Collection Period} & Bags & Messages \\
 \hline
-/points\_livox\_front & 35--40 & 3.5--4.0 \\
-/points\_livox\_port  & 35--40 & 3.5--4.0 \\
-/points\_livox\_starboard & 35--40 & 3.5--4.0 \\
-/image\_hdr\_raw  & 60--70 & 6.0--7.0 \\
 \hline
-\textbf{Total Estimated Utilization} & \textbf{165--190} & \textbf{17--19 \%} \\
+Competition Training & Sep 22 - Oct 26, 2024 & 29 & 8,408,242 \\
+RobotX Competition & Nov 3 - Nov 9, 2024 & 62 & 33,336,777 \\
+Summer 2025  & May 29, 2025 & 31 & 10,488,090 \\
+\hline
+\textbf{Total} & \textbf{---} & \textbf{122} & \textbf{52,233,109} \\
 \hline
 \end{tabular}
-\label{table:ROS_bandwidth}
-\caption{Approximate \ac{ROS} message bandwidth utilization for the topics used in this research, relative to a 1 Gbps Ethernet link ($\sim$940 Mbps usable).}
+\label{tab:collection_periods}
 \end{table}
 
-\section{ROS Bags} \label{ROS_bags}
-
-The \ac{ROS} ecosystem provides integrated data recording utilities that subscribe to designated topics and serialize all messages to disk for precise temporal replay.
-The Atlas systems employ this infrastructure to record synchronized streams of sensor and perception data, including:
-
-\begin{itemize}
-\item Raw point clouds from all three Livox Horizon \ac{LiDAR} sensors
-\item Compressed video streams with embedded timestamps from each camera
-\item GPS/INS pose estimates with timestamp and uncertainty data
-\item Detection outputs from vision and \ac{LiDAR}-based object detection algorithms
-\item Platform status, network diagnostics, and operator annotations
+Peak collection occurred during November 2024 in preparation for the Maritime RobotX Challenge, 
+with additional data gathered during Summer 2025 to expand environmental variety.  
+All recordings included the following synchronized topics:
+\begin{itemize}[noitemsep,leftmargin=1.5em]
+    \item Three Livox Horizon LiDARs publishing \texttt{/livox/lidar\_front}, \texttt{/port}, \texttt{/starboard};
+    \item One Leopard Imaging HDR camera publishing \texttt{/camera/image} and \texttt{/camera/info};
+    \item IMU and GPS streams defining the \texttt{map→base\_link} and \texttt{base\_link→sensor} transforms.
 \end{itemize}
 
-The resulting bag files serve as the ground-truth datasets for detection performance analysis (see Chapter~\ref{dataset}).
-Temporal synchronization procedures described in Section~\ref{time_sync} ensure frame-accurate alignment across all modalities within these recordings.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Data Organization and Processing}
+\label{sec:data_organization}
 
-The storage subsystem sustains aggregate write rates exceeding 200 MBps during full-sensor operation.
-Measured JPEG images extracted from the recorded ROS bags averaged approximately 0.5~MB per frame.
-At the 5 fps capture rate used during training datasets, this corresponds to about 2.5 MBps per camera, while the 15 fps rate used during RobotX competition runs produced roughly 7.5 MBps per camera. 
-Including ROS message encapsulation and metadata, total write rates during full-sensor operation typically ranged from 60 to 100 MBps when accounting for LiDAR, GPS/INS, and detection topics. 
-These rates remain well within the sustained throughput capability of the NVMe solid-state drives, enabling extended recording sessions without frame loss or buffer overflow.
+Raw ROS bags are organized by collection campaign:
+\texttt{Oct\_prep/}, \texttt{Nov\_X/}, and \texttt{2025\_summer/} directories.  
+Each subdirectory includes contextual metadata (e.g., location, weather, and task scenario).  
+A post-processing pipeline converts bag data into synchronized image–point-cloud pairs and structured YOLO-format label files.  
 
-Post-processing workflows access these bag files to extract synchronized observations for offline analysis.
-The preserved timestamps enable sub-millisecond temporal alignment between locally recorded frames on the Jetson Xavier and those received via RTSP and stored on the Atlas PCs—an essential capability for the multi-modal performance comparisons presented in Chapters~\ref{dataset}–\ref{realtime_object_detection}.
+\paragraph{Temporal Synchronization}  
+All frames were aligned using ROS time stamps at the message header level.  
+Each paired image and point cloud corresponds to a latency-bounded time window ($\le$ 50 ms).  
+
+\paragraph{Spatial Registration}  
+LiDAR point clouds were transformed into the HDR camera frame using the calibration matrices 
+derived in Section \ref{sec:camera-lidar_results}.  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Dataset Construction for Machine Learning}
+\label{sec:dataset_construction}
+
+The processed dataset forms the basis for training and validating the vision and fusion models described in Chapters \ref{yolo} and \ref{gbcache}.  
+The dataset contains labeled maritime object classes including navigation buoys, docks, vessels, and channel markers.  
+
+Each object instance includes:
+\begin{itemize}[noitemsep,leftmargin=1.5em]
+    \item RGB image crop (JPEG, 2880 × 1860 → 640 × 640 letterboxed);
+    \item Corresponding LiDAR point subset (PCD format);
+    \item YOLO label file with normalized bounding boxes;
+    \item Metadata: timestamp, GPS pose, and lighting condition.
+\end{itemize}
+
+Training, validation, and test splits follow a 70 / 20 / 10 ratio, stratified by date to prevent temporal leakage between sets.  
+
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{Images/dataset_pipeline.pdf}
+%     \caption{Processing pipeline from raw ROS bags to labeled training dataset.}
+%     \label{fig:dataset_pipeline}
+% \end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Representative Samples}
+\label{sec:dataset_samples}
+
+% Figure \ref{fig:sample_pairs} shows synchronized LiDAR and camera samples from representative collection runs.  
+% Objects are outlined by YOLO bounding boxes and colored by class label.  
+
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{Images/sample_pairs.pdf}
+%     \caption{Example synchronized image–LiDAR pairs illustrating dataset diversity.}
+%     \label{fig:sample_pairs}
+% \end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \chapter{Sensor Data and Dataset} \label{dataset}
+
+% \section{Sensor Data} \label{sensor_data}
+
+% \section{ROS Architecture} \label{ROS_architechture}
+
+% \subsection{ROS Messages} \label{ROS_mesages}
+
+% \begin{table}[htbp]
+% \centering
+% \begin{tabular}{lcc}
+% \hline
+% ROS Topic & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
+% \hline
+% /points\_livox\_front & 35--40 & 3.5--4.0 \\
+% /points\_livox\_port  & 35--40 & 3.5--4.0 \\
+% /points\_livox\_starboard & 35--40 & 3.5--4.0 \\
+% /image\_hdr\_raw  & 60--70 & 6.0--7.0 \\
+% \hline
+% \textbf{Total Estimated Utilization} & \textbf{165--190} & \textbf{17--19 \%} \\
+% \hline
+% \end{tabular}
+% \label{table:ROS_bandwidth}
+% \caption{Approximate \ac{ROS} message bandwidth utilization for the topics used in this research, relative to a 1 Gbps Ethernet link ($\sim$940 Mbps usable).}
+% \end{table}
+
+% \section{ROS Bags} \label{ROS_bags}
+
+% The \ac{ROS} ecosystem provides integrated data recording utilities that subscribe to designated topics and serialize all messages to disk for precise temporal replay.
+% The Atlas systems employ this infrastructure to record synchronized streams of sensor and perception data, including:
+
+% \begin{itemize}
+% \item Raw point clouds from all three Livox Horizon \ac{LiDAR} sensors
+% \item Compressed video streams with embedded timestamps from each camera
+% \item GPS/INS pose estimates with timestamp and uncertainty data
+% \item Detection outputs from vision and \ac{LiDAR}-based object detection algorithms
+% \item Platform status, network diagnostics, and operator annotations
+% \end{itemize}
+
+% The resulting bag files serve as the ground-truth datasets for detection performance analysis (see Chapter~\ref{dataset}).
+% Temporal synchronization procedures described in Section~\ref{time_sync} ensure frame-accurate alignment across all modalities within these recordings.
+
+% The storage subsystem sustains aggregate write rates exceeding 200 MBps during full-sensor operation.
+% Measured JPEG images extracted from the recorded ROS bags averaged approximately 0.5~MB per frame.
+% At the 5 fps capture rate used during training datasets, this corresponds to about 2.5 MBps per camera, while the 15 fps rate used during RobotX competition runs produced roughly 7.5 MBps per camera. 
+% Including ROS message encapsulation and metadata, total write rates during full-sensor operation typically ranged from 60 to 100 MBps when accounting for LiDAR, GPS/INS, and detection topics. 
+% These rates remain well within the sustained throughput capability of the NVMe solid-state drives, enabling extended recording sessions without frame loss or buffer overflow.
+
+% Post-processing workflows access these bag files to extract synchronized observations for offline analysis.
+% The preserved timestamps enable sub-millisecond temporal alignment between locally recorded frames on the Jetson Xavier and those received via RTSP and stored on the Atlas PCs—an essential capability for the multi-modal performance comparisons presented in Chapters~\ref{dataset}–\ref{realtime_object_detection}.
 
 
 
