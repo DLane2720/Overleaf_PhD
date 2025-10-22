@@ -378,7 +378,7 @@ Autonomous vehicles use a variety of sensors to perceive their surroundings, but
 Each sensing modality offers distinct advantages: visual data provides rich color and texture information, while \ac{LiDAR} delivers precise spatial measurements of the surrounding environment.
 Real-time object detection methods have been developed for both sensing modalities, leveraging deep learning architectures.
 Object detection with visual data often employs transfer learning on pre-trained convolutional neural networks such as ResNet \cite{he2016} and \ac{YOLO} \cite{ultralytics}.%[6].
-Similarly, \ac{LiDAR}-based object detection can be performed using point-based algorithms like PointNet \cite{garcia-garcia2016}, voxel-based methods such as VoxelNet \cite{zhou2018a}, or hybrid approaches like PV-RCNN \cite{shi2021}.%[9].
+Similarly, \ac{LiDAR}-based object detection can be performed using point-based algorithms like PointNet \cite{garcia-garcia2016}, voxel-based methods such as VoxelNet \cite{zhou2018}, or hybrid approaches like PV-RCNN \cite{shi2021}.%[9].
 Despite these advancements, each modality has inherent limitations—vision-based systems struggle with poor lighting conditions and occlusions, while \ac{LiDAR} data can be sparse and affected by water reflections.
 
 To address these limitations, sensor fusion techniques have been explored as a means of combining the strengths of both modalities. 
@@ -388,7 +388,7 @@ While research in the automotive sector has contributed significantly to sensor 
 Automotive environments are highly structured, with well-defined lanes, uniform object classes, and relatively predictable lighting conditions. 
 In contrast, the maritime environment introduces additional complexities, including dynamic vehicle motion induced by wind and waves, variable scene density (ranging from sparse open waters to congested littoral zones), and specular reflections on the water surface that can interfere with both vision-based \cite{liu2023a} and \ac{LiDAR}-based object detection \cite{ahmed2024}.%[15]. 
 These factors necessitate domain-specific adaptations of sensor fusion architectures to ensure robust real-time object detection for \acp{USV}. 
-However, the lack of available maritime-specific datasets \cite{jun-hwa2022,su2023,thompson2023} creates an additional challenge.
+However, the lack of available maritime-specific datasets \cite{kim2022,su2023,thompson2023} creates an additional challenge.
 
 Given these challenges, further research is needed to enhance sensor fusion methodologies for maritime applications. 
 Key areas of investigation include efficient feature selection tailored to maritime object classes, the development of lightweight fusion architectures suited for real-time processing, and an evaluation of computational requirements for deployment on \ac{USV} hardware. 
@@ -735,7 +735,7 @@ where $f$ is the \ac{EFL} of the camera and lens, $N_x$ is the horizontal image 
 This equation can be used to determine camera requirements if the true size of the imaged objects is known, or to determine a reasonable expectation of object resolution if the camera values are known.
 This relationship is also critical for determining the distortion present in each camera/lens system, detailed further in section~\ref{spatial_calibration}.
 
-Defining the requirement for the minimum resolution of an object in the image frame requires an understanding of the object detection method used with visual cameras, as well as the objects being detected. both of which will be discussed in greater detail in sections ~\ref{sec:object_classes} and ~\ref{yolo}, respectively.
+Defining the requirement for the minimum resolution of an object in the image frame requires an understanding of the object detection method used with visual cameras, as well as the objects being detected. both of which will be discussed in greater detail in sections ~\ref{sec:sensor_data_dataset} and ~\ref{yolo}, respectively.
 % For now, it is sufficient to know that the smallest object we wish to detect is $0.3683$ meters wide at a distance of 60 meters.
 % , and that we have optical and digital resolution requirements to consider.
 This image detection architecture is discussed in section ~\ref{yolo}.
@@ -2999,7 +2999,7 @@ Maintaining one system on ROS 1 while transitioning the other to ROS 2 allowed i
 % \bibliographystyle{plainnat} - Most recent
 \bibliographystyle{IEEEtranN} % natbib-compatible numeric IEEE style
 % \bibliography{References}
-\bibliography{Dissertation}
+\bibliography{Dissertation,extra_cite}
 
 \backmatter
 
