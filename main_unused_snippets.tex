@@ -2071,3 +2071,273 @@ One branch is compressed and saved locally to the Jetson's internal storage, whi
 % $$\text{Combined Livox rate} = 3 \times 480,000 = 1.44 \times 10^6 \text{ pts/sec}$$
 
 % This represents a 2.25× increase in point returns within the camera view, excluding additional benefits from superior vertical sampling achieved through the non-repetitive pattern compared to fixed 32-ring geometry \cite{thompson2023}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \chapter{Sensor Data and Dataset} \label{dataset}
+
+% \section{Sensor Data} \label{sensor_data}
+
+% \section{ROS Architecture} \label{ROS_architechture}
+
+% \subsection{ROS Messages} \label{ROS_mesages}
+
+% \begin{table}[htbp]
+% \centering
+% \begin{tabular}{lcc}
+% \hline
+% ROS Topic & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
+% \hline
+% /points\_livox\_front & 35--40 & 3.5--4.0 \\
+% /points\_livox\_port  & 35--40 & 3.5--4.0 \\
+% /points\_livox\_starboard & 35--40 & 3.5--4.0 \\
+% /image\_hdr\_raw  & 60--70 & 6.0--7.0 \\
+% \hline
+% \textbf{Total Estimated Utilization} & \textbf{165--190} & \textbf{17--19 \%} \\
+% \hline
+% \end{tabular}
+% \label{table:ROS_bandwidth}
+% \caption{Approximate \ac{ROS} message bandwidth utilization for the topics used in this research, relative to a 1 Gbps Ethernet link ($\sim$940 Mbps usable).}
+% \end{table}
+
+% \section{ROS Bags} \label{ROS_bags}
+
+% The \ac{ROS} ecosystem provides integrated data recording utilities that subscribe to designated topics and serialize all messages to disk for precise temporal replay.
+% The Atlas systems employ this infrastructure to record synchronized streams of sensor and perception data, including:
+
+% \begin{itemize}
+% \item Raw point clouds from all three Livox Horizon \ac{LiDAR} sensors
+% \item Compressed video streams with embedded timestamps from each camera
+% \item GPS/INS pose estimates with timestamp and uncertainty data
+% \item Detection outputs from vision and \ac{LiDAR}-based object detection algorithms
+% \item Platform status, network diagnostics, and operator annotations
+% \end{itemize}
+
+% The resulting bag files serve as the ground-truth datasets for detection performance analysis (see Chapter~\ref{dataset}).
+% Temporal synchronization procedures described in Section~\ref{time_sync} ensure frame-accurate alignment across all modalities within these recordings.
+
+% The storage subsystem sustains aggregate write rates exceeding 200 MBps during full-sensor operation.
+% Measured JPEG images extracted from the recorded ROS bags averaged approximately 0.5~MB per frame.
+% At the 5 fps capture rate used during training datasets, this corresponds to about 2.5 MBps per camera, while the 15 fps rate used during RobotX competition runs produced roughly 7.5 MBps per camera. 
+% Including ROS message encapsulation and metadata, total write rates during full-sensor operation typically ranged from 60 to 100 MBps when accounting for LiDAR, GPS/INS, and detection topics. 
+% These rates remain well within the sustained throughput capability of the NVMe solid-state drives, enabling extended recording sessions without frame loss or buffer overflow.
+
+% Post-processing workflows access these bag files to extract synchronized observations for offline analysis.
+% The preserved timestamps enable sub-millisecond temporal alignment between locally recorded frames on the Jetson Xavier and those received via RTSP and stored on the Atlas PCs—an essential capability for the multi-modal performance comparisons presented in Chapters~\ref{dataset}–\ref{realtime_object_detection}.
+
+
+
+
+
+% Despite the hierarchical GPS-NTP-PTP synchronization architecture distributing a common time reference to all platform sensors, systematic timing offsets arise between video frames recorded locally on the NVIDIA Jetson Xavier camera enclosure and the same frames transmitted over the network and received as ROS messages on the Atlas PC.
+% These offsets originate from a combination of network latency, video encoding and decoding delays, frame buffering in the GStreamer pipeline, and potential residual clock drift between computing platforms.
+% Uncorrected timing discrepancies of 0.24 to 1.54 seconds compromise temporal alignment between camera observations and LiDAR point clouds.
+% For a vessel traveling at 5 meters per second, a 1-second timing error translates to 5 meters of spatial misalignment when attempting to associate camera frames with LiDAR observations, invalidating the frame-accurate sensor fusion required for rigorous detection performance analysis.
+
+% A comprehensive temporal drift analysis and correction methodology establishes ground-truth frame correspondence between locally-recorded video and network-transmitted ROS messages through structural similarity-based image matching, quantifies systematic timing offsets, characterizes drift patterns, and applies interpolation-based corrections to achieve sub-second temporal alignment accuracy.
+
+% ### Problem Statement and Offset Sources
+
+% The distributed video processing architecture separates frame acquisition and encoding on the Jetson Xavier from reception and ROS publication on the Atlas PC.
+% This separation introduces timing discrepancies through multiple mechanisms.
+
+% Encoding and transmission delays arise as the H.264/H.265 encoding process introduces latency between frame capture and bitstream availability.
+% Network transmission adds additional delay, followed by RTP depacketization, parsing, and decoding on the receive side.
+% While the SEI timestamp embedded in each frame records the original capture time, the ROS message timestamp on the Atlas PC may differ due to buffering and processing delays.
+
+% Clock synchronization imperfections contribute to offsets.
+% Although both the Jetson Xavier and Atlas PC synchronize to GPS time via NTP, network latency and NTP algorithm behavior result in typical synchronization accuracy of 1-10 milliseconds.
+% Over extended recording sessions, differential clock drift between systems can accumulate, creating time-varying offsets.
+
+% Frame buffering in GStreamer's buffering mechanisms, designed to smooth network jitter and ensure continuous playback, introduces variable delays between frame availability and processing.
+% These delays manifest as offsets between the SEI-embedded acquisition timestamp and the ROS message publication time.
+
+% The cumulative effect produces systematic time offsets ranging from hundreds of milliseconds to multiple seconds between Jetson-recorded video timestamps and Atlas-received ROS message timestamps.
+
+% ### Ground Truth Establishment via Image Matching
+
+% Quantifying temporal offsets requires establishing ground-truth correspondence between frames in locally-recorded video files and frames in ROS bag recordings.
+% This correspondence cannot be assumed based on frame count or relative timing, as dropped frames or transmission artifacts might desynchronize sequential indexing.
+% A content-based matching approach using the Structural Similarity Index Measure provides robust frame correspondence despite minor compression artifacts or brightness variations.
+
+% % #### Structural Similarity Index Measure
+
+% SSIM quantifies perceptual similarity between two images by comparing luminance, contrast, and structural patterns rather than simple pixel-wise differences.
+% The metric ranges from 0.0 indicating completely dissimilar images to 1.0 indicating identical images, with values above 0.6-0.7 typically indicating the same scene despite minor variations in encoding, brightness, or noise.
+
+% For two image patches $x$ and $y$, SSIM is computed as:
+
+% \begin{equation}
+%     \text{SSIM}(x,y) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
+% \end{equation}
+
+
+% where $\mu$ denotes mean luminance, $\sigma^2$ denotes variance, $\sigma_{xy}$ denotes covariance, and $C_1$, $C_2$ are stabilization constants.
+
+% SSIM proves superior to mean squared error or peak signal-to-noise ratio for this application because it tolerates the slight brightness and contrast variations introduced by independent H.264/H.265 encoding of the same source frames on the Jetson for local recording versus the Atlas after ROS decoding.
+
+% % #### Frame Matching Implementation
+
+% A custom Python analysis tool was developed to extract frames from both locally-saved video files and ROS bag recordings, then perform SSIM-based matching.
+
+% Video frame extraction uses OpenCV to read all frames with timestamps from MP4 or MKV video files, computing relative timestamps based on frame number and video frame rate.
+
+% ROS bag frame extraction reads image messages from ROS bag files, extracting ROS timestamps from message headers and converting ROS image messages to OpenCV format using the cv\_bridge library.
+
+% SSIM computation converts images to grayscale for computational efficiency, resizes images if dimensions differ, and computes the structural similarity score using implementations from scikit-image.
+
+% % ### Hybrid Manual-Automated Matching Strategy
+
+% The frame matching procedure employs a hybrid approach where initial synchronization points are established through intensive brute-force SSIM comparison, then subsequent matches leverage the learned time offset for computational efficiency.
+
+% % #### Phase 1: Initial Synchronization Points
+
+% For each ROS bag file, the first 5 message frames undergo exhaustive SSIM matching against a search window in the corresponding video file.
+
+% The search window spans ±15 seconds, equivalent to 375 frames at 25 fps, sufficient to accommodate potential multi-second timing offsets while remaining computationally tractable.
+% For each ROS frame, SSIM scores are computed between the ROS frame and all video frames in the search window.
+% The video frame with the highest SSIM score is selected as the best match, provided the score exceeds the 0.6 threshold indicating acceptable match quality.
+
+% % #### Phase 2: Offset Validation
+
+% Once initial synchronization points are established, time offsets are computed as the difference between video timestamp and ROS timestamp.
+% Offset consistency is verified across sync points.
+
+% If the standard deviation of offsets across the first 5 sync points exceeds 0.1 seconds, the methodology flags the bag-video pair for manual review, as large offset variability suggests non-linear drift or frame matching errors.
+
+% % #### Phase 3: Automated Processing
+
+% For ROS messages beyond the initial 5 manual sync points, the learned average offset enables efficient matching.
+% The ROS timestamp is adjusted by the learned offset to compute the expected video frame number, reducing computational cost from order $n \times m$ for exhaustive SSIM comparison to order $n$ for timestamp-based lookup, where $n$ is the number of ROS messages and $m$ is the search window size.
+
+% ### Database Implementation for Scalability
+
+% The temporal drift analysis processes 107,968 total ROS image messages across multiple recording sessions.
+% A SQLite database provides structured storage for synchronization points, offsets, and validation metrics.
+
+% The database schema includes tables linking bag files to video files and recording frame synchronization points including ROS timestamps, video timestamps, video frame numbers, time offsets, SSIM scores, and estimation quality classification distinguishing exact matches from interpolated and extrapolated values.
+
+% The database enables queries for drift analysis calculating offset changes and drift rates over time, supporting temporal alignment validation across the complete dataset.
+
+% % ### Temporal Drift Characteristics
+
+% Analysis of the synchronization database reveals systematic patterns in timing offsets.
+
+% % #### Offset Magnitude and Stability
+
+% Typical offset ranges span 0.24 to 1.54 seconds across different bag-video pairs.
+% Offset standard deviations range from 0.01 to 0.08 seconds within individual recording sessions.
+% Drift rates range from -0.17 to +0.01 seconds per second.
+
+% Negative drift rates indicate that ROS message timestamps advance faster than video timestamps, equivalently that the time offset decreases over the session, suggesting slight residual clock drift between Jetson Xavier and Atlas PC despite NTP synchronization.
+
+% % #### Network Jitter Contribution
+
+% The ±0.081 second standard deviation observed in some sessions indicates network-induced timing variability.
+% UDP transport used for RTSP streaming offers no delivery guarantees, and occasional network jitter manifests as frame arrival time variations that GStreamer buffering mechanisms smooth but do not eliminate entirely.
+
+% % #### Systematic Offset Sources
+
+% The consistent 0.24-1.54 second offset magnitude exceeds the expected NTP synchronization error of 1-10 milliseconds by orders of magnitude, indicating that the primary offset source is not clock drift but rather pipeline latency.
+% The video encoding, transmission, and decoding chain introduces delays accumulating to hundreds of milliseconds or seconds, necessitating correction beyond simple clock synchronization to achieve frame-accurate temporal alignment.
+
+% % ### Interpolation-Based Timestamp Correction
+
+% Establishing synchronization points approximately every 1 second, equivalent to 10 ROS messages at 10 Hz sampling rate, enables accurate interpolation of corrected timestamps for all frames including those between explicit sync points.
+
+% % #### Linear Interpolation Method
+
+% Using SciPy's interpolation functions, mapping functions are created from ROS timestamps to video frame numbers based on established synchronization points.
+% For any ROS message with timestamp falling between two synchronization points, the corresponding video frame number is estimated through linear interpolation.
+
+% The linear interpolation assumption holds well given observed drift characteristics where drift rates typically remain below ±0.2 seconds per second, producing nearly linear offset evolution between 1-second sync points.
+
+% % #### Validation Metrics
+
+% Interpolation accuracy is validated by comparing predicted frame numbers against ground-truth SSIM matches.
+
+% Mean absolute error remains under 1 frame, equivalent to under 40 milliseconds at 25 fps.
+% Root mean square error remains under 2 frames, representing under 80 milliseconds.
+% Maximum errors of 3-5 frames represent under 200 milliseconds.
+
+% These accuracy levels achieve sub-second temporal alignment meeting requirements for associating camera frames with LiDAR observations for object detection evaluation.
+
+% % #### Quality Classification
+
+% Each timestamp correction is classified by estimation quality.
+
+% Exact match designates cases where the ROS timestamp exactly matches a synchronization point with SSIM greater than 0.6.
+% Interpolated designates cases where linear interpolation occurs between two synchronization points.
+% Extrapolated designates cases outside the range of synchronization points, indicating lower confidence.
+
+% % ### Corrected Dataset Generation
+
+% The drift correction methodology produces a comprehensive temporal alignment dataset for each bag-video pair.
+
+% For each ROS frame, the corresponding video frame is estimated using the interpolation function.
+% The corrected timestamp is computed from the estimated frame number and video frame rate.
+% The applied time offset is calculated as the difference between estimated video timestamp and original ROS timestamp.
+% Estimation quality is determined based on whether the ROS timestamp matches a sync point, falls between sync points, or lies outside the sync point range.
+
+% Output CSV files provide corrected timestamps for all frames in each recording session, enabling downstream sensor fusion pipelines to apply accurate temporal alignment.
+
+% The dataset contains 10,141 exact matches representing 9.4% of total frames, 96,827 interpolated frames representing 89.7%, and 1,000 extrapolated frames representing 0.9%.
+% The high interpolation fraction reflects the computational efficiency optimization that establishes explicit sync points for only a subset of frames while interpolating the remainder.
+
+% % ### Integration with Sensor Fusion Pipeline
+
+% The temporal drift correction methodology directly enables multi-modal sensor fusion by ensuring camera frame timestamps accurately reflect acquisition time.
+
+% Before correction, camera-LiDAR temporal alignment errors of 0.24-1.54 seconds produce spatial misalignment of 1.2-7.7 meters at 5 meters per second vessel speed, invalid temporal correlation between modalities, and potential false negative detections due to temporal mismatch.
+
+% After correction, camera-LiDAR temporal alignment improves to under 0.1 second typical interpolation error, spatial misalignment reduces to under 0.5 meters at 5 meters per second vessel speed, valid frame-accurate temporal association is established, and reliable cross-modal detection comparison becomes possible.
+
+% % ### Methodology Validation
+
+% Several validation procedures confirm the accuracy of the temporal drift correction.
+
+% % #### SSIM Score Distribution
+
+% The distribution of SSIM scores for matched frames indicates match quality.
+% Mean SSIM reaches 0.72, median SSIM reaches 0.73, the 95th percentile exceeds 0.85, and matches with SSIM below 0.6 representing less than 2 percent are flagged for manual review.
+% The high SSIM scores confirm reliable frame matching despite independent encoding paths.
+
+% % #### Offset Consistency
+
+% For recording sessions with stable operation, time offsets exhibit standard deviation under 0.05 seconds over 60-second periods, confirming the linear drift assumption.
+
+% % #### Monotonicity
+
+% Corrected timestamps maintain strict monotonic increase, confirming no frame reordering or duplicate frame issues.
+
+% % #### Visual Inspection
+
+% Random sampling of matched frames for visual comparison by human observers confirms that SSIM matches correspond to identical scene content.
+
+% % ### Limitations and Assumptions
+
+% The temporal drift analysis methodology assumes several conditions.
+
+% Linear drift between sync points is approximately valid for 1-second intervals but may degrade for longer periods.
+% SSIM reliability requires sufficient visual features; feature-sparse maritime scenes including open water or fog may reduce match confidence.
+% No dropped frames are assumed; the methodology assumes all captured frames reach the ROS bag, as dropped frames would require more sophisticated matching.
+% Constant frame rate is assumed; variable frame rate would complicate interpolation.
+
+% Despite these limitations, the methodology achieves the sub-second temporal alignment necessary for rigorous object detection performance comparison between sensing modalities.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Temporal Calibration}
+
+% \paragraph{LAN}
+% Because Minion employs dual Atlas PCs for redundancy, only one Chrony instance operates as the active NTP server at a time; the secondary node remains in standby mode to prevent competing time sources. Startup procedures include automatic verification that the active Chrony instance has successfully locked to the GPS source and that downstream devices have joined the synchronization hierarchy.
+
+% End-to-end timing accuracy was validated during preliminary trials, yielding approximately 127~ms latency through the HDR video pipeline and confirmed microsecond-level consistency across LiDAR timestamps. This hybrid NTP/PTP design provides a scalable, fault-tolerant foundation for temporal alignment across all sensing modalities—critical for the late-fusion methods discussed in Chapter \ref{realtime_object_detection}.
+
+% \paragraph{RTSP}
+% Embedding timestamps within SEI NAL units provides frame-accurate temporal alignment between video and LiDAR data, without dependence on external metadata files or fragile caption layers.
+% This approach improves both the robustness and portability of the recorded data: timestamps remain bound to the video content itself, simplifying dataset conversion and playback analysis.
+
+% Empirical validation confirmed that SEI-based synchronization achieved millisecond-level alignment between the visual and LiDAR modalities, surpassing the performance of prior closed-caption and CSV-based timestamping approaches.
+% Together with the NTP/PTP network synchronization system, this architecture ensures precise temporal coherence across all sensing modalities, forming the foundation for reliable multi-sensor fusion and object detection.

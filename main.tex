@@ -1268,18 +1268,26 @@ Admin / SSH / Control Traffic & $0.5$--$2.0$ & $0.05$--$0.2$ \\
 The multi-sensor perception suite described in the previous section integrates complementary sensing modalities: \ac{LiDAR} for spatial structure and cameras for visual context.
 Each of these sensors measures the environment within its own local reference frame and according to its own internal clock.
 To combine their observations into a consistent world model, the system must first be calibrated both spatially and temporally.
+% Target calibration accuracy for the Minion platform was defined as less than $1^{\circ}$ rotational error, less than 1~cm translational error, and no more than 20~ms temporal offset across all sensors.
 
-For the Minion platform, all sensors are rigidly mounted and assigned reference frames within a unified transform hierarchy.
-Spatial calibration establishes the geometric relationships among these frames by estimating the rotation and translation between sensor frames, represented by the arrows in Figure~\ref{fig:tf_tree}.  
-Intrinsic calibration is also required for the visible-spectrum cameras (shown in blue), determining the internal optical parameters such as focal length, principal point location, and lens distortion. %, as detailed in Section~\ref{sec:HDR_calib}.
+For the Minion platform, all sensors are rigidly mounted and assigned reference frames within a unified transform hierarchy. 
+The GPS receiver anchors the global \texttt{map} frame; the ROS TF tree (Fig.~\ref{fig:tf_tree}) resolves transforms such as \texttt{map}\ $\rightarrow$\ \texttt{base\_link} and \texttt{base\_link}\ $\rightarrow$\ \texttt{sensor}. Spatial calibration estimates the rigid rotations and translations that populate this tree.  
+Intrinsic calibration is also required for the visible-spectrum cameras (shown in blue), determining the internal optical parameters such as focal length, principal point location, and lens distortion. 
 Time synchronization is similarly structured, with a master clock distributed over the network to subsystems and sensors to ensure that data acquired across sensor modalities remain temporally aligned.
 
-Within this framework, the port and starboard Livox units are first registered to the center Livox reference frame before their point clouds are merged into a single unified point cloud.  
-This consolidated LiDAR frame is then related to the HDR camera frame through an additional extrinsic transform, allowing three-dimensional LiDAR points $(x, y, z)$ to be projected onto the two-dimensional image plane $(u, v)$ using the camera’s intrinsic parameters.  
-Finally, all perception data are kept in sync and expressed in the global map frame defined through the time, location, and orientation provided by the \ac{GPS}.
+% Within this framework, the port and starboard Livox units are first registered to the center Livox reference frame, where their point clouds are merged into a single unified point cloud.  
+% This consolidated LiDAR frame is then related to the HDR camera world-frame through an additional extrinsic transform and finally to the camera's image-frame through the determined camera intrinsic values, allowing three-dimensional LiDAR points $(x, y, z)$ to be projected onto the two-dimensional image plane $(u, v)$ using the camera’s intrinsic parameters.  
+% Finally, all perception data are kept in sync and expressed in the global map frame defined through the time, location, and orientation provided by the \ac{GPS}.
+Within this framework, the port and starboard Livox units are first registered to the center Livox reference frame to produce a unified point cloud. 
+The consolidated LiDAR frame is then related to the HDR camera world frame through an additional extrinsic transform. 
+Using the camera’s intrinsic parameters, three-dimensional LiDAR points $(x, y, z)$ can then be projected onto the two-dimensional image plane and expressed as pixel locations $(u, v)$. 
+An additional series of extrinsic transforms relates the central Livox frame to the \ac{GPS} antenna frame, and the \ac{GPS} frame to the global map frame. 
+The \ac{GPS} provides dual functionality, maintaining synchronization across all sensor data and orienting them within the static global map frame.
+
+% All perception data are synchronized and expressed in the global map frame, defined by the time, location, and orientation provided by the \ac{GPS}.
 
 An initial calibration of the camera enclosure was performed during earlier work by Thompson~\cite{thompson2023}, establishing the baseline intrinsic camera parameters and the extrinsic relationship between the three Livox LiDAR units.
-In the \textcolor{blue}{two to three} years between data collection campaigns, the camera enclosure was relocated multiple times and subjected to extended periods of vibration—both during vessel operation and transport on trailers.
+In the multiple years between data collection campaigns, the camera enclosure was relocated multiple times and subjected to extended periods of vibration during transport of the \ac{USV} on its trailer.
 These mechanical stresses alone were sufficient to warrant recalibration, as small shifts in sensor mounts or camera optics can accumulate over time and degrade geometric alignment.
 Compounding this, the center Livox unit suffered a hardware failure and was replaced, making a full recalibration of all extrinsic transforms essential before further data collection.
 
@@ -1292,7 +1300,7 @@ Finally, the resulting spatial calibration accuracy and temporal alignment obtai
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.7\linewidth]{Images/tf_tree_1.png}
-    \caption{Spatial transform hierarchy for the perception system sensors onboard Minion.}
+    \caption{Transform hierarchy for Minion: the GPS-defined \texttt{map} frame anchors the ROS TF tree used for LiDAR–camera projection and sensor fusion.}
     \label{fig:tf_tree}
 \end{figure}
 
@@ -1305,9 +1313,11 @@ This process establishes the geometric relationships required to express all sen
 Calibration begins with determining the camera’s intrinsic parameters, followed by estimation of the extrinsic transformation that defines the rigid-body relationship between the camera and each \ac{LiDAR} sensor.  
 The following sections describe the methods and results of this calibration process.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Extrinsic Calibration} \label{extrinsic_tform}
 
 Extrinsic calibration defines the rigid-body transformation between two reference frames.  
+
 The transformation from frame $A$ to frame $B$ is represented as
 \begin{equation}
     _{B}^{A}\mathbf{T} =
@@ -1334,8 +1344,8 @@ The \ac{LiDAR}-to-\ac{LiDAR} extrinsic calibration defines the rigid-body transf
 The center unit serves as the reference frame, with the port and starboard sensors calibrated relative to it to create a unified, geometrically consistent point cloud.
 
 Using large flat surfaces such as walls or other well-defined objects within the unit's overlapping field of view allows the sensors to be aligned.
-The Livox devices used have a functional detection range of 260 meters, which is far greater than the intended operational range for the sensor fusion presented in this research. 
-and because of the divergent nature of the scanning pattern, a simple visual inspection  (as illustrated in figure \ref{fig:Lidar2Lidar}) of sensor alignment beyond 100 meters guarantees alignment at closer range. 
+The Livox devices used have a functional detection range of 260~m \cite{livox_manual}, which is far greater than the intended operational range for the sensor fusion presented in this research. 
+Due to the divergent nature of the scanning pattern, a simple visual inspection  (as illustrated in figure \ref{fig:Lidar2Lidar}) of sensor alignment beyond 100~m guarantees alignment at closer range. 
 
 \begin{figure}[htbp]
     \centering
@@ -1344,6 +1354,7 @@ and because of the divergent nature of the scanning pattern, a simple visual ins
     \label{fig:Lidar2Lidar}
 \end{figure}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Camera Intrinsics} \label{camera_intrinsics}
 
 Camera intrinsic parameters describe the internal geometry of the camera and define how three-dimensional points are projected onto the two-dimensional image plane.  
@@ -1391,14 +1402,14 @@ Following these practices produces robust intrinsic estimates across the full im
     \begin{subfigure}[t]{0.3\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Images/cam_calib_1.png}
-        \caption{Corner detection on multiple images of the checkerboard pattern.}
+        \caption{A single example of detected and reprojected checkerboard corners. Agreement between detected (green circles) and reprojected (red crosses) points demonstrates corner localization and mapping of the image coordinate system.}
         \label{fig:cam_calib_1}
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{0.625\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Images/cam_calib_2.png}
-        \caption{Reprojection of each target position into a three-dimensional world frame after calibration.}
+        \caption{Reprojection of sample target poses into the 3D world frame after calibration.}
         \label{fig:cam_calib_2}
     \end{subfigure}%
 }
@@ -1407,7 +1418,7 @@ Following these practices produces robust intrinsic estimates across the full im
 \end{figure}
 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Camera to LiDAR Extrinsic Calibration} \label{camLidar_calib}
 
 Camera–LiDAR calibration begins by positioning a planar checkerboard target within both the LiDAR field of view and the camera image.  
@@ -1447,35 +1458,35 @@ In some cases, minor adjustments to the camera intrinsics are also necessary to 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Results: Spatial Calibration}
 \label{sec:spatial_calib_results}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{LiDAR–LiDAR Calibration} \label{results_lidarLidar_calib}
 
-Calibration was performed using the manufacturer’s Livox Viewer software, which provides real-time point cloud visualization and the ability to view, modify, and store sensor extrinsic measurements on-device.
-This interface enables manual adjustment and fine-tuning to minimize misalignment across large planar surfaces such as walls.  
-Once optimal alignment is achieved, the extrinsic parameters can be stored in each sensor’s onboard memory so transformations can be applied in hardware prior to transmission, reducing downstream computation.
+% Calibration was performed using the manufacturer’s Livox Viewer software, which provides real-time point cloud visualization and the ability to view, modify, and store sensor extrinsic measurements on-device.
+% This interface enables manual adjustment and fine-tuning to minimize misalignment across large planar surfaces such as walls.  
+% Once optimal alignment is achieved, the extrinsic parameters can be stored in each sensor’s onboard memory.
+% The port and starboard Livox units use this information to transform the data into the central Livox frame prior to transmission, reducing the computational load on Atlas. 
 
-Calibration was performed using the Livox Viewer software, which provides real-time multi-sensor point cloud visualization and tools for manual adjustment of extrinsic parameters. 
-The calibration process involved iterative fine-tuning of sensor orientations until consistent alignment was achieved across overlapping fields of view, using the large planar surfaces of the laboratory walls as a reference. 
-Calibration accuracy was then verified through visual inspection of large, well-defined environmental features such as trees and buildings at distances of 100–200 meters, confirming consistent alignment across all three sensors.
-Once satisfactory alignment was reached, the resulting parameters were recorded and written to the respective sensor’s onboard memory, where the transformation can be applied prior to data transmission, thus minimizing downstream computation. 
+Calibration was performed using the Livox Viewer software, which provides real-time multi-sensor point cloud visualization and tools for automatic calibration and manual adjustment of extrinsic parameters (as shown in Figure~\ref{fig:LidarLidar_calib}). 
+The calibration process involved fine-tuning of the $x, y, z$ distance and roll, pitch, and yaw between sensors.
+% until a consistent alignment was achieved across overlapping fields of view, using the large planar surfaces of the laboratory walls as a reference. 
+Calibration accuracy was then verified through visual inspection of large, well-defined environmental features such as trees and buildings at distances of 100–200~m, confirming consistent alignment across all three sensors.
+Once satisfactory alignment was reached, the resulting parameters were recorded and written to the respective sensor’s onboard memory, where the transformation can be applied before data transmission, thus minimizing downstream computation. 
 
 \begin{figure}[ht]
 \centering
-        \includegraphics[width=0.65\textwidth]{Images/livox_viewer.png}
-        \caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
-\caption{\textcolor{red}{Placeholder figure for Livox Viewer image}}
+        \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
+\caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
 \label{fig:LidarLidar_calib}
 \end{figure}
 
 % \textcolor{red}{Insert Image from Livox Viewer Showing alignment}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Camera Calibration} \label{sec:camera_intriniscs_results}
 
 Camera calibration was performed using a newly fabricated checkerboard target, shown in Figures~\ref{fig:checkerboard_old} and~\ref{fig:checkerboard_new}.  
-The target consists of a 6$\times$9 grid of 100 mm squares, providing 40 corner features for registration.  
-A set of 30 images was captured with the HDR camera.
-The new checkerboard was placed in positions that spanned the horizontal field of view at distances ranging from five to 40 meters.
-These images were then processed with MATLAB Camera Calibration app \cite{matlab_calibration}, which was successful in detecting calibration targets in 23 separate frames.  
+The target consists of a 6$\times$9 grid of 100~mm squares, providing 40 corner features for registration.  
+Thirty HDR images were captured with the checkerboard placed at positions spanning the horizontal field of view and distances between five and 40~m.
+These images were then processed with MATLAB Camera Calibration app \cite{matlab_calibration}, which was successful in detecting the checkerboard in 23 separate frames.  
 This initial process provided a set of camera intrinsic values with a mean pixel error of 0.63~pixels (Figure~\ref{fig:HDR_calib_error}).
 
 \begin{figure}[htbp]
@@ -1494,17 +1505,17 @@ This initial process provided a set of camera intrinsic values with a mean pixel
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.75\linewidth]{Images/HDR_calib_error.png}
-    \caption{Initial HDR camera calibration yielded a mean reprojection error of 0.63~pixels across the dataset.}
+    \includegraphics[width=0.9\linewidth]{Images/HDR_calib_error.png}
+    \caption{Initial HDR camera calibration yielded a mean re-projection error of 0.63~pixels across the dataset.\textcolor{red}{reproduce graphic with larger text and landscape orientation. no need for square aspect ratio.}}
     \label{fig:HDR_calib_error}
 \end{figure}
 
 % The resulting transformation achieved sub-degree rotational and centimeter-level translational accuracy, sufficient for reliable fusion and object detection.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Camera–LiDAR Calibration} \label{sec:camera-lidar_results}
 
 During extrinsic calibration, the same checkerboard images were concurrently scanned by the LiDAR.  
-Each frame was held stationary while the LiDAR accumulated data over 0.5~s, producing a dense point cloud of the target even at ranges up to 12~m.  
+Each frame was held stationary while the LiDAR accumulated data over 0.5 seconds, producing a dense point cloud of the target even at ranges up to 12~m.  
 These data were segmented into \acp{ROI}, matched to their corresponding image frames, and processed within MATLAB’s LiDAR Calibration tool \cite{matlab_calibration} to derive the initial extrinsic transformation.
 
 \begin{figure}[htbp]
@@ -1560,36 +1571,43 @@ Comparison between early and final calibration results can be seen by comparing 
 \subsection{Temporal Calibration}
 \label{time_sync}
 
+This section discusses how each of the distributed computers and sensor are kept in sync with each other.
+% Section \ref{comp:network} discussed the network architecture onboard the Minion \ac{USV} and dealt with the concept of network latency.
+Section \ref{time_sync_lan} discusses how a master clock time from the GPS is distributed throughout the network, and section \ref{time_sync_cam} discusses how camera data is transferred from one machine to another without loss of timing information.
+It is important to note that the temporal offsets discussed here should not be affected by the network latency described in Section~\ref{comp:network}, as timing information is transmitted with the data, and not subject to how long it takes to be delivered. 
+
+% Latency is used to describe the discrepancy between two system clocks as well as the delay experienced in data transmission over the \ac{LAN}.
+% Offset is used to discuss the difference in time between sensor data timestamps.
+
+% an offset between system clocks, referred to here as latency, and a discrepancy between the recorded timestamps within the camera and LiDAR sensor data 
+
 Multi-modal sensor fusion for object detection fundamentally requires precise temporal alignment between sensors operating on independent clocks and sampling at different rates.  
-For example, if two sensors are offset by 200~ms while observing a vessel moving at $5~\mathrm{m/s}$ and located 30~m from the platform, their detections would appear approximately $1~\mathrm{m}$ apart—equivalent to nearly $2^{\circ}$ of angular separation in the field of view.  
+For example, if two sensors are offset by 200 milliseconds while observing a vessel moving at $5~\mathrm{m/s}$ and located 30~m from the platform, their detections would appear approximately $1~\mathrm{m}$ apart—equivalent to nearly $2^{\circ}$ of angular separation in the field of view.  
 Such a discrepancy disrupts the spatial alignment between LiDAR points and image features, emphasizing the importance of consistent timing across all data streams.
+While an inter-sensor offset of 20 milliseconds or less would ensure that collected data is within the tolerance of our detection system in a real-world scenario, this level of precision was determined to be unnecessary for the RobotX competition and was relaxed to 100 milliseconds.
 
-In maritime applications, where vehicle motion is relatively slow compared to ground-based platforms, sub-millisecond synchronization is generally unnecessary.  
-For the same vessel traveling at $5~\mathrm{m/s}$ and 30~m range, a temporal offset of $20~\mathrm{ms}$ limits apparent displacement to about 0.1~m, corresponding to less than two pixels in the downsampled image used for YOLO-based detection.  
-As demonstrated in Chapter~\ref{realtime_object_detection}, this level of alignment provides sufficient temporal accuracy for late-fusion operations.
-Therefore, a 20~ms offset is adopted as the maximum allowable synchronization error for this system.
+% In maritime applications, where vehicle motion is relatively slow compared to ground-based platforms, sub-millisecond synchronization is generally unnecessary.  
+% For the same vessel traveling at $5~\mathrm{m/s}$ and 30~m range, a temporal offset of $20~\mathrm{ms}$ limits apparent displacement to about 0.1~m, corresponding to less than two pixels in the downsampled image used for YOLO-based detection.  
+% As demonstrated in Chapter~\ref{realtime_object_detection}, this level of alignment provides sufficient temporal accuracy for late-fusion operations.
+% Therefore, a 20~ms offset is adopted as the maximum allowable synchronization error for this system.
+% In this work, the design requirement is an inter-sensor clock \emph{offset} of $\leq 20~\mathrm{ms}$, which limits apparent target displacement to $\approx 0.1~\mathrm{m}$ at 30~m for a vessel moving at $5~\mathrm{m/s}$.  
+% Note that offset (clock difference between devices) is distinct from end-to-end video latency (capture→decode delay); latency does not break fusion when frame timestamps are preserved.
 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \subsection{Temporal Calibration}
-
-% \paragraph{LAN}
-% Because Minion employs dual Atlas PCs for redundancy, only one Chrony instance operates as the active NTP server at a time; the secondary node remains in standby mode to prevent competing time sources. Startup procedures include automatic verification that the active Chrony instance has successfully locked to the GPS source and that downstream devices have joined the synchronization hierarchy.
-
-% End-to-end timing accuracy was validated during preliminary trials, yielding approximately 127 ms latency through the HDR video pipeline and confirmed microsecond-level consistency across LiDAR timestamps. This hybrid NTP/PTP design provides a scalable, fault-tolerant foundation for temporal alignment across all sensing modalities—critical for the late-fusion methods discussed in Chapter \ref{realtime_object_detection}.
-
-% \paragraph{RTSP}
-% Embedding timestamps within SEI NAL units provides frame-accurate temporal alignment between video and LiDAR data, without dependence on external metadata files or fragile caption layers.
-% This approach improves both the robustness and portability of the recorded data: timestamps remain bound to the video content itself, simplifying dataset conversion and playback analysis.
-
-% Empirical validation confirmed that SEI-based synchronization achieved millisecond-level alignment between the visual and LiDAR modalities, surpassing the performance of prior closed-caption and CSV-based timestamping approaches.
-% Together with the NTP/PTP network synchronization system, this architecture ensures precise temporal coherence across all sensing modalities, forming the foundation for reliable multi-sensor fusion and object detection.
+% The next subsections describe the timing architecture: network synchronization across the vessel, Network Time Protocol for millisecond alignment of compute nodes, Precision Time Protocol for microsecond alignment of LiDAR units, and camera synchronization with timestamps embedded in the video bitstream and recovered at the receiver. Final timing performance and any corrective alignment used for LiDAR fusion are reported in Sec.~\ref{sec:time_sync_results}.
 
 
+% Offset is the difference between device clocks at the same instant in time. 
+% It shifts timestamps and creates apparent motion between modalities. 
+% Latency is the delay from image exposure to availability at the receiver. Latency changes throughput but not the recorded capture time when timestamps are preserved. 
+% At 5~m/s and 30~m range, a 20~milliseconds offset yields about 0.1~m apparent displacement, which is acceptable for late fusion. 
+% The next subsections describe network synchronization, NTP for millisecond alignment of compute nodes, PTP for microsecond alignment of LiDAR units, and camera time-stamping within the video bitstream. Final offset and pipeline latency measurements appear in Section ~\ref{time_sync}.
+% \textcolor{red}{This needs revision. The next section discusses latency, which needs to be identified as a separate measure from offset. Redo this last paragraph to correct.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Network Synchronization} \label{time_sync_lan}
 
-The Minion platform employs a hierarchical time synchronization architecture that distributes GPS-disciplined time from the PinPoint receiver to all perception sensors, \textcolor{blue}{achieving millisecond-level accuracy for camera observations and microsecond-level synchronization for LiDAR measurements. } 
+The Minion platform employs a hierarchical time synchronization architecture that distributes GPS-disciplined time from the PinPoint receiver to all perception sensors.
+% \textcolor{blue}{achieving millisecond-level accuracy for camera observations and microsecond-level synchronization for LiDAR measurements. } 
 In this configuration, the GPS clock serves as the master time source, which is distributed over the network via \ac{NTP} for coarse alignment or \ac{PTP} to achieve higher precision.
 Together, these layers establish a unified temporal framework supporting reliable cross-modal data fusion and performance evaluation.
 
@@ -1599,17 +1617,19 @@ The synchronization hierarchy cascades timing information from the PinPoint GPS 
 
 At the top of this chain, the PinPoint GPS module provides Coordinated Universal Time (UTC) with sub-microsecond accuracy using the Global Navigation Satellite System (GNSS) signal. This external clock acts as the authoritative reference for the entire vessel, ensuring that all downstream systems inherit a consistent time base independent of internet connectivity.
 
-\subsubsection{Network Time Protocol} \label{NTP}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsubsection{Network Time Protocol} \label{NTP}
 % \paragraph{NTP}
 Within the local area network (LAN), the Chrony \ac{NTP} daemon runs on the primary Atlas computer, which serves as the authoritative time server for all onboard devices. Chrony continuously disciplines the system clock using the GPS reference and corrects for minor drift caused by oscillator instability.
 
-The NVIDIA Jetson AGX Xavier inside the camera enclosure operates as an \ac{NTP} client, synchronizing its system clock with the Atlas PC over the local Ethernet link. The resulting clock alignment achieves approximately 1–10 ms accuracy—sufficient for coordinating 10 Hz camera streams and maintaining consistent ROS timestamps across computing nodes.
+The NVIDIA Jetson AGX Xavier inside the camera enclosure operates as an \ac{NTP} client, synchronizing its system clock with the Atlas PC over the local Ethernet link. The resulting clock alignment achieves approximately 1–10~milliseconds accuracy—sufficient for coordinating 10~Hz camera streams and maintaining consistent ROS timestamps across computing nodes.
 
 The synchronization status is verified at startup by onboard scripts that query Chrony before any video or LiDAR processes begin. This verification ensures that recording never proceeds with unsynchronized clocks. In addition, automated diagnostic checks allow operators to confirm that time distribution remains stable throughout offshore missions, where the GPS link represents the sole external time authority
 
-\subsubsection{Precision Time Protocol} \label{PTP}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsubsection{Precision Time Protocol} \label{PTP}
 % \paragraph{PTP}
-While \ac{NTP} provides millisecond-level precision for cameras and computing nodes, LiDAR sensors demand tighter synchronization. Each Livox Horizon operates at 100 Hz with microsecond-timestamped measurements, where even millisecond-level drift would cause measurable spatial distortion during vessel motion. To meet this requirement, the Jetson Xavier distributes the \ac{PTP} signal using the Linux ptp4l service.
+While \ac{NTP} provides millisecond-level precision for cameras and computing nodes, LiDAR sensors demand tighter synchronization. Each Livox Horizon operates at 100~Hz with microsecond-timestamped measurements, where even millisecond-level drift would cause measurable spatial distortion during vessel motion. To meet this requirement, the Jetson Xavier distributes the \ac{PTP} signal using the Linux ptp4l service.
 
 In this configuration, the Jetson acts as the \ac{PTP} master clock, broadcasting timing packets over the camera-enclosure network to all three Livox devices, which function as \ac{PTP} slaves. \ac{PTP} uses hardware-timestamped Ethernet packets to measure network delay symmetrically and correct for it in real time, achieving sub-microsecond synchronization between LiDAR units. The Livox Viewer utility confirms synchronization state during system startup, and visual indicators within the GUI report “active 1588 signal” once synchronization is established.
 
@@ -1626,15 +1646,22 @@ In this configuration, the Jetson acts as the \ac{PTP} master clock, broadcastin
 Accurate video timestamps are essential for aligning image data with LiDAR point clouds. To achieve frame-level temporal precision, the Minion system embeds timestamps directly into the H.264/H.265 video stream generated by the Jetson Xavier using the GStreamer framework. This ensures that timing information remains synchronized with the frame itself, surviving compression, transmission, and playback.
 
 % \paragraph{prior solution}
-Earlier implementations of the Minion perception system—originally developed by \textcolor{blue}{Thompson~\cite{thompson2023}} employed a custom GStreamer plugin that performed two timestamping operations.
-First, it generated an adjacent .csv file containing per-frame timestamps for locally recorded video; second, it embedded the same timecodes into the closed-caption (CEA-608) layer of the encoded stream.
-While effective for offline post-processing, this method proved cumbersome for real-time applications: the closed-caption data were often stripped or modified by downstream GStreamer elements, making timestamp extraction unreliable during live network transmission and subsequent ROS integration.
-This limitation motivated the development of the SEI-based synchronization method described below.
+% Earlier implementations of the Minion perception system—originally developed by Thompson~\cite{thompson2023} employed a custom GStreamer plugin that performed two timestamping operations.
+% First, it generated an adjacent .csv file containing timestamps that aligned to each frame of locally recorded video; second, it embedded the same timestamps into the closed-caption (CEA-608) layer of the \ac{RTSP} video stream.
+% While this method was effective for offline data processing using the locally saved video files, the video stream is conducted asynchronously, and the RTSP protocol is unable to keep the closed-caption stream data linked to video frames.
+% This limitation motivated the development of an \ac{SEI}-based synchronization method described below.
+Earlier implementations of the Minion perception system—originally developed by Thompson~\cite{thompson2023}—employed a custom GStreamer plugin that performed two time-stamping operations. 
+First, it generated an adjacent .csv file containing timestamps aligned to each frame of the locally recorded video. 
+Second, it embedded the same timestamps into the closed-caption (CEA-608) layer of the \ac{RTSP} video stream. 
+While effective for offline data processing using the saved video files, this method was limited by the asynchronous nature of \ac{RTSP}, which cannot maintain a persistent link between closed-caption data and video frames. 
+This limitation motivated the development of the \ac{SEI}-based synchronization method described below.
 
 % \paragraph{developed solution}
 
 The current implementation replaces the caption-based approach with direct timestamp embedding using Supplemental Enhancement Information (SEI) Network Abstraction Layer (NAL) units defined in the H.264/H.265 standard.
-Each video frame receives a GPS-disciplined system timestamp at the instant of capture from the camera sensor. These timestamps are stored as 64-bit values (milliseconds since Unix epoch) and attached to the frame via a custom GStreamer metadata extension (CustomTimestampMeta).
+Each video frame receives a GPS-disciplined system timestamp at the instant of capture from the camera sensor. These timestamps are stored as 64-bit values (milliseconds since Unix epoch) and attached to each frame via a custom GStreamer extension. % (CustomTimestampMeta).
+This method keeps the timestamp data inextricably linked to the same video layer that is transmitted over \ac{RTSP}, guaranteeing that each video frame received will have a timestamp, even if dropped frames are experienced.
+The complete video processing pipeline is visualized as a block diagram in Figure \ref{video_pipeline}.
 
 % During encoding, a pad probe inserts the SEI NAL units immediately before the RTP payload (rtph264pay), ensuring that every encoded frame carries its own timestamp embedded within the bitstream.
 % Because this method fits within the encoding standard, the timestamps persist through compression and streaming, which eliminates the complexity of the prior approach and maintains compatibility with all conventional video decoders.
@@ -1647,7 +1674,7 @@ Each video frame receives a GPS-disciplined system timestamp at the instant of c
 \end{figure}
 
 
-The complete video processing pipeline is visualized as a block diagram in Figure \ref{video_pipeline}.
+
 % v4l2src → videoconvert → videorate → x264enc → [SEI insertion] → rtph264pay → RTSP stream
 
 % Captured video at 2880×1860px and 60fps is downsampled to 10fps for transmission, balancing temporal resolution with network bandwidth. The SEI timestamp metadata is attached prior to frame-rate conversion, ensuring that each output frame retains its original capture time.
@@ -1659,37 +1686,41 @@ At the receiving end, the Atlas PC decodes incoming streams using a complementar
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=5in]{Images/gstreamer_block.png}
-\caption{Block diagram of the NVIDIA Jetson's video pipeline. Green rectangles represent video data entering or leaving the pipeline, red rectangles indicate local file creation, and light-blue rectangles with chamfered corners indicate timestamp acquisition and application operations of the pipeline.}
+\caption{Block diagram of the NVIDIA Jetson's video pipeline. Green rectangles represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue rectangles with chamfered corners denote timestamp acquisition and application operations within the pipeline.}
 \label{video_pipeline}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Results: Temporal Synchronization} \label{results)time_sync_cam}
 
-
-
-An initial evaluation of the video stream and timestamping system was conducted under conditions that simulated expected network load conditions.
-Video data was recorded for 14.5 seconds at 10 frames per second (twice the anticipated operational rate) for a total of 8,720 frames. 
-The NVIDIA computer in the camera enclosure was accessed via SSH terminal and displayed a log of each timestamp being recorded and sent over the RTSP video stream. Similarly, the Atlas PC was connected to via SSH and displayed the timestamp being received over the RSTP video stream in a similar fashion. This data was also logged in a text file on the respective machines and compared for analysis. 
-To ensure real-world clock precision, in the vision, a real-time clock was set up in front of the camera, displaying UNIX timecode and epoch, and transmitted with the video feed. An image of this setup is presented in Figure~\ref{fig:time_sync1}
+An initial evaluation of the video stream and time-stamping system was conducted under conditions that simulated expected network load conditions.
+Video data was recorded for 14.5 seconds at 10 \ac{fps} (twice the anticipated operational rate) for a total of 8,720 frames. 
+The NVIDIA computer in the camera enclosure was accessed via SSH terminal and displayed a log of each timestamp being recorded and sent over the RTSP video stream. 
+Similarly, the Atlas PC was connected to via SSH and displayed the timestamp being received over the RTSP video stream.
+This data was also logged in a text file on the respective machines and compared for analysis. 
+To ensure real-world clock precision, a real-time clock was set up in front of the camera displaying the current time, and transmitted as the subject of the video feed. An image of this setup is presented in Figure~\ref{fig:time_sync1}
+This allows for any internal clock drift to easily be identified by comparing the transmitted timestamp to the time displayed in the video itself.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\linewidth]{Images/time_sync1.png}
-    \caption{Caption}
+    \caption{Testing the timestamp embedding within the RTSP stream for dropped frames and real-world temporal accuracy.}
     \label{fig:time_sync1}
 \end{figure}
-
-
-Data was recorded by outputting the timestamps being sent and received by video camera, as well as by exporting this data to a log file on each machine. 
+% Data was recorded by outputting the timestamps being sent and received by video camera, as well as by exporting this data to a log file on each machine. 
 
 During the test, system-wide clock synchronization was measured using Chrony, which reported an average offset of $197;\text{ms};\pm;33;\text{ms}$ between the NVIDIA Jetson and Atlas machines.
-The results of this test showed a total delay in video frame reception of 127 ms, and logs between computers showed zero dropped frames with a 100\% match between timestamps.
+The results of this test showed a total delay in video frame reception of 127 milliseconds, and logs between computers showed zero dropped frames with a 100\% match between timestamps.
+\textcolor{blue}{This test was performed on Helios - Not Atlas, and did not have a true "master clock", if I recall. Find more recent test data. I would bet that running with updated chrony and ptp4l settings reduces this number significantly.}
 
 Despite this result in frame delivery and timestamp assignment during testing, analysis of the recorded ROS bagfile data revealed a measurable drift between the original frame timestamps on the Jetson and those recorded by the Atlas system. 
-This discrepancy is believed to stem from thermal issues within the camera enclosure that were encountered during data collection.
-Therefore, some postprocessing of the data was required to ensure its validity.
+% This discrepancy is believed to stem from thermal issues within the camera enclosure that were encountered during data collection.
+% Therefore, some postprocessing of the data was required to ensure its validity.
+This discrepancy is believed to result from thermal effects within the sealed camera enclosure during extended operation. 
+Although no direct temperature measurements were recorded during this test, subsequent observations suggest that overheating may influence the Jetson's internal clock stability. 
+This hypothesis remains unverified and will be revisited in Section~\ref{recommendations}.
 
-To resolve this, structural similarity (SSIM) scoring was employed to match each frame recorded by ROS on the Atlas to its corresponding source frame from the original video files on the Jetson. Although SSIM is conventionally used to assess visual degradation from compression, in this context, it served as a frame-matching metric: matched frames produced SSIM scores near 1.0, while mismatches scored closer to 0.0. The SSIM metric used is defined as:
+To resolve this, structural similarity (SSIM) scoring was employed to match each frame recorded by ROS on the Atlas to its corresponding source frame from the original video files on the Jetson. 
+Although SSIM is conventionally used to assess visual degradation from compression, in this context, it served as a frame-matching metric: matched frames produced SSIM scores near 1.0, while mismatches scored closer to 0.0. The SSIM metric used is defined as:
 \begin{equation}
     \text{SSIM}(x, y) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
 \end{equation}
@@ -1697,207 +1728,14 @@ To resolve this, structural similarity (SSIM) scoring was employed to match each
 In this expression, $\mu_x$ and $\mu_y$ represent the mean pixel intensities of images $x$ and $y$, $\sigma_x^2$ and $\sigma_y^2$ are their variances, $\sigma_{xy}$ is the covariance between the images, and $C_1$ and $C_2$ are small constants that stabilize the division when the denominator is near zero.
 
 To initialize alignment for each bag file, the first five ROS image messages within each bag were manually paired to the corresponding frames in the source video.
-This established the offset the system was experiencing at the time of data was being recorded, which was then used to programmatically pair the remaining image messages in the bag with their video frame counterparts.
-
-To streamline this process across all 112 recorded bag files, a database was created to store the file names, paths, and relevant metadata, allowing image and video data to be easily cross-referenced between video and CSV files, and each of the 100,000 + ROS image messages.
-
-
-
-% Despite the hierarchical GPS-NTP-PTP synchronization architecture distributing a common time reference to all platform sensors, systematic timing offsets arise between video frames recorded locally on the NVIDIA Jetson Xavier camera enclosure and the same frames transmitted over the network and received as ROS messages on the Atlas PC.
-% These offsets originate from a combination of network latency, video encoding and decoding delays, frame buffering in the GStreamer pipeline, and potential residual clock drift between computing platforms.
-% Uncorrected timing discrepancies of 0.24 to 1.54 seconds compromise temporal alignment between camera observations and LiDAR point clouds.
-% For a vessel traveling at 5 meters per second, a 1-second timing error translates to 5 meters of spatial misalignment when attempting to associate camera frames with LiDAR observations, invalidating the frame-accurate sensor fusion required for rigorous detection performance analysis.
-
-% A comprehensive temporal drift analysis and correction methodology establishes ground-truth frame correspondence between locally-recorded video and network-transmitted ROS messages through structural similarity-based image matching, quantifies systematic timing offsets, characterizes drift patterns, and applies interpolation-based corrections to achieve sub-second temporal alignment accuracy.
-
-% ### Problem Statement and Offset Sources
-
-% The distributed video processing architecture separates frame acquisition and encoding on the Jetson Xavier from reception and ROS publication on the Atlas PC.
-% This separation introduces timing discrepancies through multiple mechanisms.
-
-% Encoding and transmission delays arise as the H.264/H.265 encoding process introduces latency between frame capture and bitstream availability.
-% Network transmission adds additional delay, followed by RTP depacketization, parsing, and decoding on the receive side.
-% While the SEI timestamp embedded in each frame records the original capture time, the ROS message timestamp on the Atlas PC may differ due to buffering and processing delays.
-
-% Clock synchronization imperfections contribute to offsets.
-% Although both the Jetson Xavier and Atlas PC synchronize to GPS time via NTP, network latency and NTP algorithm behavior result in typical synchronization accuracy of 1-10 milliseconds.
-% Over extended recording sessions, differential clock drift between systems can accumulate, creating time-varying offsets.
-
-% Frame buffering in GStreamer's buffering mechanisms, designed to smooth network jitter and ensure continuous playback, introduces variable delays between frame availability and processing.
-% These delays manifest as offsets between the SEI-embedded acquisition timestamp and the ROS message publication time.
-
-% The cumulative effect produces systematic time offsets ranging from hundreds of milliseconds to multiple seconds between Jetson-recorded video timestamps and Atlas-received ROS message timestamps.
-
-% ### Ground Truth Establishment via Image Matching
-
-% Quantifying temporal offsets requires establishing ground-truth correspondence between frames in locally-recorded video files and frames in ROS bag recordings.
-% This correspondence cannot be assumed based on frame count or relative timing, as dropped frames or transmission artifacts might desynchronize sequential indexing.
-% A content-based matching approach using the Structural Similarity Index Measure provides robust frame correspondence despite minor compression artifacts or brightness variations.
-
-% % #### Structural Similarity Index Measure
-
-% SSIM quantifies perceptual similarity between two images by comparing luminance, contrast, and structural patterns rather than simple pixel-wise differences.
-% The metric ranges from 0.0 indicating completely dissimilar images to 1.0 indicating identical images, with values above 0.6-0.7 typically indicating the same scene despite minor variations in encoding, brightness, or noise.
-
-% For two image patches $x$ and $y$, SSIM is computed as:
-
-% \begin{equation}
-%     \text{SSIM}(x,y) = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}
-% \end{equation}
-
-
-% where $\mu$ denotes mean luminance, $\sigma^2$ denotes variance, $\sigma_{xy}$ denotes covariance, and $C_1$, $C_2$ are stabilization constants.
-
-% SSIM proves superior to mean squared error or peak signal-to-noise ratio for this application because it tolerates the slight brightness and contrast variations introduced by independent H.264/H.265 encoding of the same source frames on the Jetson for local recording versus the Atlas after ROS decoding.
-
-% % #### Frame Matching Implementation
-
-% A custom Python analysis tool was developed to extract frames from both locally-saved video files and ROS bag recordings, then perform SSIM-based matching.
-
-% Video frame extraction uses OpenCV to read all frames with timestamps from MP4 or MKV video files, computing relative timestamps based on frame number and video frame rate.
-
-% ROS bag frame extraction reads image messages from ROS bag files, extracting ROS timestamps from message headers and converting ROS image messages to OpenCV format using the cv\_bridge library.
-
-% SSIM computation converts images to grayscale for computational efficiency, resizes images if dimensions differ, and computes the structural similarity score using implementations from scikit-image.
-
-% % ### Hybrid Manual-Automated Matching Strategy
-
-% The frame matching procedure employs a hybrid approach where initial synchronization points are established through intensive brute-force SSIM comparison, then subsequent matches leverage the learned time offset for computational efficiency.
-
-% % #### Phase 1: Initial Synchronization Points
-
-% For each ROS bag file, the first 5 message frames undergo exhaustive SSIM matching against a search window in the corresponding video file.
-
-% The search window spans ±15 seconds, equivalent to 375 frames at 25 fps, sufficient to accommodate potential multi-second timing offsets while remaining computationally tractable.
-% For each ROS frame, SSIM scores are computed between the ROS frame and all video frames in the search window.
-% The video frame with the highest SSIM score is selected as the best match, provided the score exceeds the 0.6 threshold indicating acceptable match quality.
-
-% % #### Phase 2: Offset Validation
-
-% Once initial synchronization points are established, time offsets are computed as the difference between video timestamp and ROS timestamp.
-% Offset consistency is verified across sync points.
-
-% If the standard deviation of offsets across the first 5 sync points exceeds 0.1 seconds, the methodology flags the bag-video pair for manual review, as large offset variability suggests non-linear drift or frame matching errors.
-
-% % #### Phase 3: Automated Processing
-
-% For ROS messages beyond the initial 5 manual sync points, the learned average offset enables efficient matching.
-% The ROS timestamp is adjusted by the learned offset to compute the expected video frame number, reducing computational cost from order $n \times m$ for exhaustive SSIM comparison to order $n$ for timestamp-based lookup, where $n$ is the number of ROS messages and $m$ is the search window size.
-
-% ### Database Implementation for Scalability
-
-% The temporal drift analysis processes 107,968 total ROS image messages across multiple recording sessions.
-% A SQLite database provides structured storage for synchronization points, offsets, and validation metrics.
-
-% The database schema includes tables linking bag files to video files and recording frame synchronization points including ROS timestamps, video timestamps, video frame numbers, time offsets, SSIM scores, and estimation quality classification distinguishing exact matches from interpolated and extrapolated values.
-
-% The database enables queries for drift analysis calculating offset changes and drift rates over time, supporting temporal alignment validation across the complete dataset.
-
-% % ### Temporal Drift Characteristics
-
-% Analysis of the synchronization database reveals systematic patterns in timing offsets.
-
-% % #### Offset Magnitude and Stability
-
-% Typical offset ranges span 0.24 to 1.54 seconds across different bag-video pairs.
-% Offset standard deviations range from 0.01 to 0.08 seconds within individual recording sessions.
-% Drift rates range from -0.17 to +0.01 seconds per second.
-
-% Negative drift rates indicate that ROS message timestamps advance faster than video timestamps, equivalently that the time offset decreases over the session, suggesting slight residual clock drift between Jetson Xavier and Atlas PC despite NTP synchronization.
-
-% % #### Network Jitter Contribution
-
-% The ±0.081 second standard deviation observed in some sessions indicates network-induced timing variability.
-% UDP transport used for RTSP streaming offers no delivery guarantees, and occasional network jitter manifests as frame arrival time variations that GStreamer buffering mechanisms smooth but do not eliminate entirely.
-
-% % #### Systematic Offset Sources
-
-% The consistent 0.24-1.54 second offset magnitude exceeds the expected NTP synchronization error of 1-10 milliseconds by orders of magnitude, indicating that the primary offset source is not clock drift but rather pipeline latency.
-% The video encoding, transmission, and decoding chain introduces delays accumulating to hundreds of milliseconds or seconds, necessitating correction beyond simple clock synchronization to achieve frame-accurate temporal alignment.
-
-% % ### Interpolation-Based Timestamp Correction
-
-% Establishing synchronization points approximately every 1 second, equivalent to 10 ROS messages at 10 Hz sampling rate, enables accurate interpolation of corrected timestamps for all frames including those between explicit sync points.
-
-% % #### Linear Interpolation Method
-
-% Using SciPy's interpolation functions, mapping functions are created from ROS timestamps to video frame numbers based on established synchronization points.
-% For any ROS message with timestamp falling between two synchronization points, the corresponding video frame number is estimated through linear interpolation.
-
-% The linear interpolation assumption holds well given observed drift characteristics where drift rates typically remain below ±0.2 seconds per second, producing nearly linear offset evolution between 1-second sync points.
-
-% % #### Validation Metrics
-
-% Interpolation accuracy is validated by comparing predicted frame numbers against ground-truth SSIM matches.
-
-% Mean absolute error remains under 1 frame, equivalent to under 40 milliseconds at 25 fps.
-% Root mean square error remains under 2 frames, representing under 80 milliseconds.
-% Maximum errors of 3-5 frames represent under 200 milliseconds.
-
-% These accuracy levels achieve sub-second temporal alignment meeting requirements for associating camera frames with LiDAR observations for object detection evaluation.
-
-% % #### Quality Classification
-
-% Each timestamp correction is classified by estimation quality.
-
-% Exact match designates cases where the ROS timestamp exactly matches a synchronization point with SSIM greater than 0.6.
-% Interpolated designates cases where linear interpolation occurs between two synchronization points.
-% Extrapolated designates cases outside the range of synchronization points, indicating lower confidence.
-
-% % ### Corrected Dataset Generation
-
-% The drift correction methodology produces a comprehensive temporal alignment dataset for each bag-video pair.
-
-% For each ROS frame, the corresponding video frame is estimated using the interpolation function.
-% The corrected timestamp is computed from the estimated frame number and video frame rate.
-% The applied time offset is calculated as the difference between estimated video timestamp and original ROS timestamp.
-% Estimation quality is determined based on whether the ROS timestamp matches a sync point, falls between sync points, or lies outside the sync point range.
-
-% Output CSV files provide corrected timestamps for all frames in each recording session, enabling downstream sensor fusion pipelines to apply accurate temporal alignment.
-
-% The dataset contains 10,141 exact matches representing 9.4% of total frames, 96,827 interpolated frames representing 89.7%, and 1,000 extrapolated frames representing 0.9%.
-% The high interpolation fraction reflects the computational efficiency optimization that establishes explicit sync points for only a subset of frames while interpolating the remainder.
-
-% % ### Integration with Sensor Fusion Pipeline
-
-% The temporal drift correction methodology directly enables multi-modal sensor fusion by ensuring camera frame timestamps accurately reflect acquisition time.
-
-% Before correction, camera-LiDAR temporal alignment errors of 0.24-1.54 seconds produce spatial misalignment of 1.2-7.7 meters at 5 meters per second vessel speed, invalid temporal correlation between modalities, and potential false negative detections due to temporal mismatch.
-
-% After correction, camera-LiDAR temporal alignment improves to under 0.1 second typical interpolation error, spatial misalignment reduces to under 0.5 meters at 5 meters per second vessel speed, valid frame-accurate temporal association is established, and reliable cross-modal detection comparison becomes possible.
-
-% % ### Methodology Validation
-
-% Several validation procedures confirm the accuracy of the temporal drift correction.
-
-% % #### SSIM Score Distribution
-
-% The distribution of SSIM scores for matched frames indicates match quality.
-% Mean SSIM reaches 0.72, median SSIM reaches 0.73, the 95th percentile exceeds 0.85, and matches with SSIM below 0.6 representing less than 2 percent are flagged for manual review.
-% The high SSIM scores confirm reliable frame matching despite independent encoding paths.
-
-% % #### Offset Consistency
-
-% For recording sessions with stable operation, time offsets exhibit standard deviation under 0.05 seconds over 60-second periods, confirming the linear drift assumption.
-
-% % #### Monotonicity
-
-% Corrected timestamps maintain strict monotonic increase, confirming no frame reordering or duplicate frame issues.
-
-% % #### Visual Inspection
-
-% Random sampling of matched frames for visual comparison by human observers confirms that SSIM matches correspond to identical scene content.
-
-% % ### Limitations and Assumptions
-
-% The temporal drift analysis methodology assumes several conditions.
-
-% Linear drift between sync points is approximately valid for 1-second intervals but may degrade for longer periods.
-% SSIM reliability requires sufficient visual features; feature-sparse maritime scenes including open water or fog may reduce match confidence.
-% No dropped frames are assumed; the methodology assumes all captured frames reach the ROS bag, as dropped frames would require more sophisticated matching.
-% Constant frame rate is assumed; variable frame rate would complicate interpolation.
-
-% Despite these limitations, the methodology achieves the sub-second temporal alignment necessary for rigorous object detection performance comparison between sensing modalities.
+This established the offset the system was experiencing at the time the data was being recorded, which was then used to programmatically pair the remaining image messages in the bag with their video frame counterparts.
+SSIM-based alignment was then automated on a subset of frames sampled at one-second intervals across each bagfile. 
+Once alignment was confirmed through SSIM scores, the timestamps and frame indices for the intermediate frames were interpolated from the verified matches. 
+Accordingly, the total number of frames analyzed by SSIM is approximately equal to the total number of seconds of recorded data.
+
+To streamline this process across all 112 recorded bag files, a database was created to store file names, paths, and relevant metadata, allowing image and video data to be easily cross-referenced between the video and CSV files, and more than 100,000 ROS image messages. 
+The same database also served as the repository for SSIM scores, interpolated matched frame numbers, and both the original and corrected timestamps for each image message. 
+This dual-purpose design enabled automation of the SSIM alignment process while simultaneously providing a complete record of the aligned frame data for offline analysis and validation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1910,9 +1748,11 @@ To streamline this process across all 112 recorded bag files, a database was cre
 % Together, these processes establish the bridge between hardware-level sensing and 
 % machine-learning-based object detection methods discussed in Chapter~\ref{realtime_object_detection}.
 
-This section describes the collected sensor data, ROS node architecture used to record it, 
+This section describes the collected sensor data, the ROS node architecture used to record it, 
 and the organization of the resulting dataset used throughout this research.  
 It integrates over three hours of multi-sensor maritime data collected aboard the Minion between October 2023 and May 2025.
+
+The resulting dataset represents a multi-modal maritime perception package that integrates synchronized LiDAR, HDR video, GPS, and IMU data collected under real-world conditions, and is structured to enable rapid offline reproduction of real-time detection and fusion results.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1921,16 +1761,16 @@ It integrates over three hours of multi-sensor maritime data collected aboard th
 
 Data were collected using the ROS 1 \texttt{Noetic} framework on Ubuntu 20.04, 
 leveraging custom C++ packages developed for LiDAR–camera fusion and object detection.  
-% Figure \ref{fig:ros_architecture} outlines the software architecture.  
+% Figure \ref{fig:ros} outlines the software architecture.  
+ROS 1 Noetic was selected because the Minion software stack had not yet been fully migrated or validated under ROS 2, while the ROS 1 implementation was stable, field-tested, and fully operational across all sensing subsystems.
 
-Raw data from the Pinpoint GPS and Livox LiDAR units, and the RTSP video stream, are converted into individual ROS messages through discrete ROS nodes and published to sensor-specific topics as visualized in figure\ref{fig:ros}.
- 
+Raw data from the Pinpoint GPS, Livox LiDAR units, and the RTSP video stream are converted into individual ROS messages through separate ROS nodes and published to sensor-specific topics as visualized in Figure \ref{fig:ros}.  
+Temporal synchronization was achieved by applying original hardware timestamps to each ROS message header: LiDAR packets were time-stamped by the Livox\_SDK driver, while the RTSP video stream was decoded frame-by-frame, with timing extracted from H.264 metadata and applied to each image message before publication, as detailed in Section~\ref{time_sync_cam}.
 
-% \subsubsection{Vision Pipeline}  
-% Five nodes handled image acquisition, fusion, ROI extraction, and color classification.  
-% The \texttt{image\_lidar\_fusion} node projected LiDAR points into camera space using stored calibration transforms,  
-% while \texttt{roi\_color\_classifier} performed HSV-based color classification of maritime objects such as buoys and light towers.  
-% The \texttt{roi\_logger} node recorded cropped regions of interest for offline dataset construction.  
+All sensor topics were recorded using the standard rosbag record utility without compression. 
+The resulting bag files constitute the dataset itself, recorded in real-time during field operations and later parsed offline for analysis and model training.
+
+
 
 % \subsubsection{LiDAR Pipeline}  
 % Four nodes implemented object detection, filtering, and 3-D clustering.  
@@ -1941,7 +1781,7 @@ Raw data from the Pinpoint GPS and Livox LiDAR units, and the RTSP video stream,
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\linewidth]{Images/ros.png}
-    \caption{ROS node architecture for synchronized LiDAR–camera data collection.}
+    \caption{Software architecture used to acquire synchronized LiDAR, HDR video, GPS, and IMU data within the ROS 1 Noetic framework. Each node publishes time-stamped sensor messages to modality-specific topics, allowing for the raw data to be played back with accurate timing.}
     \label{fig:ros}
 \end{figure}
 
@@ -1951,36 +1791,36 @@ Raw data from the Pinpoint GPS and Livox LiDAR units, and the RTSP video stream,
 \subsection{Data Collection Overview}
 \label{sec:data_overview}
 
-A total of 122 ROS bag files were recorded over 13 collection days,  containing more than 52 million sensor messages and 3.67 hours of synchronized data.  
+The data collection framework was deployed aboard Minion across multiple field days before, during, and after the RobotX Competition, producing the complete dataset used in this research.
+A total of 122 ROS bag files were recorded over 13 collection days,  containing more than 52 million sensor messages and 3.67 hours of synchronized data.
+Across all campaigns, the dataset includes approximately 132,000 camera frames and 66,000 LiDAR scans, corresponding to an average of about 10,000 frames per collection day.
 Tables \ref{tab:rosbag_stats} and \ref{tab:obj_class_dets} aggregate these statistics.  
+HDR messages correspond to the total number of image-topic messages recorded, and LiDAR message counts can be estimated as the total recorded duration multiplied by 300 messages per second (three sensors operating at 100 Hz each).
+Based on the total durations of recorded bagfiles, this equates to more than 3.9 million LiDAR frames per unit and more than 11 million LiDAR messages when combined.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
-\begin{tabular}{llrr}
+\begin{tabular}{llrrr}
 \hline
-% \textbf{Period} & \textbf{Date Range} & \textbf{Bags} & \textbf{Messages} \\
-\multicolumn{2}{c}{Collection Period} & Bags & Messages \\
+\multicolumn{2}{c}{Collection Period} & Bags & HDR Messages & Seconds \\
 \hline
 \hline
-Competition Training & Sep 22 - Oct 26, 2024 & 29 & 8,408,242 \\
-RobotX Competition & Nov 3 - Nov 9, 2024 & 62 & 33,336,777 \\
-Summer 2025  & May 29, 2025 & 31 & 10,488,090 \\
+Competition Training & Sep 22 - Oct 26, 2024 & 29 & 8,408,242 & 2,145 \\
+RobotX Competition & Nov 3 - Nov 9, 2024 & 62 & 33,336,777 & 8,026 \\
+Summer 2025  & May 29, 2025 & 31 & 10,488,090 & 3,010 \\
 \hline
-\textbf{Total} & \textbf{---} & \textbf{122} & \textbf{52,233,109} \\
+\textbf{Total} & \textbf{---} & \textbf{122} & \textbf{52,233,109} & \textbf{13,181} \\
 \hline
 \end{tabular}
-\caption{Overall Data Collection Statistics}
+\caption{Overall data collection statistics for each campaign, showing the number of ROS bag files, total recorded messages, and total recording duration in seconds.}
 \label{tab:rosbag_stats}
 \end{table}
 
-Peak collection occurred during November 2024 in preparation for the Maritime RobotX Challenge, 
-with additional data gathered during Summer 2025 to expand environmental variety.  
-All recordings included the following synchronized topics:
-\begin{itemize}[noitemsep,leftmargin=1.5em]
-    \item Three Livox Horizon LiDARs publishing \texttt{/livox/lidar\_front}, \texttt{/port}, \texttt{/starboard};
-    \item One Leopard Imaging HDR camera publishing \texttt{/camera/image} and \texttt{/camera/info};
-    \item IMU and GPS streams defining the \texttt{map→base\_link} and \texttt{base\_link→sensor} transforms.
-\end{itemize}
+Peak collection occurred during November 2024 in preparation for the Maritime RobotX Challenge, with additional data gathered during Summer 2025 to expand environmental variety.  
+Data collection was limited to favorable weather conditions to ensure team and equipment safety. 
+All sessions were conducted under calm seas, low winds, and generally clear or partly cloudy skies, with no recordings made during inclement or low-visibility conditions.
+Each recording included synchronized data from three Livox Horizon LiDARs  (\texttt{/livox/lidar\_front}, \texttt{/livox/lidar\_port}, and  \texttt{/livox/lidar\_starboard}), one Leopard Imaging HDR camera publishing  \texttt{/camera/image} and \texttt{/camera/info}, and the IMU and GPS topics defining the  \texttt{map\_to\_base\_link} and \texttt{base\_link\_to\_sensor} transforms.
+For clarity, topic and sensor identifiers are presented here using descriptive names (e.g., \texttt{/livox/lidar\_front}), whereas the original recorded topics used serial-number-based identifiers corresponding to each LiDAR unit.
 
 
 \begin{table}[ht]
@@ -2000,43 +1840,130 @@ Class & Class       & Num. Samples & Unique Objs \\
 11    & Sailboat    & 7617         & 140  \\      
 \hline
 \end{tabular}
-\caption{Number of objects detected by class}
+\caption{Total object detections and unique object counts for each labeled maritime class within the processed dataset.}
 \label{tab:obj_class_dets}
 \end{table}
 
+Unique objects correspond to persistent object IDs assigned by the mapping system, as described in Section~\ref{gbcache}.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cllcc}
+\hline
+Legacy ID & Legacy Label & YOLO Label & LiDAR Label  & Included \\
+\hline
+1  & Tall Buoy          & Tall Buoy              & Tall Buoy          & Yes \\
+2  & A2 Buoy            & Round Buoy (merged)    & A2 Buoy            & Yes \\
+3  & A3 Buoy            & Round Buoy (merged)    & A3 Buoy            & Yes \\
+4  & A5  Buoy           & —                      & —                  & - \\
+5  & Light Tower        & Light Tower            & Light Tower        & Yes \\
+6  & Dock               & —                      & —                  & - \\
+7  & Power Boat         & Jon Boat               & Jon Boat           & Yes \\
+8  & Sailboat           & Sailboat               & Sailboat           & Yes \\
+9  & Kayak              & —                      & —                  & - \\
+10 & UAV\_SR    & —                      & —                  & - \\
+11 & UAV\_Rep   & —                      & —                  & - \\
+\hline
+\end{tabular}
+\caption{Modality-aware class mapping. YOLO merges A2/A3 into \emph{Round Buoy} because a single monocular image does not provide absolute scale; LiDAR retains A2 and A3 as distinct classes due to direct range measurements enabling size-based separation.}
+\label{tab:class_map}
+\end{table}
+
+Metadata from each bagfile and associated video files, including topic names, message counts, and timestamps, were compiled into an SQLite3 database to support efficient indexing, retrieval, and temporal alignment tasks outlined in section~\ref{time_sync_cam}.
+This dataset structure provides the foundation for the evaluation results presented in Section \ref{performance}. 
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Data Organization and Processing}
+% \label{sec:data_organization}
+
+% The recorded dataset consists of multiple ROS topics operating at distinct rates. 
+% The three Livox LiDAR sensors published point-cloud data at 100~Hz, the HDR camera produced image messages at 5~Hz, 
+% and the combined GPS/IMU localization topics updated at approximately 5~Hz. 
+% These asynchronous data streams were recorded concurrently into ROS bag files during field operations, forming the complete dataset used for subsequent analysis.
+
+% All data were later reprocessed within ROS for operational testing and analysis. 
+% Metadata from each bag file, including topic names, message counts, and timestamps, was extracted into an SQLite3 database 
+% to support efficient indexing, retrieval, and temporal alignment tasks outlined in section~\ref{time_sync_cam}.
+% This dataset structure provides the foundation for the training and evaluation results presented in Chapters~\ref{yolo} and~\ref{gbcache}. 
+% The organization described here ensures that the models discussed in those chapters operate on a consistent, time-synchronized dataset, 
+% allowing direct comparison of performance between the vision-only YOLO framework and the LiDAR-based GB-CACHE method.
+
+% \paragraph{Temporal Synchronization}  
+% Detailed discussion of temporal alignment and clock drift correction is provided in Section~\ref{time_sync_cam}. 
+% Briefly, image and LiDAR frames were associated based on their recorded timestamps, ensuring that each pair represented 
+% the closest available acquisition times within a latency bound of 50~ms.
+
+% \paragraph{Spatial Registration}  
+% Spatial alignment of LiDAR data to the camera frame use the extrinsic calibration derived in Section~\ref{sec:camera-lidar_results}. 
+% Because the GPS/IMU topics operated at a lower rate than the LiDAR, the \texttt{robot\-localization} package within ROS interpolated position and heading between consecutive 5~Hz updates to generate intermediate pose estimates at 100~Hz. 
+% These interpolated poses ensured each LiDAR scan was transformed using a temporally consistent platform orientation and position.
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Dataset Construction for Machine Learning}
+% \label{sec:dataset_construction}
+
+% The processed dataset forms the basis for training and validating the vision and fusion models described in Chapters \ref{yolo} and \ref{gbcache}.  
+% The dataset contains labeled maritime object classes, including navigation buoys, docks, vessels, and channel markers.  
+% Each object instance includes a cropped RGB image (2880 × 1860 resized to 640 × 640 for network input), a corresponding LiDAR point subset in PCD format, a YOLO label file with normalized bounding boxes, and associated metadata such as timestamp, GPS pose, and lighting condition.
+
+% The final YOLO training dataset consisted of 543 labeled images for training, 158 for validation, and 77 for testing. 
+% Across all splits, the dataset contained 1,934 labeled objects with an average of 2.5 bounding boxes per image. 
+% The class distribution was moderately imbalanced, with sailboats representing approximately 60\% of annotations, 
+% followed by jon boats ($16$\%), tall buoys ($12$\%), light towers ($11$\%), and minor representation of round buoys and A3 markers ($<2$\%). 
+% This class composition reflects the real-world frequency of visible maritime targets encountered during data collection.
+% Training, validation, and test splits follow a 70 / 20 / 10 ratio, stratified by date to prevent temporal leakage between sets.
+
+% The five YOLO class labels, tall\_buoy, round\_buoy, light\_tower, jon\_boat, and sailboat, correspond directly to the maritime object categories summarized in Tables~\ref{tab:obj_class_dets} and~\ref{tab:class_map}, with one key distinction. 
+% While the LiDAR-based detection framework differentiates between A2- and A3-sized buoys as separate classes, these were combined into a single round\_buoy category for YOLO training because visual appearance alone does not reliably convey scale or distance. 
+% As a result, the LiDAR models operate on six classes, whereas the YOLO models use five, excluding kayaks from both datasets due to insufficient representation for robust training.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Data Organization and Processing}
-\label{sec:data_organization}
-
-Raw ROS bags are organized by collection campaign:
-\texttt{Oct\_prep/}, \texttt{Nov\_X/}, and \texttt{2025\_summer/} directories.  
-Each subdirectory includes contextual metadata (e.g., location, weather, and task scenario).  
-A post-processing pipeline converts bag data into synchronized image–point-cloud pairs and structured YOLO-format label files.  
-
-\paragraph{Temporal Synchronization}  
-All frames were aligned using ROS time stamps at the message header level.  
-Each paired image and point cloud corresponds to a latency-bounded time window ($\le$ 50 ms).  
-
-\paragraph{Spatial Registration}  
-LiDAR point clouds were transformed into the HDR camera frame using the calibration matrices 
-derived in Section \ref{sec:camera-lidar_results}.  
+\subsection{YOLO Training Dataset}
+\label{sec:yolo_training_data}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Dataset Construction for Machine Learning}
-\label{sec:dataset_construction}
+% \subsection{Vision Dataset for YOLO Transfer Learning}
+% \label{sec:vision_dataset_yolo}
 
-The processed dataset forms the basis for training and validating the vision and fusion models described in Chapters \ref{yolo} and \ref{gbcache}.  
-The dataset contains labeled maritime object classes including navigation buoys, docks, vessels, and channel markers.  
+A manually labeled image dataset was constructed to support the transfer learning and evaluation of the YOLO object detection network. 
+All YOLO training images were obtained from video recorded directly on the Jetson.
+Rosbag data was recorded intermittently, whereas the cameras operated and streamed continuously.
+This ensured that a large pool of video data remained separate from the main dataset and available for YOLO training.
 
-Each object instance includes:
-\begin{itemize}[noitemsep,leftmargin=1.5em]
-    \item RGB image crop (JPEG, 2880 × 1860 → 640 × 640 letterboxed);
-    \item Corresponding LiDAR point subset (PCD format);
-    \item YOLO label file with normalized bounding boxes;
-    \item Metadata: timestamp, GPS pose, and lighting condition.
-\end{itemize}
+The complete dataset contained 778 annotated images with a total of 1934 labeled maritime objects from the six classes defined in Table \ref{tab:class_map} 
+Each annotation was produced through a manual labeling process for objects present within each 2880 $\times$ 860 frame. 
 
-Training, validation, and test splits follow a 70 / 20 / 10 ratio, stratified by date to prevent temporal leakage between sets.  
+The final dataset contained 778 annotated images and 1934 labeled maritime objects. 
+Data were divided into training, validation, and test subsets following a 70:20:10 ratio.
+Each subset preserved the relative class proportions observed in the complete dataset, which contained an average of 2.5 labeled objects per image across the five categories listed in Table~\ref{tab:class_map}.
+The A2 and A3 buoy variants are virtually identical when viewed in isolation, as their size difference can only be inferred through comparison or with additional depth information in the image frame. 
+Because YOLO operates purely on two-dimensional image data without access to spatial depth cues, there was no practical benefit to treating these as separate classes; both were therefore labeled collectively as \texttt{round\_buoy}.
+\textcolor{blue}{Based on field observations, it is likely that A2 buoys were predominantly red, green, or blue, whereas A3 and larger buoys appeared black. 
+However, since visually similar large black buoys were also observed throughout the rosbag dataset without verified size information, these classes were merged to maintain labeling consistency.}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lccccccc}
+\hline
+Subset & Images & Labels & Tall Buoy & Round Buoy & Light Tower & Jon Boat & Sailboat \\
+\hline
+Train & 543 & 1,343 & 12.0\% & 1.4\% & 11.2\% & 15.8\% & 59.6\% \\
+Validation & 158 & 390 & 14.1\% & 1.3\% & 13.1\% & 12.8\% & 58.7\% \\
+Test & 77 & 201 & 16.4\% & 1.5\% & 9.5\% & 12.4\% & 59.7\% \\
+\hline
+Total & 778 & 1,934 &  &  &  &  &  \\
+\hline
+\end{tabular}
+\caption{YOLO dataset composition and class distribution across training, validation, and test subsets.}
+\label{table:yolo_data_split}
+\end{table}
+
+\noindent The relative consistency across all three subsets demonstrates that the temporal stratification preserved real-world object frequency while maintaining balance for training and evaluation. 
+The test set was reserved exclusively for the final performance assessment described in Section~\ref{performance}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{GB-CACHE Training Dataset}
+\label{sec:gbcache_training_data}
 
 % \begin{figure}[htbp]
 %     \centering
@@ -2045,74 +1972,9 @@ Training, validation, and test splits follow a 70 / 20 / 10 ratio, stratified by
 %     \label{fig:dataset_pipeline}
 % \end{figure}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Representative Samples}
-\label{sec:dataset_samples}
-
-% Figure \ref{fig:sample_pairs} shows synchronized LiDAR and camera samples from representative collection runs.  
-% Objects are outlined by YOLO bounding boxes and colored by class label.  
-
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.95\linewidth]{Images/sample_pairs.pdf}
-%     \caption{Example synchronized image–LiDAR pairs illustrating dataset diversity.}
-%     \label{fig:sample_pairs}
-% \end{figure}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \chapter{Sensor Data and Dataset} \label{dataset}
-
-% \section{Sensor Data} \label{sensor_data}
-
-% \section{ROS Architecture} \label{ROS_architechture}
-
-% \subsection{ROS Messages} \label{ROS_mesages}
-
-% \begin{table}[htbp]
-% \centering
-% \begin{tabular}{lcc}
-% \hline
-% ROS Topic & Typical Bandwidth (Mbps) & \% Total Bandwidth \\
-% \hline
-% /points\_livox\_front & 35--40 & 3.5--4.0 \\
-% /points\_livox\_port  & 35--40 & 3.5--4.0 \\
-% /points\_livox\_starboard & 35--40 & 3.5--4.0 \\
-% /image\_hdr\_raw  & 60--70 & 6.0--7.0 \\
-% \hline
-% \textbf{Total Estimated Utilization} & \textbf{165--190} & \textbf{17--19 \%} \\
-% \hline
-% \end{tabular}
-% \label{table:ROS_bandwidth}
-% \caption{Approximate \ac{ROS} message bandwidth utilization for the topics used in this research, relative to a 1 Gbps Ethernet link ($\sim$940 Mbps usable).}
-% \end{table}
-
-% \section{ROS Bags} \label{ROS_bags}
-
-% The \ac{ROS} ecosystem provides integrated data recording utilities that subscribe to designated topics and serialize all messages to disk for precise temporal replay.
-% The Atlas systems employ this infrastructure to record synchronized streams of sensor and perception data, including:
-
-% \begin{itemize}
-% \item Raw point clouds from all three Livox Horizon \ac{LiDAR} sensors
-% \item Compressed video streams with embedded timestamps from each camera
-% \item GPS/INS pose estimates with timestamp and uncertainty data
-% \item Detection outputs from vision and \ac{LiDAR}-based object detection algorithms
-% \item Platform status, network diagnostics, and operator annotations
-% \end{itemize}
-
-% The resulting bag files serve as the ground-truth datasets for detection performance analysis (see Chapter~\ref{dataset}).
-% Temporal synchronization procedures described in Section~\ref{time_sync} ensure frame-accurate alignment across all modalities within these recordings.
-
-% The storage subsystem sustains aggregate write rates exceeding 200 MBps during full-sensor operation.
-% Measured JPEG images extracted from the recorded ROS bags averaged approximately 0.5~MB per frame.
-% At the 5 fps capture rate used during training datasets, this corresponds to about 2.5 MBps per camera, while the 15 fps rate used during RobotX competition runs produced roughly 7.5 MBps per camera. 
-% Including ROS message encapsulation and metadata, total write rates during full-sensor operation typically ranged from 60 to 100 MBps when accounting for LiDAR, GPS/INS, and detection topics. 
-% These rates remain well within the sustained throughput capability of the NVMe solid-state drives, enabling extended recording sessions without frame loss or buffer overflow.
-
-% Post-processing workflows access these bag files to extract synchronized observations for offline analysis.
-% The preserved timestamps enable sub-millisecond temporal alignment between locally recorded frames on the Jetson Xavier and those received via RTSP and stored on the Atlas PCs—an essential capability for the multi-modal performance comparisons presented in Chapters~\ref{dataset}–\ref{realtime_object_detection}.
+% This dataset structure provides the foundation for the training and evaluation results presented in Chapters~\ref{yolo} and~\ref{gbcache}. 
+% The organization described here ensures that the models discussed in those chapters operate on a consistent, time-synchronized dataset, 
+% allowing direct comparison of performance between the vision-only YOLO framework and the LiDAR-based GB-CACHE method.
 
 
 
@@ -2151,13 +2013,11 @@ Finally, Section~\ref{late_fusion} introduces the late-fusion framework develope
 \label{yolo}
 % Purpose and Context
 The eighth generation of the \ac{YOLO} object detection framework developed by Ultralytics was selected to provide a high-performance, real-time vision baseline for this research. 
-
 % \textcolor{red}{add something about semantic and information-rich data?}
-
-YOLO detection networks gained popularity for its ease of use and implementation for detecting and localizing objects within an image.
-Once detected, an object is typically enclosed withing a rectangle that defines the minimum and maximum bounds of the pixel coordinates it occupies - known as the bounding box.
-Its open-source models are pretrained on the COCO dataset, a large repository containing approximately 1.5 million labeled images, are provided in various sizes and quality and can be deployed on a wide variety edge computing hardware.
-Additionally, transfer learning simple to apply, tailoring these models for more specific use cases, such as maritime environments.
+This method of detection gained popularity for its ease of use and implementation for detecting and localizing objects within an image.
+Once detected, an object is bounded by a rectangle that defines the minimum and maximum extremes of the pixel coordinates it occupies - known as the bounding box.
+Its open-source models are pretrained on the COCO dataset, a large repository containing approximately 1.5 million labeled images, and are provided in various sizes and qualities, which can be deployed on a wide variety of edge computing hardware.
+Additionally, transfer learning is simple to apply, allowing these models to be tailored for more specific use cases, such as maritime environments.
 
 \begin{figure}
     \centering
@@ -2167,14 +2027,14 @@ Additionally, transfer learning simple to apply, tailoring these models for more
 \end{figure}
 
 The name YOLO refers to the one-shot convolutional neural network utilized to perform both detection and localization in a single pass of the network.
-This architecture is what makes it fast, and for for real-time object detection applications. 
-Prior to the release of version 8 in 2023, the dual action of detection and localization required that the location and dimension of the bounding box also had to be encoded into the model.
+This architecture is what makes it fast, and for real-time object detection applications. 
+Before the release of version 8 in 2023, the dual action of detection and localization required that the location and dimension of the bounding box also had to be encoded into the model.
 Version 8 was the first to utilize dual-detection heads at the end of the CNN.
 The first detection head identifies if and where an object is present within the image, and the second is used to determine the bounding box for the object.
 This "anchor-free" architectural change not only makes localization of the detected objects more reliable, but also alleviates some of the intense transfer learning burden that was required for fine-tuning the pretrained models in earlier versions \cite{ultralytics}.
 
-The wide-spread adoption of YOLOv8 and the fundamental architectural change to this version, make it the optimal choice to provide a baseline visual detection methods.
-However, this mode of detection is not without its compromise, \textcolor{red}{as detailed in section .}
+The widespread adoption of YOLOv8 and the fundamental architectural changes in this version make it the optimal choice to provide a baseline visual detection method.
+% However, this mode of detection is not without its compromises, \textcolor{red}{as will be detailed in Section ____.}
 
 
 
@@ -2220,14 +2080,13 @@ However, this mode of detection is not without its compromise, \textcolor{red}{a
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{GB-CACHE} \label{gbcache}
 
-In parallel with vision-based detection, this research employs the LiDAR-centric method GB-CACHE to represent the class of geometry-driven clustering and segmentation algorithms optimized for sparse, three-dimensional maritime environments.
+In parallel with vision-based detection, this research employs the LiDAR-centric method GB-CACHE to represent the class of geometry-driven clustering and segmentation algorithms.
+% optimized for sparse maritime environments.
 Its name is derived from the methodology it utilizes for object detection: grid-based clustering and concave hull extraction.
 
-
-The segmentation approach is designed for maritime use, where point cloud data is concentrated to only a few nearby objects.
+The segmentation approach is designed for maritime use, where point cloud data is concentrated on only a few nearby objects.
 By ignoring large volumes of unoccupied space, GB-CACHE reduces memory demands and improves processing efficiency.
 Its deterministic design and bounded computational complexity make it an optimal choice for real-time operation, and provide a meaningful contrast to the data-intensive, black-box nature of neural-network-based algorithms.
-
 
 The algorithm begins by projecting unstructured point cloud data into a spatially organized grid defined in the global fixed frame.
 Each point is associated with a primary set of $x$ and $y$ coordinates, and a tertiary $z$ coordinate to preserve vertical geometry.
@@ -2643,7 +2502,7 @@ However, for maritime objects with distinct geometric profiles and size ranges, 
 
 \chapter{Recommendations and Future Work} 
 
-\section{recommendations} \label{reccomendations}
+\section{Recommendations} \label{recommendations}
 
 \section{Future Work} \label{futurework}
 
