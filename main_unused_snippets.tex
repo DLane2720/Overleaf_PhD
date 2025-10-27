@@ -1637,3 +1637,437 @@ This limitation is partially addressed through temporal continuity in downstream
 Despite these limitations, YOLOv8-based vision detection provides valuable complementary capabilities to \ac{LiDAR}-based detection.
 The camera system excels at object classification through visual appearance, detecting low-profile objects that produce sparse \ac{LiDAR} returns, and providing rich semantic information about the maritime environment that supports higher-level reasoning about scene context and navigation intent.
 
+
+
+% The Minion autonomous surface vessel employs a dedicated Gigabit Ethernet local area network to interconnect computing platforms, sensors, and navigation equipment. 
+% This network serves multiple critical functions: sensor data transmission, \ac{NTP} for system clock synchronization, and remote administration access for communication to the \ac{ROS} middleware. 
+% Figure \ref{fig:network_diagram} presents a block diagram of the connected network endpoints required for sensor fusion.
+
+% All computing platforms and sensors maintain fixed addresses throughout system operation, enabling deterministic routing and simplified network administration.
+
+
+
+
+% The local network architecture connects all major perception and processing nodes within the vessel and provides a unified temporal reference across systems.
+% Time synchronization is managed hierarchically through GPS, Chrony, and PTP, ensuring consistent timestamps for all recorded data streams.
+
+% At the top of the synchronization hierarchy, the Pinpoint GPS/INS unit provides a GPS-disciplined Network Time Protocol (NTP) reference to both the Atlas PC and the Jetson Xavier via the onboard router. Each device runs the Chrony service (Ubuntu 18.04), which continuously aligns the local system clock to the GPS reference with sub-millisecond accuracy.
+
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.8\textwidth]{Images/network_diagram2.png}
+% \caption{Minion's LAN for network end-points related to real-time object detection}
+% \label{fig:network_sync}
+% \end{figure}
+
+% The Jetson Xavier, serving as the core perception node, then acts as the PTP master for the Livox LiDAR units. Through the Precision Time Protocol (IEEE 1588), the Jetson broadcasts high-precision timestamps to all connected LiDAR clients, achieving microsecond-level synchronization between video and LiDAR data streams. This configuration ensures that every sensor measurement—image frame, LiDAR scan, or GPS fix—is temporally aligned to a common reference frame, enabling accurate data fusion and calibration as described in Section \ref{time_sync_cam}.
+
+% Network bandwidth allocation is carefully managed to prevent congestion during real-time operation.
+% Each Jetson video stream dynamically adjusts its bitrate based on the active frame rate, while LiDAR and telemetry traffic maintain constant low-latency channels.
+% Table \ref{table:network_bandwidth} summarizes the approximate bandwidth usage across major network components.
+
+% \begin{table}[htbp]
+% \centering
+% \begin{tabular}{lcc}
+% \hline
+% \textbf{Data Source} & \textbf{Protocol / Port} & \textbf{Typical Bandwidth (Mbps)} \\
+% \hline
+% HDR Camera Stream (Jetson $\rightarrow$ Atlas) & RTP / UDP & 3.7–11.2 \\
+% FLIR Camera Streams (2x) & RTP / UDP & 7.0–20.0 (total) \\
+% Livox LiDAR Units (3x) & UDP / PTP Client & 15.0–18.0 (total) \\
+% GPS / INS Telemetry & NMEA / TCP & $< 0.1$ \\
+% PTP Synchronization Packets & IEEE 1588 / UDP & $< 0.01 $\\
+% \hline
+% \textbf{Total Estimated Utilization} & — & \textbf{25–50 Mbp/s} \\
+% \hline
+% \end{tabular}
+% \caption{Approximate Network Bandwidth Utilization}
+% \label{table:network_bandwidth}
+% \end{table}
+
+% Security considerations for remote access include firewall configuration to restrict inbound connections, authentication requirements for SSH administrative access, and potential disconnection of external network access during sensitive operations to prevent unauthorized interference. The remote access infrastructure facilitates collaboration between multiple researchers working on different system components, as well as monitoring by shore-based personnel during extended autonomous operations.
+
+% \subsubsection{Integration with Distributed Computing Architecture}
+
+% The network infrastructure provides the physical medium for the distributed computing architecture that spans multiple platforms. The Jetson Xavier camera enclosure performs video encoding at the sensor location, transmitting compressed streams to the Atlas PC for object detection processing. This distribution optimizes bandwidth utilization by avoiding transmission of raw uncompressed video while maintaining centralized processing for computationally intensive algorithms.
+
+
+
+% \subsubsection{Network Performance Validation}
+
+% Network performance validation procedures employed during system commissioning verify that the infrastructure meets requirements for real-time perception and control. These procedures include bandwidth testing using iperf3 or similar tools to verify Gigabit link speeds between key endpoints, latency measurement via ping utilities to measure round-trip latency for time-critical paths, packet loss assessment through extended ping tests or UDP stream analysis to verify zero packet loss under load, and time synchronization quality monitoring to confirm clock accuracy meets requirements as detailed in Section \ref{time_sync_lan}.
+
+% These validation procedures ensure that the network infrastructure meets the performance requirements necessary for real-time multi-modal perception and accurate temporal alignment of sensor data. Baseline performance metrics established during commissioning provide reference values for ongoing network health monitoring during field operations.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Sensor Calibration} \label{sec:calibration}
+
+% The multi-sensor perception suite described in the previous section integrates complementary sensing modalities: \ac{LiDAR} for spatial structure and cameras for visual context.
+% Each of these sensors measures the environment within its own reference frame and according to its own internal clock.
+% To combine their observations into a consistent world model, the system must first be calibrated both spatially and temporally.
+
+% Spatial calibration establishes the geometric relationships among all sensing elements.
+% It quantifies each sensor’s intrinsic parameters—those governing the internal projection or ranging model—and the extrinsic transformations that define their relative positions and orientations within the overall platform.
+% In the context of this work, the global chain of spatial relationships is implemented in the \ac{ROS} \texttt{tf\_tree}, linking coordinate frames from the \ac{GPS} and inertial reference through each \ac{LiDAR} unit to the visible-spectrum cameras.
+% Accurate spatial calibration ensures that a point detected in a \ac{LiDAR} scan can be correctly projected onto the image plane, enabling correspondence between geometric and visual detections for downstream fusion.
+
+% Temporal calibration aligns sensor data streams in time, ensuring that observations correspond to the same physical instant.
+% Because each device maintains its own internal clock and sampling rate—\ac{LiDAR} operating at 100Hz with microsecond timestamps and cameras capturing 10Hz video with millisecond precision—even small timing offsets can lead to significant spatial error.
+% % For a vessel traveling at 5 m/s, a 100ms misalignment translates to roughly 0.5~m of positional discrepancy between sensor modalities.
+% To mitigate this, a sensor and system clocks are synchronized to the master GPS-disciplined time signature using \ac{NTP} and \ac{PTP} methods.
+% Video timestamps allow temporal drift to be measured and corrected for high-precision multi-modal object detection.
+
+% Spatial calibration methods, including camera intrinsic and extrinsic estimation and multi-\ac{LiDAR} registration, are presented in Section \ref{spatial_calibration}, followed by the temporal synchronization framework in Section~\ref{time_sync}.
+% Each section details both the methods employed and the resulting calibration accuracy achieved.
+% % brief overview of TF_tree
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Spatial Calibration} \label{spatial_calibration}
+
+% % # Spatial Calibration
+
+% Before the data from the camera and \ac{LiDAR} sensors can be combined, each device needs to be spatially calibrated through extrinsic and intrinsic transforms.
+% Every sensor measures the environment relative to its own local coordinate frame.
+% Minion uses a forward-left-up (FLU) reference frame to express its position and orientation within the inertial map frame, and the data from each sensor must undergo a rotation and translation to create a unified perception model.
+
+% Intrinsic calibration characterizes the internal geometric and optical properties of each camera, quantifying lens distortion, focal length, principal point location, and sensor pixel geometry.
+% Extrinsic calibration determines the six-degree-of-freedom transformation required to translate one reference frame into another.
+
+% The sensor transforms required to move between the sensors specific to Minion are presented as a transform tree in Figure \ref{fig:tf_tree}. 
+% The port and starboard Livox points undergo extrinsic transforms into the center Livox frame before being combined into a unified point cloud.
+% To project LiDAR points from the center Livox into the HDR camera frame, these three-dimensional X-Y-Z points are transformed through the extrinsic transform between the two sensors, followed by transformation according to the camera's intrinsic transform into the two-dimensional X-Y pixel values required to place them in the image frame.
+% All sensor data undergoes two transforms to be placed onto the map frame, first through the GPS frame, which defines Minion's origin and orientation, and finally to the inertial Map frame.
+
+% Combined, these calibrations enable observations between sensor coordinate systems, projection of \ac{LiDAR} points onto camera images, and registration of multi-modal sensor data for fusion applications.
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{Images/tf_tree.png}
+%     \caption{Spatial transform tree between sensor reference frames onboard Minion.}
+%     \label{fig:tf_tree}
+% \end{figure}
+
+% Because these transforms stack upon each other, they require calibration to achieve a level of precision to minimize compounding errors through the tree.
+% Additionally, each sensor must maintain precise relative timing to one another to align the data from each sensor temporally.
+
+% This section discusses the methods used to define these spatial transformations in \ref{spatial_calibration}, as well as temporal synchronization in \ref{time_sync}.
+
+% \subsubsection{Camera Intrinsic Calibration} \label{HDR_intrinsic}
+
+% Camera intrinsic parameters describe the internal geometry of a camera and define the mapping between three-dimensional coordinates in the camera frame and two-dimensional pixel locations in the image plane.  
+
+
+
+% \subsubsection{Workload Allocation}
+
+% The CPU-GPU task distribution reflects algorithm characteristics and hardware capabilities.
+% LiDAR processing with irregular spatial queries and dynamic data structures exploits CPU cache hierarchies and branch prediction, while vision processing with regular tensor operations and data parallelism leverages GPU throughput.
+% The 6-core CPU handles approximately 3× simultaneous LiDAR processing streams plus sensor fusion logic without saturating computational resources, while the 2560-core GPU processes vision workloads that would overwhelm CPU execution.
+
+% This balanced allocation maintains real-time performance with sub-100 millisecond end-to-end latency from sensor observation to fused detection output, meeting the temporal requirements for autonomous navigation decision-making.
+% Load monitoring during typical operations indicates approximately 60-70\% CPU utilization across all cores and 70-80\% GPU utilization during simultaneous LiDAR and vision processing, providing margin for computational bursts during high-complexity scenes.
+
+% % \paragraph{CPU-Based Processing}
+
+% LiDAR point cloud processing and LiDAR-based object detection are executed on the system’s multi-core CPU.
+% These algorithms involve spatial clustering, coordinate transformations, and probabilistic data association—operations that rely on irregular memory access patterns and branching logic.
+% Such workloads benefit from the CPU’s high single-threaded performance, cache hierarchy, and flexible memory management.
+% The CPU also performs sensor fusion between LiDAR and vision detections, as well as general system coordination tasks such as recording data. %, network management, and operator interface control.
+
+% % \paragraph{GPU-Based Processing}
+
+% The GPU accelerates two perception tasks that exhibit a high degree of data parallelism: video decoding and deep learning inference.
+% Its first responsibility is processing video streams received from the camera enclosure. 
+% Video decoding and image preprocessing are performed directly in GPU memory, minimizing data transfer overhead and reducing end-to-end latency.
+% The second responsibility is image-based object detection using the \ac{YOLO} framework. 
+% This algorithm relies on convolutional and tensor operations within neural networks and is implemented to leverage the parallel processing capabilities of NVIDIA’s CUDA architecture.
+
+% \subsubsection{Storage Media}
+
+% and 5–15MBps per camera for H.265-compressed video at 10~fps, with additional low-bandwidth streams for GPS/INS and detection results.
+% The NVMe solid-state drives provide sufficient sequential throughput and IOPS to maintain these rates for extended sessions without frame loss or buffer overflow.
+
+% \textcolor{red}{If time allows, it may be worth mentioning the cooling system.}
+
+% \subsubsection{GPU}
+
+% The NVIDIA GTX~1080 GPU accelerates the vision-based object detection pipeline by handling tasks that benefit from highly parallel computation.  
+% Its primary responsibilities include decoding the incoming video streams from the camera enclosure and performing the image convolution operations required for vision-based detection.  
+% The GPUs have hardware-accelerated video encoders and decoders for processing multiple video streams, and an object-detection algorithm was written to leverage the 2,560 CUDA cores for fast tensor and matrix computations and image convolution.
+% This also offloads H.264 decompression from the CPU, allowing the system to process multiple high-resolution camera streams simultaneously while preserving CPU resources for LiDAR and sensor-fusion tasks.
+
+  
+% These operations are executed directly in GPU memory, leveraging  cores  the repetitive tensor and matrix computations common to neural network inference.  
+% This hardware acceleration enables real-time image processing and object detection performance that would otherwise be infeasible on CPU resources alone.
+
+% Each GTX 1080 GPU features 2560 CUDA cores based on NVIDIA's Pascal architecture with 8 GB of GDDR5X memory, accelerating both machine learning inference for object detection video decoding tasks.
+% The Pascal architecture provides CUDA compute capability 6.1, enabling efficient execution of YOLOv8 convolutional neural networks and GPU-accelerated image preprocessing described in Chapter \ref{realtime_object_detection}.
+% Hardware video decode engines offload H.264 video decompression from the CPU, enabling the Atlas PC to receive and process multiple camera streams simultaneously while maintaining CPU resources for perception algorithms.
+
+% \subsubsection{GPU}
+
+%% Atlas
+
+% Minion A was configured with Ubuntu 22.04 for the development and migration of Minion's software to ROS 2 Humble, while 
+% Minion B served as the only device used for data-recording and object-detection processing performed for the research of this dissertation, and ran Ubuntu 20.04 with ROS 1 Noetic.
+
+% While ROS manages sensor data and transforms between reference frames, the focus in this section relates to the underlying hardware responsible for real-time, multi-modal perception.  
+% The object-detection methods described in Chapter \ref{realtime_object_detection} are optimized for the computational characteristics of the CPU and GPU.  
+% This distribution of processing responsibilities balances throughput, latency, and efficiency across the perception pipeline.  
+% The following subsections describe how LiDAR and vision workloads are allocated between the CPU and GPU on the Atlas platform.
+
+% While the ROS middleware manages communication and synchronization between sensor nodes, the emphasis here is on the computational workload executed by the Atlas hardware. 
+
+% Perception processing is divided between CPU and GPU resources according to the characteristics of each object detection method.  
+% LiDAR-based object detection, is performed on the CPU due to its reliance on irregular memory access patterns and control flow.  
+% Conversely, vision-based detection utilizes parallel tensor operations that the GPU hardware is optimized for.  
+% This allocation of workloads balances computational throughput and latency, ensuring reliable multi-modal perception and sensor fusion for autonomous operation.
+
+% primarily between the CPU and GPU according to algorithm characteristics and hardware acceleration capabilities.
+
+% have different workload requirements, and therefore operate primarily on separate processing units.
+% Perception workloads are 
+% This 
+% While \ac{ROS} manages coordination and communication across processes, the following overview focuses on the hardware-level execution of LiDAR and vision tasks.
+
+% \subsubsection{CPU and Memory}
+% Each Atlas PC is equipped with computing hardware selected to meet the demanding real-time requirements of multimodal perception and autonomous operation.  
+% % Table~\ref{table:Minion_hardware} summarizes the key system specifications.
+% The Intel Xeon processor provides six cores and a total of twelve parallel threads for concurrent perception and navigation processes.
+% Tasks that require low-latency responses—such as LiDAR point cloud filtering and sensor updates benefit from the processor’s strong single-thread performance.
+% % , which minimizes delay between sensor input and system response.  
+% At the same time, the multi-core architecture supports parallel execution of computationally intensive workloads.
+% % , including feature extraction and classification across multiple LiDAR streams.  
+% Hardware vector acceleration further enhances numerical operations common to point cloud transformations and coordinate frame calculations.
+
+% The system’s 16~GB of high-bandwidth memory provides sufficient capacity to buffer LiDAR point clouds, video imagery, and other sensor data during real-time processing.  
+% This configuration allows multiple perception modules to access and update shared data concurrently without slowing overall system performance.
+
+% \subsubsection{CPU and Memory}
+
+
+%%%%%%%%%%%%%%%%%
+% camera enclosure
+
+% Local recording also serves diagnostic purposes, enabling comparison of locally-saved video files with network-transmitted ROS bag data to validate timestamp accuracy and detect any frame dropping or duplication during network transmission. The temporal drift analysis methodology described in Section \ref{time_sync_cam} exploits this local recording capability by comparing locally-saved video frames with network-transmitted ROS messages to quantify systematic timing offsets introduced by the encoding-transmission-decoding pipeline.
+
+
+% The video encoding workflow exploits the Jetson's dedicated hardware encoding engines to achieve real-time compression of three simultaneous 2880×1860 pixel video streams. Hardware encoding offloads the computationally intensive compression operations from the CPU, enabling sustainable operation without thermal throttling during extended recording sessions. The RTSP bitrate is [INSERT bitrate formula here] dependent upon the requested stream frame rate (typically 5-15 fps).
+
+% The compressed video streams are transmitted to the Atlas PC main computing platform via RTSP over UDP, where they are decoded and published as ROS image messages for consumption by object detection algorithms. This architecture distributes the encoding burden to the camera enclosure while centralizing detection processing on the more powerful Atlas hardware.
+
+% A critical function performed by the Jetson Xavier is the embedding of precise system timestamps directly into the encoded video bitstream. Custom GStreamer pipeline elements inject SEI (Supplemental Enhancement Information) NAL units containing synchronized timestamps alongside encoded video frames. This in-band metadata approach ensures that timing information persists with the video data through network transmission, recording, and playback. The temporal synchronization procedures and timestamp validation methodology are detailed in Section \ref{time_sync_cam}.
+
+% \subsubsection{Network Infrastructure Role}
+
+% Within Minion's distributed computing architecture, the Jetson Xavier subscribes to the precise GPS clock provided by the Pinpoint.
+
+% erves several network infrastructure functions. As described in Section \ref{time_sync_lan}, the system participates 
+
+% in the hierarchical time distribution network that provides temporal synchronization for all platform sensors. The Jetson operates as both a client for receiving GPS-disciplined time and a server for providing high-precision timing to the LiDAR sensors.
+
+% The Gigabit Ethernet interface connects the camera enclosure to the vessel local area network at IP address 201.7.90.147. This single network connection carries bidirectional traffic including compressed video streams, time synchronization protocols, remote administration access, and platform status monitoring. The camera enclosure may also include a secondary Ethernet switch to provide local network connectivity for the three Livox Horizon LiDAR units mounted on or near the camera mast, as detailed in Section \ref{comp:camera_enclosure}.
+
+% \subsubsection{Local Recording Capability}
+
+
+% Each camera stream defaults to 5 \ac{fps} to match the data rate of other perception data, but can be modified based upon need.
+% This  us a default maintaining each stream below 25–30 Mbps to prevent network saturation.
+% This ensures bandwidth allocation per stream remains within network limits while preserving visual fidelity.
+
+% ## NVIDIA Jetson Xavier Platform
+% The Jetson Xavier’s 8-core ARM processor provides ample computational capacity for managing multiple video pipelines, network protocols, and system services, while the integrated 512-core Volta GPU enables hardware-accelerated video encoding required for concurrent high-resolution stream processing.  
+% A shared 32~GB pool of unified memory between the CPU and GPU supports high-throughput data exchange, ensuring efficient media handling and minimizing latency within the video processing pipeline.
+
+% % \subsubsection{Video Processing Architecture}
+% The primary computational responsibility of the Jetson Xavier is video encoding and transmission of video from the six cameras.
+% % three 4K cameras, two FLIR, and a single HDR camera feeds. 
+% The pipeline for each video follows a similar structure: raw video frames are received via USB 3.0, parsed by custom software, and then split into two processing branches. 
+% One branch is encoded in H.265 and saved locally to the Jetson's internal storage, while the other branch is down-sampled to a reduced frame rate before being streamed over the \ac{LAN} to one of the Minion PCs in Atlas.
+
+
+% # Camera Enclosure Computing Platform
+
+% for the RobotX competition in 2022, as well as the PhD research of D. Thompson \cite{thompson2023}.
+% Specialized computing hardware is required to manage up to six video streams from the cameras within the enclosure.
+% The camera enclosure assembly integrates six camera sensors with dedicated computing hardware housed in a weatherproof enclosure mounted on the vessel's superstructure. 
+
+
+% real-time H.264/H.265 video encoding, manages timestamp embedding for temporal synchronization, and serves critical time distribution functions within the hierarchical clock architecture. This distributed computing approach places video processing at the camera location rather than transmitting raw uncompressed video over the network, substantially reducing bandwidth requirements while enabling sophisticated in-stream timestamp embedding.
+
+% The camera enclosure houses six cameras and serves as the mount for the three forward Livox LiDAR units, and was designed to be a self-contained perception platform for any maritime vessel or ground vehicle. 
+The camera enclosure serves as the integrated perception module for the vessel, and was designed as a self-contained sensor and computing subsystem that can operate independently on any maritime or ground vehicle. 
+Integrated into this subsystem is a NVIDIA Jetson AGX Xavier, a compact and capable PC designed for video processing, as well as other computer vision applications.
+% The system-on-module (SOM) design combines ARM-based CPU cores with a powerful GPU architecture optimized for media encoding and AI tasks. 
+% The system-on-module (SOM) design integrates a processor, GPU, and memory in a compact form factor designed for speed and power efficiency.
+Key hardware specifications are provided in table \ref{table:Xavier_hardware}.
+% The Jetson AGX Xavier serves as the dedicated processing unit within the camera enclosure, managing video acquisition, compression, and transmission from all six cameras.  
+
+Its 8-core ARM processor provides ample computational capacity for handling multiple video pipelines, network protocols, and system-level services, while the integrated 512-core Volta GPU performs hardware-accelerated video encoding required for concurrent high-resolution streams.  
+A unified memory architecture shares 32 GB between the CPU and GPU and supports a memory bandwidth of 136.5 GBps, which minimizes latency and improves overall pipeline efficiency.
+
+Each video feed follows a two-branch processing pipeline before being transmitted to Atlas.  
+% Raw frames are captured over USB~3.0 and parsed by custom software before being distributed to parallel encoding tasks. 
+Raw video frames are received via USB 3.0, parsed by custom software, and then split into two processing branches. 
+One branch is compressed and saved locally to the Jetson's internal storage, while the other branch is down-sampled to a reduced frame rate before being streamed over the \ac{LAN}.% to one of the Minion PCs in Atlas.
+
+
+%% compute/lan
+
+% The device interfaces with the vessel's compute infrastructure via Ethernet, configured at IP address 201.7.90.30 on the local network.
+% Beyond navigation, the Pinpoint unit serves dual roles: providing a high-accuracy time reference for sensor synchronization and delivering six-degree-of-freedom pose estimates through onboard sensor fusion algorithms.
+% The specific methodologies for temporal calibration and synchronization using this device are detailed in Section 3.2.2.1, while the spatial calibration procedures appear in Section 3.2.3.
+
+
+% Global Navigation Satellite System signals inherently carry highly accurate timing information, as satellite positioning operates through precise measurement of signal delay from multiple satellites with synchronized atomic clocks.
+% The PinPoint receiver extracts this timing information and distributes it over the vessel's network using Network Time Protocol.
+% The \ac{GPS} unit was assigned a static IP address of 201.7.90.30 on the Minion network and configured to broadcast \ac{GPS}-disciplined time via Network Time Protocol.
+% The Atlas PC main computer synchronizes its clock to this \ac{GPS} source with typical accuracy in the tens to hundreds of nanoseconds, limited primarily by network latency rather than \ac{GPS} accuracy.
+
+% This \ac{GPS} time reference propagates through the synchronization hierarchy to every computing resource on the platform.
+% Atlas functions as a Network Time Protocol server for the NVIDIA Jetson Xavier camera computer, which subsequently operates as a Precision Time Protocol master for the Livox Horizon \ac{LiDAR} sensors.
+% This cascaded approach ensures timestamps from all sensors—cameras, \ac{LiDAR}, and \ac{GPS}/\ac{IMU}—share a common time reference traceable to \ac{GPS} time.
+
+% Beyond timekeeping, the \ac{GPS}/\ac{IMU} system continuously tracks platform position and orientation, which is required for \ac{LiDAR} temporal aggregation.
+% As described in Section 3.1.1.3, accumulating \ac{LiDAR} points over several seconds necessitates compensation for vessel motion during that period.
+% The PinPoint system fuses \ac{GPS} position measurements with \ac{IMU} acceleration and rotation data through an Extended Kalman Filter to produce pose estimates at rates substantially higher than \ac{GPS} alone could provide.
+% \ac{GPS} fixes arrive at 1-10 Hz depending on satellite visibility, while the \ac{IMU} operates at hundreds of hertz.
+% The fusion algorithm propagates pose estimates forward using \ac{IMU} integration between \ac{GPS} updates, subsequently correcting accumulated drift when new \ac{GPS} measurements arrive.
+
+% The resulting pose solution provides six-degree-of-freedom state estimates—three-dimensional position and three-dimensional orientation—at sufficient temporal resolution to interpolate platform pose to the exact timestamp of each \ac{LiDAR} point.
+% This capability supports the transformation methodology presented in Chapter 5, where \ac{LiDAR} points acquired at different times during motion are transformed to a common reference frame before projection onto camera images.
+
+% The PinPoint \ac{GPS}/\ac{IMU} connects to the Minion computing infrastructure via Ethernet, utilizing both Network Time Protocol for time distribution and User Datagram Protocol for pose data transmission.
+% \ac{ROS} driver nodes on the Atlas PC receive and parse the binary \ac{GPS}/\ac{IMU} messages, publishing pose estimates as standard \ac{ROS} geometry messages.
+% These messages incorporate position (latitude, longitude, altitude), orientation (roll, pitch, yaw), uncertainty estimates, and \ac{GPS} fix quality flags.
+% The \ac{ROS} tf2 library consumes these pose estimates to maintain the time-varying transformation tree relating sensor frames to platform and world frames, enabling automated coordinate transformation for sensor fusion.
+
+% The \ac{GPS}/\ac{IMU} defines the local reference frame for the platform \texttt{base\_link}, with position expressed in geographic coordinates (WGS84 datum) and orientation relative to true north and local gravity.
+% This world-referenced system serves as the common reference for transforming observations from multiple sensors acquired at different times during motion.
+% Transformation from sensor-local frames to the \ac{GPS}/\ac{IMU} world frame requires knowledge of sensor-to-platform extrinsic calibration parameters.
+% These parameters are determined through calibration procedures described in Section 3.2.1.2 for cameras and Section 3.2.1.3 for \ac{LiDAR} sensors.
+% With extrinsic parameters established, the \ac{GPS}/\ac{IMU} pose solution enables transformation of any sensor observation to world coordinates or to any other sensor's reference frame.
+
+% Maritime environments present challenges for \ac{GPS}/\ac{IMU} systems that differ from land vehicle applications.
+% Water surface reflections induce multipath interference in \ac{GPS} signals, while vessel pitch and roll motion exercises the full range of the \ac{IMU}.
+% The PinPoint system was designed for marine applications and incorporates algorithms to address these factors while maintaining accuracy during vessel maneuvering.
+% \ac{GPS} accuracy degrades in areas with limited satellite visibility, such as proximity to tall structures, bridges, or fjord-like coastal terrain.
+% The \ac{IMU} provides short-term pose continuity during \ac{GPS} outages, though accumulated drift limits the duration for which pure inertial navigation remains accurate.
+% Data collection operations were conducted in open water with favorable satellite visibility, ensuring consistent \ac{GPS} fix quality throughout recording sessions.
+
+% The \ac{GPS}/\ac{IMU} system enables two functions essential for multi-modal sensor fusion research.
+% First, \ac{GPS}-disciplined time distributed to all sensors ensures timestamps from cameras, \ac{LiDAR}, and \ac{GPS} itself reference the same time base, providing frame-accurate temporal association across modalities.
+% Second, continuous pose estimates enable transformation of temporally distributed observations to common reference frames, supporting \ac{LiDAR} aggregation during motion and registration of sensor fields of view for fusion operations.
+% Combined with the synchronization verification and drift correction procedures described in Section 3.2.2, these capabilities establish the temporal and spatial foundation for rigorous object detection performance evaluation across sensing modalities.
+% The \ac{GPS}/\ac{IMU} thus functions not merely as a navigation sensor but as critical infrastructure enabling the multi-modal perception analysis central to this research.
+
+%% Camera Selection
+
+
+% This performance is enabled by a digital overlap \ac{HDR} (DOL-HDR) architecture with in-pixel dual conversion gain.  
+% By capturing multiple gain levels within a single frame period, the sensor produces simultaneous multi-gain readouts without relying on sequential multi-exposure stacking.  
+% This design eliminates ghosting and motion artifacts, which are common when either the platform or surrounding targets move between exposures.  
+
+% \subsubsection{Leopard Imaging HDR Camera}
+
+% To overcome these limitations, a \ac{HDR} camera from Leopard Imaging was integrated, based on Sony’s IMX490 automotive-grade \ac{HDR} sensor.  
+% This camera provides 65 degrees of forward coverage and achieves approximately 120~dB of dynamic range, enabling preservation of fine image details across extreme lighting conditions, including bright sky, reflective water, and shaded objects.  
+
+
+
+% This substantial increase in dynamic range, combined with robust performance under challenging illumination, made the IMX490-based \ac{HDR} camera the primary visual spectrum sensor for \ac{LiDAR}-camera fusion research in this dissertation.  
+% Preliminary results from a comparative study by Liebergall et al.~\cite{liebergall} further supported this decision, showing improved detection consistency with the \ac{HDR} sensor compared to the FLIR 4K cameras.  
+% Although later published results did not fully corroborate the preliminary findings, those results became available only after the dataset for this research had been collected.  
+% Accordingly, the IMX490 \ac{HDR} camera served as the main forward-facing visual spectrum sensor throughout this study.  
+
+
+
+% The 2880×1860 resolution provides sufficient spatial detail for detecting objects at relevant ranges in autonomous vessel navigation, while the 25 fps frame rate adequately supports typical vessel speeds and maneuvering.
+
+% The IMX490's native \ac{HDR} combines multiple exposures in a single frame period, achieving 120 dB dynamic range without sequential multi-exposure capture.
+% This simultaneous approach eliminates motion artifacts associated with temporal bracketing, which is critical when both the platform and targets are in motion.
+% Image quality validation and intrinsic calibration are addressed in Section 3.2.1.1, including lens distortion characterization and camera matrix estimation.
+% The combination of wide dynamic range, moderate resolution, and calibrated geometry provides the image quality necessary for training and evaluating vision-based detection models in Chapter 5.
+
+% Thompson et al. \cite{thompson2023} originally developed this camera hardware and integration approach, establishing a foundation for maritime perception research.
+% The primary enhancement introduced in this work comprises in-band timestamp embedding and temporal drift correction, detailed in Section 3.2.2, which are essential for rigorous multi-modal sensor fusion analysis.
+
+
+%%%%%% image resolution
+
+
+
+% Insert equation to get the horizontal focal length / horizontal resolution ratio needed for camera selection based upon the equation and information provided above
+% Assuming our camera will have a landscape aspect ratio, our equation becomes 
+% Since the detection network downsamples each input frame to a maximum dimension of 640 pixels while preserving aspect ratio, a landscape-oriented image with native resolution $N_x \times N_y$ (where $N_x > N_y$) is scaled such that the horizontal dimension becomes 640 pixels.
+% For an object that must occupy at least $w_{\text{net}}$ pixels horizontally in the network input to be reliably detected, the camera system must satisfy
+%   \begin{equation}
+%   \frac{f}{S_w} = \frac{w_{\text{net}} \, d}{640 \, W}
+%   \end{equation}
+% \begin{equation}
+%  w_{\text{px}} \left(\frac{650}{N_x}\right) = f \; \frac{N_x}{S_w}\frac{W}{d}
+% \end{equation}
+
+% where the ratio $f/S_w$ represents the normalized focal length of the camera-lens system.
+% Substituting the minimum object dimensions ($W = 0.3683$ m, $d = 60$ m) and assuming a minimum network resolution requirement of $w_{\text{net}}$ pixels, this relationship defines the optical design space for camera selection.
+% This makes our equation
+
+% \begin{equation}
+% w_{\text{px}} = \frac{f \, N_x^2 \, W}{(680)S_w \, d}
+% \end{equation}
+
+
+%%%%%%%%% Livox
+
+
+
+%%%%%%% move to sensor calibration %%%%%%%%%%%
+% Accurate fusion of data from multiple \ac{LiDAR} units requires precise knowledge of sensor geometric relationships.
+% The Livox Horizon units feature onboard storage for extrinsic calibration parameters, enabling each sensor to transform its measurements to a common reference frame before transmission.
+% These parameters are written to non-volatile memory on each Livox unit and applied before data transmission so that all LiDAR returns are received in the center \ac{LiDAR}'s reference frame, reducing the necessary calculation further down the data pipeline.
+% \textcolor{red}{cite Livox documentation?}.
+% enhancing their real-time operational advantage by reducing additional computation later in the pipeline.
+% The calibration methodology to determine these extrinsic values is detailed in Section~\ref{LiDAR_extrinsic}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The 905 nm near-infrared wavelength experiences strong absorption by water, resulting in minimal returns from water surfaces.
+% This characteristic benefits maritime object detection by reducing clutter from waves that would otherwise trigger false positives in clustering algorithms.
+
+% The fundamental distinction between the Livox Horizon and traditional spinning \ac{LiDAR} lies in the scan pattern.
+% A mechanically spinning sensor with N lasers produces N discrete horizontal rings that repeat identically each rotation.
+% For vessels moving at typical speeds (2-5 m/s), platform displacement between rotations remains small relative to object size, resulting in near-perfect overlap of consecutive scans.
+% The Livox operates differently, employing a two-dimensional scanning mechanism that traces a non-repetitive rosette pattern across the \ac{FOV}.
+% Two orthogonal mirrors operating at slightly different frequencies cause the laser beam to trace a complex Lissajous-like path that progressively fills the \ac{FOV} without repetition \cite{thompson2023}.
+
+% Scan pattern coverage accumulates over time, with longer integration periods yielding denser spatial sampling.
+% At the standard 100 Hz output rate, each \ac{UDP} message contains approximately 10 milliseconds of returns.
+% Over a one-second aggregation period, the rosette pattern provides substantially higher spatial coverage than a spinning sensor's fixed ring geometry.
+
+% The non-repetitive forward-scanning nature of the Livox units means that point cloud density is not uniform across the \ac{FOV}.
+% The 81.7-degree horizontal \ac{FOV} allows for overlap between the three units, achieving more uniform density across the 165-degree \ac{FOV}, matching the 4K FLIR camera coverage.
+
+% Insert figure showing Livox scan pattern here
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.8\textwidth]{Images/Livox_1.png}
+% \caption{Livox Horizon non-repetitive rosette scan pattern demonstrating point cloud density distribution from 0.1 to 0.5 seconds.}
+% \label{fig:livox_scan_pattern}
+% \end{figure}
+
+
+
+
+% A Velodyne VLP-16 in dual-return mode produces approximately 1.4 million \ac{pps} distributed across the full 360-degree plane.
+% The camera \ac{FOV} encompasses approximately 165 degrees, yielding an effective point rate in the region of interest of:
+
+% $$\text{Effective HDL-32E rate} = 1.4 \times 10^6 \times \frac{165 degree}{360 degree} \approx 641,000 \text{ pts/sec}$$
+
+% Three Livox Horizon units in dual-return mode together produce:
+
+% $$\text{Combined Livox rate} = 3 \times 480,000 = 1.44 \times 10^6 \text{ pts/sec}$$
+
+% This represents a 2.25× increase in point returns within the camera view, excluding additional benefits from superior vertical sampling achieved through the non-repetitive pattern compared to fixed 32-ring geometry \cite{thompson2023}.
