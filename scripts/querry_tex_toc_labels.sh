@@ -14,14 +14,17 @@
 #     Custom path: bash querry_tex_toc.sh ../main.tex
 #
 # Output:
-#     main_toc.txt - CSV-like format: level, title, line_number
+#     main_toc.txt - CSV-like format: level, title, label, line_number
 #     Default output location: project root (../)
+#     Labels are extracted from current line or up to 3 lines following the section command
 #
 # Date Created: 2025-10-22
 #
 # Changelog:
 #     - 2025-10-22: Initial version - extract LaTeX hierarchy to main_toc.txt
 #     - 2025-10-22: Added default paths for scripts folder usage (../main.tex, ../ output)
+#     - 2025-10-27: Added label extraction from section commands (searches up to 3 lines ahead)
+#     - 2025-10-27: Modified output format to include labels; clears output file before writing
 
 
 # Set default paths for scripts folder usage
@@ -74,7 +77,25 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             # Extract title from braces using regex
             if [[ "$line" =~ \\$cmd\{([^}]*)\} ]]; then
                 title="${BASH_REMATCH[1]}"
-                echo "$cmd|$title|$line_num" >> "$temp_results"
+                
+                # Search for label on current line first
+                label=""
+                if [[ "$comment_part" =~ \\label\{([^}]*)\} ]]; then
+                    label="${BASH_REMATCH[1]}"
+                else
+                    # Look ahead up to 3 lines for label
+                    next_lines=$(sed -n "$((line_num+1)),$((line_num+3))p" "$filepath" 2>/dev/null)
+                    if [[ "$next_lines" =~ \\label\{([^}]*)\} ]]; then
+                        # Verify label is not commented out
+                        label_line="${next_lines%%\\label*}\\label{${BASH_REMATCH[1]}}"
+                        label_comment_part="${label_line%%\%*}"
+                        if [[ "$label_comment_part" =~ \\label\{([^}]*)\} ]]; then
+                            label="${BASH_REMATCH[1]}"
+                        fi
+                    fi
+                fi
+                
+                echo "$cmd|$title|$label|$line_num" >> "$temp_results"
             fi
         fi
     done
@@ -82,9 +103,12 @@ while IFS= read -r line || [[ -n "$line" ]]; do
 done < "$filepath"
 
 # Sort by line number and write to output file
+# Clear output file first to prevent duplicates
+> "$output_file"
+
 if [[ -f "$temp_results" ]] && [[ -s "$temp_results" ]]; then
-    sort -t'|' -k3 -n "$temp_results" | while IFS='|' read -r level title line; do
-        echo "$level, $title, $line" >> "$output_file"
+    sort -t'|' -k4 -n "$temp_results" | while IFS='|' read -r level title label line; do
+        echo "$level, $title, $label, $line" >> "$output_file"
     done
     
     entry_count=$(wc -l < "$output_file")
