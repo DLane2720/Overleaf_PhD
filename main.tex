@@ -546,7 +546,7 @@ The integrated software stack was developed by \ac{ERAU} Faculty and students an
 The sensing configuration used in this research and the 2024 competition is described in Section \ref{perception_geometry}.
 % The sensor configuration described in section \ref{perception_geometry} was originally developed by Team Minion for the 2022 and 2024 Maritime RobotX competitions \cite{holland2024, thompson2023}. 
 Section~\ref{sensors} presents the technical specifications of Minion's sensor hardware, with particular emphasis on the \ac{LiDAR} and high-definition camera sensors selected for this study.
-An overview of the CPU and network infrastructure of the system is provided in section~\ref{sec:Atlas_LAN} as background for the computational requirements of the real-time object detection methods presented in Chapter~\ref{realtime_object_detection}, as well as the challenges relating to the synchronization of sensors in section~\ref{sec:calibration}.
+An overview of the CPU and network infrastructure of the system is provided in section~\ref{Atlas_LAN} as background for the computational requirements of the real-time object detection methods presented in Chapter~\ref{realtime_object_detection}, as well as the challenges relating to the synchronization of sensors in section~\ref{sec:calibration}.
 % housed within the forward camera enclosure. Section~\ref{visual_cameras} provides additional discussion regarding visual spectrum sensor selection and characterization. 
 Of particular note, the timestamp embedding mechanism described in Section~\ref{time_sync_cam} overcomes network latency issues in the video pipeline to maintain a more precise temporal alignment.
 % , essential for rigorous multi-modal sensor fusion analysis.
@@ -1081,7 +1081,7 @@ The Pinpoint unit delivers timing accuracy on the order of 10-100 nanoseconds fo
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Compute Hardware and Network} \label{sec:Atlas_LAN}
+\section{Compute Hardware and Network} \label{Atlas_LAN}
 
 Minion distributes processing tasks across multiple computing nodes to achieve real-time performance and robust system operation.
 The computing infrastructure consists an embedded computer integrated with the camera sensors for video encoding and streaming, and twin computers serving as the primary processing platforms, with a \ac{GbE} \ac{LAN} connecting all systems and sensors. 
@@ -1089,7 +1089,7 @@ The computing infrastructure consists an embedded computer integrated with the c
 The following subsections detail the hardware specifications, system architecture, and network infrastructure that enable real-time multi-modal perception for maritime object detection and sensor fusion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Camera Enclosure} \label{comp:camera_enclosure}
+\subsection{Camera Enclosure} \label{subsec:camera_enclosure}
 
 % # Camera Enclosure Computing Platform
 
