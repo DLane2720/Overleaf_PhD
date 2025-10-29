@@ -1,0 +1,15 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../images/}}}
+\begin{document}
+
+
+% The Minion platform features a PinPoint \ac{GPS}/\ac{INS} equipped with dual-antennae for orientation and differential corrections for millimeter precision geolocation.
+% The sensor performs two critical functions for the \ac{USV}: tracking vessel position and orientation, and precise global time for sensor synchronization.
+% The \ac{GPS} receiver functions as the master clock for the entire synchronization hierarchy described in ~\ref{time_sync}, while the integrated \ac{IMU} enables high-rate pose updates between \ac{GPS} fixes.
+
+The Minion \ac{USV} employs a Torc Robotics Pinpoint \ac{GPS}/\ac{INS} unit for both global positioning and inertial navigation capabilities.
+This device integrates a differential-corrected \ac{GPS} receiver with a multi-axis \ac{IMU} and dual antenna, providing precise position, velocity, and orientation data for the autonomous platform.
+The \ac{GPS} receiver is configured to operate at an update rate of five Hz, while the integrated \ac{IMU} provides high-frequency inertial measurements at 105.4 Hz.
+The Pinpoint unit delivers timing accuracy on the order of 10-100 nanoseconds for \ac{GPS}-disciplined time signals, which is a critical function for multi-sensor synchronization discussed in Section~\ref{time_sync}.
+
+\end{document}
