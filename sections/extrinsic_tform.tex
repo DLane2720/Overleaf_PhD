@@ -1,0 +1,36 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../images/}}}
+\begin{document}
+
+Extrinsic calibration defines the rigid-body transformation between two reference frames.  
+
+The transformation from frame $A$ to frame $B$ is represented as
+\begin{equation}
+    _{B}^{A}\mathbf{T} =
+    \begin{bmatrix}
+        _{B}^{A}\mathbf{R} & _{B}^{A}\mathbf{t} \\
+        \mathbf{0}^\mathrm{T} & 1
+    \end{bmatrix},
+\end{equation}
+
+where $\mathbf{R}_{B}^{A} \in \mathbb{R}^{3\times3}$ is the rotation matrix describing the orientation of frame $A$ relative to frame $B$, and $_{B}^{A}\mathbf{t} \in \mathbb{R}^{3}$ is the translation vector locating the origin of frame $A$ with respect to frame $B$.  
+The notation convention used here is that the subscript denotes the destination frame and the superscript the source frame.
+
+A point $_{A}\mathbf{P}$ expressed in frame $A$ can therefore be transformed into frame $B$ as
+
+\begin{equation}
+    _{B}\mathbf{P} =
+    _{B}^{A}\mathbf{R} _{A}\mathbf{P} + _{B}^{A}\mathbf{t}.
+\end{equation}
+
+This formulation provides a consistent framework for representing spatial relationships among all platform sensors.  
+Transformations can be sequentially composed through the transform tree shown in Figure~\ref{fig:tf_tree}, allowing points measured by any sensor to be expressed in a common reference frame and projected into the camera image for spatial alignment.
+
+The \ac{LiDAR}-to-\ac{LiDAR} extrinsic calibration defines the rigid-body transformations relating the three Livox Horizon units to a shared coordinate system.  
+The center unit serves as the reference frame, with the port and starboard sensors calibrated relative to it to create a unified, geometrically consistent point cloud.
+
+Using large flat surfaces such as walls or other well-defined objects within the unit's overlapping field of view allows the sensors to be aligned.
+The Livox devices used have a functional detection range of 260~m \cite{livox_manual}, which is far greater than the intended operational range for the sensor fusion presented in this research. 
+Due to the divergent nature of the scanning pattern, a simple visual inspection  (as illustrated in figure \ref{fig:Lidar2Lidar}) of sensor alignment beyond 100~m guarantees alignment at closer range. 
+
+\end{document}

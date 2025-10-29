@@ -1,0 +1,72 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../images/}}}
+\begin{document}
+
+To obtain the two-dimensional pixel coordinates of the distorted image ($u, v$) in the camera frame $C$ from a three-dimensional coordinate ($X_{L}, Y_L, Z_L$) in the LiDAR frame $L$:
+
+% 3D LiDAR point to distorted image pixel
+% \paragraph{Projection from LiDAR to image.}
+Let $\mathbf{R}\in \mathbb{R}^{3\times3}$, $\mathbf{t}\in \mathbb{R}^{3\times1}$, $_L\mathbf{P} = [X_L, Y_L, Z_L, 1]^T$,  and $_C\mathbf{P} = \;_{C}^{L}\mathbf{T} \; _L\mathbf{P}$, then:
+\begin{equation*}
+_C\mathbf{P} = [X_C, Y_C, Z_C, 1]^T \;= \; _{C}^{L}\mathbf{T} \;[X_L, Y_L, Z_L, 1]^T,
+% ,\qquad
+% _{C}^{L}\mathbf{T} =
+% \begin{bmatrix}
+% \mathbf{R}_{C}^{L} & \mathbf{t}_{C}^{L} \\
+% \mathbf{0}^T & 1
+% \end{bmatrix}.
+% \label{eq:LiDAR_to_cam_frame}
+\end{equation*}
+
+such that:
+\begin{equation*}
+    _{L}^{C}\mathbf{T} =
+    \begin{bmatrix}
+        _{L}^{C}\mathbf{R} & _{L}^{C}\mathbf{t} \\
+        \mathbf{0}^\mathrm{T} & 1
+    \end{bmatrix},
+\end{equation*}
+
+We obtain the pixel coordinates ($x_n, y_n$) in the undistorted image frame by pinhole projection:
+\begin{equation*}
+x_n = \frac{X_C}{Z_C}, \qquad
+y_n = \frac{Y_C}{Z_C}, \qquad
+r^2 = x_n^2 + y_n^2 .
+\label{eq:normalized_coords}
+\end{equation*}
+
+Apply the radial distortion model:
+\begin{align*}
+r^2 & = x_n^2 + y_n^2 .\\
+x' & = x_n\!\left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right), \\
+y' & = y_n\!\left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right).
+\label{eq:radial_distortion_apply}
+\end{align*}
+
+Map ($x', y'$) to distorted pixel coordinates ($u,v$) using the intrinsic matrix $\mathbf{K}$:
+\begin{equation}
+\begin{bmatrix} u \\ v \\ 1 \end{bmatrix}
+=
+\begin{bmatrix}
+f_x & s & c_x \\
+0   & f_y & c_y \\
+0   & 0   & 1
+\end{bmatrix}
+\begin{bmatrix} x' \\ y' \\ 1 \end{bmatrix},
+\qquad
+% \mathbf{K} =
+% \begin{bmatrix}
+% f_x & s & c_x \\
+% 0   & f_y & c_y \\
+% 0   & 0   & 1
+% \end{bmatrix},
+% \quad
+\Rightarrow\ 
+\begin{cases}
+u = f_x x' + s y' + c_x,\\
+v = f_y y' + c_y.
+\end{cases}
+\label{eq:intrinsics_to_pixels}
+\end{equation}
+
+\end{document}

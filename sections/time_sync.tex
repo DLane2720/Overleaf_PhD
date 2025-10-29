@@ -1,0 +1,40 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../images/}}}
+\begin{document}
+
+% \subsection{Temporal Calibration} \label{time_sync}
+
+This section discusses how each of the distributed computers and sensor are kept in sync with each other.
+% Section \ref{comp:network} discussed the network architecture onboard the Minion \ac{USV} and dealt with the concept of network latency.
+Section \ref{time_sync_lan} discusses how a master clock time from the GPS is distributed throughout the network, and section \ref{time_sync_cam} discusses how camera data is transferred from one machine to another without loss of timing information.
+It is important to note that the temporal offsets discussed here should not be affected by the network latency described in Section~\ref{comp:network}, as timing information is transmitted with the data, and not subject to how long it takes to be delivered. 
+
+% Latency is used to describe the discrepancy between two system clocks as well as the delay experienced in data transmission over the \ac{LAN}.
+% Offset is used to discuss the difference in time between sensor data timestamps.
+
+% an offset between system clocks, referred to here as latency, and a discrepancy between the recorded timestamps within the camera and LiDAR sensor data 
+
+Multi-modal sensor fusion for object detection fundamentally requires precise temporal alignment between sensors operating on independent clocks and sampling at different rates.  
+For example, if two sensors are offset by 200 milliseconds while observing a vessel moving at $5~\mathrm{m/s}$ and located 30~m from the platform, their detections would appear approximately $1~\mathrm{m}$ apart—equivalent to nearly $2^{\circ}$ of angular separation in the field of view.  
+Such a discrepancy disrupts the spatial alignment between LiDAR points and image features, emphasizing the importance of consistent timing across all data streams.
+While an inter-sensor offset of 20 milliseconds or less would ensure that collected data is within the tolerance of our detection system in a real-world scenario, this level of precision was determined to be unnecessary for the RobotX competition and was relaxed to 100 milliseconds.
+
+% In maritime applications, where vehicle motion is relatively slow compared to ground-based platforms, sub-millisecond synchronization is generally unnecessary.  
+% For the same vessel traveling at $5~\mathrm{m/s}$ and 30~m range, a temporal offset of $20~\mathrm{ms}$ limits apparent displacement to about 0.1~m, corresponding to less than two pixels in the downsampled image used for YOLO-based detection.  
+% As demonstrated in Chapter~\ref{realtime_object_detection}, this level of alignment provides sufficient temporal accuracy for late-fusion operations.
+% Therefore, a 20~ms offset is adopted as the maximum allowable synchronization error for this system.
+% In this work, the design requirement is an inter-sensor clock \emph{offset} of $\leq 20~\mathrm{ms}$, which limits apparent target displacement to $\approx 0.1~\mathrm{m}$ at 30~m for a vessel moving at $5~\mathrm{m/s}$.  
+% Note that offset (clock difference between devices) is distinct from end-to-end video latency (capture→decode delay); latency does not break fusion when frame timestamps are preserved.
+
+% The next subsections describe the timing architecture: network synchronization across the vessel, Network Time Protocol for millisecond alignment of compute nodes, Precision Time Protocol for microsecond alignment of LiDAR units, and camera synchronization with timestamps embedded in the video bitstream and recovered at the receiver. Final timing performance and any corrective alignment used for LiDAR fusion are reported in Sec.~\ref{sec:time_sync_results}.
+
+
+% Offset is the difference between device clocks at the same instant in time. 
+% It shifts timestamps and creates apparent motion between modalities. 
+% Latency is the delay from image exposure to availability at the receiver. Latency changes throughput but not the recorded capture time when timestamps are preserved. 
+% At 5~m/s and 30~m range, a 20~milliseconds offset yields about 0.1~m apparent displacement, which is acceptable for late fusion. 
+% The next subsections describe network synchronization, NTP for millisecond alignment of compute nodes, PTP for microsecond alignment of LiDAR units, and camera time-stamping within the video bitstream. Final offset and pipeline latency measurements appear in Section ~\ref{time_sync}.
+% \textcolor{red}{This needs revision. The next section discusses latency, which needs to be identified as a separate measure from offset. Redo this last paragraph to correct.}
+
+
+\end{document}
