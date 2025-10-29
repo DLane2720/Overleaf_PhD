@@ -2116,16 +2116,16 @@ The magnitude of an object's observed individual features may change based on di
 \hline
 \textbf{No.} & \textbf{Feature Type} & \textbf{Description} \\ 
 \hline
-1 & Maximum Intensity & Peak LiDAR return intensity \\
-2 & Minimum Intensity & Lowest LiDAR return intensity \\
-3 & Average Intensity & Mean LiDAR return intensity \\
-4 & Intensity Standard Deviation & Variation in return intensity \\
-5 & Maximum Height & Vertical extent of the object \\
+1 & Intensity (Max) & Peak LiDAR return intensity \\
+2 & Intensity (Min) & Lowest LiDAR return intensity \\
+3 & Intensity (Avg) & Mean LiDAR return intensity \\
+4 & Intensity (Std. Deviation) & Variation in return intensity \\
+5 & Height (Max) & Vertical extent of the object \\
 6 & Filled Cell Count & Number of occupied grid cells \\
-7 & Polygon Perimeter & Boundary length of concave hull \\
-8 & Polygon Area & Enclosed area of concave hull \\
-9 & 2D Major Axis Length & Longer principal axis of object shape \\
-10 & 2D Minor Axis Length & Shorter principal axis of object shape \\
+7 & Polygon Perimeter & Length of 2D concave hull boundary \\
+8 & Polygon Area & Area of enclosed 2D concave hull \\
+9 & Major Axis Length & Longer principal axis of object polygon \\
+10 & Minor Axis Length & Shorter principal axis of object polygon \\
 \hline
 \end{tabular}
 \caption{Features used for GB-CACHE multivariate classification.}
@@ -2136,12 +2136,12 @@ In \ac{MGC}, the values of these features are assumed to follow Gaussian distrib
 By modeling the joint distribution of all ten features at once (a multivariate Gaussian), the classifier can compute a \acl{PDF} for each object class.
 This enables the classifier to assign the most probable class label to the object based on the vector of all ten features, even as the individual values may fluctuate.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{Images/roi_capture.png}
-    \caption{Rectangular bounding boxes placed around maritime objects detected by a re-trained YOLO detection model.}
-    \label{fig:roi_capture}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{Images/gbcache_flow.png}
+%     \caption{Rectangular bounding boxes placed around maritime objects detected by a re-trained YOLO detection model.}
+%     \label{fig:gbcache_flow}
+% \end{figure}
 
 % The YOLO Framework
 % Describe the principle succinctly:
@@ -2246,18 +2246,18 @@ This enables the classifier to assign the most probable class label to the objec
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Late Fusion} \label{late_fusion}
 
-\subsection{Intro}
-Introduce fusion and late fusion
+% \subsection{Intro}
+% Introduce fusion and late fusion
 
-\subsection{late fusion method}
-fuse bounding boxes from YOLO with projected object bounds from GB-CACHE
+% \subsection{late fusion method}
+% fuse bounding boxes from YOLO with projected object bounds from GB-CACHE
 
-Kalman filter type reliability factor from each to produce more accurate bounds
+% Kalman filter type reliability factor from each to produce more accurate bounds
 
-\paragraph{Limitations}
-corrections to GB-CACHE perimeter vertices.
+% \paragraph{Limitations}
+% corrections to GB-CACHE perimeter vertices.
 
-Limitations of YOLO resolution
+% Limitations of YOLO resolution
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2363,7 +2363,7 @@ This compression proves particularly advantageous for maritime environments wher
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{Images/gbcache_flow.png}
+    \includegraphics[width=0.95\linewidth]{Images/gbcache_flow.png}
     \caption{Caption}
     \label{fig:gbcache_flow}
 \end{figure}
