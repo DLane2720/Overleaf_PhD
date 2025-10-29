@@ -1,87 +1,56 @@
-chapter, Introduction, , 104
-section, Significance of Study, significance_of_study, 127
-section, Problem Statement: Performance Comparison Gap, problem_statement1, 142
-chapter, Literature Review, litReview, 171
-section, Autonomous Surface Vessel Perception, , 175
-section, Sensing Modalities for Environmental Perception, , 183
-section, Object Detection with Visual and LiDAR Data, , 232
-subsection, Vision-Based Object Detection, , 234
-subsection, LiDAR-Based Object Detection, , 244
-section, Sensor Fusion Paradigms, , 261
-section, Temporal and Spatial Alignment in Fusion Systems, , 319
-section, Challenges in Maritime Perception, , 337
-section, Research Gaps and Motivation for This Work, , 391
-section, Summary and Connection to Methodology, , 415
-chapter, Sensing Platform, sensing_platform, 491
-section, Perception Geometry, perception_geometry, 553
-section, Sensors, sensors, 637
-subsection, LiDAR, sensors_LiDAR, 644
-subsubsection, Livox Horizon, sensors_livox, 698
-subsection, Visible Spectrum Cameras, visual_cameras, 799
-subsubsection, Image Resolution, , 810
-subsubsection, Dynamic Range, , 959
-subsubsection, FLIR Blackfly S 4K Cameras, sensors_FLIR, 992
-subsubsection, Leopard Imaging HDR Camera, sensors_HDR, 1040
-subsubsection, Camera Selection, camera_selection, 1115
-subsection, PinPoint GPS/INS, sensors_GPS, 1161
-section, Compute Hardware and Network, sec:Atlas_LAN, 1220
-subsection, Camera Enclosure, comp:camera_enclosure, 1228
-subsection, Atlas, atlas, 1344
-subsection, Network Structure, comp:network, 1478
-section, Sensor Calibration, sec:calibration, 1648
-subsection, Spatial Calibration, spatial_calibration, 1717
-subsubsection, Camera Intrinsics, camera_intrinsics, 1730
-subsubsection, Intrinsic Calibration, intrinsic_calib, 1767
-subsubsection, Extrinsic Calibration, extrinsic_tform, 1798
-subsubsection, Camera–LiDAR Extrinsic Calibration, camLidar_calib, 1829
-subsubsection, LiDAR–LiDAR Extrinsic Calibration, lidarLidar_calib, 2143
-subsection, Results: Spatial Calibration, sec:spatial_calib_results, 2169
-subsubsection, Camera Calibration, sec:camera_intriniscs_results, 2172
-subsubsection, Camera-LiDAR Calibration, sec:camera-lidar_results, 2180
-subsubsection, LiDAR–LiDAR Calibration, lidarLidar_calib, 2242
-subsection, Temporal Calibration, time_sync, 2244
-subsubsection, Network Synchronization, time_sync_lan, 2274
-paragraph, NTP, , 2286
-paragraph, PTP, , 2293
-subsubsection, Camera Synchronization, time_sync_cam, 2306
-paragraph, prior solution, , 2310
-paragraph, developed solution, , 2316
-subsection, Results: Temporal Synchronization, time_sync_cam, 2344
-section, Sensor Data and Dataset, sec:sensor_data_dataset, 2569
-subsection, ROS Node Architecture for Data Collection, sec:ros_architecture, 2584
-subsubsection, Vision Pipeline, , 2591
-subsubsection, LiDAR Pipeline, , 2597
-subsection, Data Collection Overview, sec:data_overview, 2613
-subsection, Data Organization and Processing, sec:data_organization, 2674
-paragraph, Temporal Synchronization, , 2682
-paragraph, Spatial Registration, , 2686
-subsection, Dataset Construction for Machine Learning, sec:dataset_construction, 2691
-subsection, Representative Samples, sec:dataset_samples, 2716
-chapter, Real-time Object Detection, realtime_object_detection, 2788
-section, YOLOv8, yolo, 2793
-subsection, YOLO Architecture , sec:yolo_architecture, 2800
-subsection, Model Selection, sec:yolo_model_selection, 2822
-subsection, Training Data, sec:yolo_training data, 2842
-subsection, Model Training and Convergence, sec:yolo_training convrg, 2867
-subsection, Computational Efficiency, sec:yolo_efficiency, 2890
-subsection, Limitations, sec:yolo_limitations, 2909
-section, GB-CACHE, gbcache, 2934
-subsection, Grid-Based Indexing, sec:grid-based_indexing, 2941
-subsection, Clustering and Object Segmentation, sec:cluster_and_seg, 2956
-subsection, Concave Hull Extraction, sec:ccHull_extract, 2973
-subsection, Computational Efficiency, sec:gbcache_efficiency, 2988
-subsection, Multivariate Classification, sec:gbcache_mvg_classification, 3010
-subsection, Mutual Information Analysis of Features, sec:gbcache_MI_features, 3045
-chapter, Late Fusion, late_fusion, 3139
-chapter, Conclusions, , 3141
-section, Research Objective Achievement Summary, , 3150
-section, Performance Comparison Findings, , 3153
-section, Implications for ASV System Design, , 3156
-chapter, Recommendations and Future Work, reccomendations, 3159
-section, recommendations, reccomendations, 3161
-section, Future Work, futurework, 3163
-section, ASV Perception System Design Recommendations, , 3177
-section, Future Research Directions, , 3180
-section, Technology Transfer Opportunities, , 3183
-chapter, Image Transform, img_tform, 3197
-chapter, test 2, , 3265
+chapter, Introduction, , 108
+section, Significance of Study, significance_of_study, 131
+section, Problem Statement: Performance Comparison Gap, problem_statement1, 146
+chapter, Literature Review, litReview, 175
+chapter, Sensing Platform, sensing_platform, 495
+section, Perception Geometry, perception_geometry, 557
+section, Sensors, sensors, 641
+subsection, LiDAR, sensors_LiDAR, 648
+subsubsection, Livox Horizon, sensors_livox, 702
+subsection, Visible Spectrum Cameras, visual_cameras, 755
+subsubsection, Image Resolution, , 766
+subsubsection, Dynamic Range, , 896
+subsubsection, FLIR Blackfly S 4K Cameras, sensors_FLIR, 929
+subsubsection, Leopard Imaging HDR Camera, sensors_HDR, 977
+subsubsection, Camera Selection, camera_selection, 1024
+subsection, PinPoint GPS/INS, sensors_GPS, 1070
+section, Compute Hardware and Network, sec:Atlas_LAN, 1084
+subsection, Camera Enclosure, comp:camera_enclosure, 1092
+subsection, Atlas, atlas, 1166
+subsection, Network Structure, comp:network, 1218
+section, Sensor Calibration, sec:calibration, 1266
+subsection, Spatial Calibration, spatial_calibration, 1308
+subsubsection, Extrinsic Calibration, extrinsic_tform, 1317
+subsubsection, Camera Intrinsics, camera_intrinsics, 1358
+subsubsection, Camera to LiDAR Extrinsic Calibration, camLidar_calib, 1422
+subsection, Results: Spatial Calibration, sec:spatial_calib_results, 1459
+subsubsection, LiDAR–LiDAR Calibration, results_lidarLidar_calib, 1462
+subsubsection, Camera Calibration, sec:camera_intriniscs_results, 1484
+subsubsection, Camera–LiDAR Calibration, sec:camera-lidar_results, 1515
+subsection, Temporal Calibration, time_sync, 1571
+subsubsection, Network Synchronization, time_sync_lan, 1607
+subsubsection, Camera Synchronization, time_sync_cam, 1644
+subsection, Results: Temporal Synchronization, results)time_sync_cam, 1693
+section, Sensor Data and Dataset, sec:sensor_data_dataset, 1742
+subsection, ROS Node Architecture for Data Collection, sec:ros_architecture, 1759
+subsection, Data Collection Overview, sec:data_overview, 1791
+subsection, YOLO Training Dataset, sec:yolo_training_data, 1921
+subsection, GB-CACHE Training Dataset, sec:gbcache_training_data, 1965
+chapter, Real-time Object Detection, realtime_object_detection, 1984
+section, YOLO, yolo, 2012
+section, GB-CACHE, gbcache, 2081
+section, Late Fusion, late_fusion, 2247
+section, Model Performance, performance, 2265
+subsection, Computational Efficiency, sec:gbcache_efficiency, 2350
+subsection, Mutual Information Analysis of Features, sec:gbcache_MI_features, 2443
+chapter, Conclusions, , 2485
+section, Research Objective Achievement Summary, , 2494
+section, Performance Comparison Findings, , 2497
+section, Implications for ASV System Design, , 2500
+chapter, Recommendations and Future Work, recommendations, 2503
+section, Recommendations, recommendations, 2505
+section, Future Work, futurework, 2507
+section, ASV Perception System Design Recommendations, , 2521
+section, Future Research Directions, , 2524
+section, Technology Transfer Opportunities, , 2527
+chapter, Image Transform, img_tform, 2541
