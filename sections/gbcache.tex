@@ -11,12 +11,19 @@ Its name is derived from the methodology it utilizes for object detection: grid-
 The segmentation approach is designed for maritime use, where point cloud data is concentrated on only a few nearby objects.
 By ignoring large volumes of unoccupied space, GB-CACHE reduces memory demands and improves processing efficiency.
 Its deterministic design and bounded computational complexity make it an optimal choice for real-time operation, and provide a meaningful contrast to the data-intensive, black-box nature of neural-network-based algorithms.
+A block diagram of the algorithm is provided in Figure \ref{fig:gbcache_flow}
 
 The algorithm begins by projecting unstructured point cloud data into a spatially organized grid defined in the global fixed frame.
 Each point is associated with a primary set of $x$ and $y$ coordinates, and a tertiary $z$ coordinate to preserve vertical geometry.
 Segmentation is then performed by clustering adjacent occupied cells in the $x,y$ plane according to a configurable distance parameter.
 This dimensionality reduction from three to two spatial dimensions greatly reduces the computational overhead and allows the algorithm to scale linearly with size.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{Images/gbcache/gbcache_flow.png}
+    \caption{Block diagram of GB-CACHE process flow.}
+    \label{fig:gbcache_flow}
+\end{figure}
 
 Each segmented object is then identified by a concave hull formed from the $x$ and $y$ vertices of a perimeter-matched polygon.
 Compared to axis-aligned bounding boxes or circular boundary approximations, concave hulls more accurately reflect object geometry without overgeneralizing the object’s spatial extent.

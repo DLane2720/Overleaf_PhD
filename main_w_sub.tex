@@ -118,6 +118,9 @@ Any opinions, findings, conclusions, or recommendations expressed in this materi
 \section{Problem Statement: Performance Comparison Gap} \label{problem_statement1}
 \subfile{sections/problem_statement1}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Literature Review} \label{litReview}
 % \subfile{sections/literatureReview_new}
 \subfile{sections/literatureReview_old}
@@ -341,13 +344,36 @@ The following sections describe the methods and results of this calibration proc
 \subfile{sections/gbcache}
 % This section only discusses the methods used for the GB-CACHE object detection.  
 
+
 \section{Late Fusion} \label{late_fusion}
 \subfile{sections/late_fusion}
 % This section only discusses the methods used for the late fusion object detection. 
 
 \section{Model Performance} \label{performance}
-\subfile{sections/performance}
+% \subfile{sections/performance}
 % This section will hold all results from analysis from the YOLO, GB cache, and late fusion techniques. 
+
+\subsection{YOLO} \label{performance_yolo}
+\subfile{sections/performance_yolo}
+
+\subsection{GB-CACHE} \label{performance_gbcache}
+\subfile{sections/performance_gbcache}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{Images/MI_analysis.png}
+    \caption{Caption}
+    \label{fig:MI_analysis}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{Images/MI_pairwise.png}
+    \caption{Caption}
+    \label{fig:MI_pairwise}
+\end{figure}
+
 
 
 \chapter{Conclusions}
@@ -414,6 +440,14 @@ The following sections describe the methods and results of this calibration proc
 \chapter{Image Transform} \label{img_tform}
 \subfile{sections/img_tform}
 
+\chapter{Video Encoding and Timestamp Pipeline} \label{appendix:video_pipeline}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{Images/gstreamer_block.png}
+\caption{Block diagram of the NVIDIA Jetson's video pipeline. Green rectangles represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue rectangles with chamfered corners denote timestamp acquisition and application operations within the pipeline.}
+\label{video_pipeline}
+\end{figure}
 
 
 % \chapter{test 2}

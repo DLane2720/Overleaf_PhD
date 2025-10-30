@@ -22,7 +22,7 @@ This limitation motivated the development of the \ac{SEI}-based synchronization 
 The current implementation replaces the caption-based approach with direct timestamp embedding using Supplemental Enhancement Information (SEI) Network Abstraction Layer (NAL) units defined in the H.264/H.265 standard.
 Each video frame receives a GPS-disciplined system timestamp at the instant of capture from the camera sensor. These timestamps are stored as 64-bit values (milliseconds since Unix epoch) and attached to each frame via a custom GStreamer extension. % (CustomTimestampMeta).
 This method keeps the timestamp data inextricably linked to the same video layer that is transmitted over \ac{RTSP}, guaranteeing that each video frame received will have a timestamp, even if dropped frames are experienced.
-The complete video processing pipeline is visualized as a block diagram in Figure \ref{video_pipeline}.
+The complete video processing pipeline is visualized as a block diagram in Appendix \ref{appendix:video_pipeline}.
 
 % During encoding, a pad probe inserts the SEI NAL units immediately before the RTP payload (rtph264pay), ensuring that every encoded frame carries its own timestamp embedded within the bitstream.
 % Because this method fits within the encoding standard, the timestamps persist through compression and streaming, which eliminates the complexity of the prior approach and maintains compatibility with all conventional video decoders.
@@ -46,8 +46,8 @@ At the receiving end, the Atlas PC decodes incoming streams using a complementar
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=5in]{Images/gstreamer_block.png}
-\caption{Block diagram of the NVIDIA Jetson's video pipeline. Green rectangles represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue rectangles with chamfered corners denote timestamp acquisition and application operations within the pipeline.}
+\includegraphics[width=0.95\textwidth]{Images/gstreamer_block.png}
+\caption{Block diagram of the NVIDIA Jetson's video pipeline. Green rectangles represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue rectangles with chamfered corners denote timestamp acquisition and application operations within the pipeline.\textcolor{red}{Move to an appendix?}}
 \label{video_pipeline}
 \end{figure}
 
