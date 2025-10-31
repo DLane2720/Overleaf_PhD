@@ -323,42 +323,39 @@ The following sections describe the methods and results of this calibration proc
 \subsubsection{Network Synchronization} \label{time_sync_lan}
 \subfile{sections/lan_sync}
 
-\subsection{Results: Temporal Synchronization} \label{results)time_sync_cam}
+\subsection{Results: Temporal Synchronization} \label{results_time_sync_cam}
 \subfile{sections/results_time_sync}
 
 \section{Sensor Data and Dataset} \label{sec:sensor_data_dataset}
 \subfile{sections/sensor_data}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Real-time Object Detection} \label{realtime_object_detection}
 \subfile{sections/real_time_obj_det}
-% a brief introduction to the chapter 
+% a brief introduction to the chapter and overview of model selection prior to method description
+% 2 to 3 paragraphs
 
 \section{YOLO} \label{yolo}
 \subfile{sections/yolo}
 % This section only discusses the methods used for the YOLO object detection. 
+% 3 to 4 paragraphs
+
 
 \section{GB-CACHE} \label{gbcache}
 \subfile{sections/gbcache}
-% This section only discusses the methods used for the GB-CACHE object detection.  
+% This section only discusses the methods used for the GB-CACHE object detection.
+% 3 to 4 paragraphs
 
 
-\section{Late Fusion} \label{late_fusion}
-\subfile{sections/late_fusion}
-% This section only discusses the methods used for the late fusion object detection. 
+\section{Classification Results} \label{classify_results}
+\subfile{sections/classify_results}
 
-\section{Model Performance} \label{performance}
-% \subfile{sections/performance}
-% This section will hold all results from analysis from the YOLO, GB cache, and late fusion techniques. 
-
-\subsection{YOLO} \label{performance_yolo}
-\subfile{sections/performance_yolo}
-
-\subsection{GB-CACHE} \label{performance_gbcache}
-\subfile{sections/performance_gbcache}
-
+\subsection{Feature Relevance} \label{gbcache_features}
+\subfile{sections/gbcache_features}
 
 \begin{figure}
     \centering
@@ -373,6 +370,27 @@ The following sections describe the methods and results of this calibration proc
     \caption{Caption}
     \label{fig:MI_pairwise}
 \end{figure}
+
+
+\section{Detection Results} \label{detect_results}
+\subfile{sections/detect_results}
+
+\section{Late Fusion} \label{late_fusion}
+\subfile{sections/late_fusion}
+% This section only discusses the methods used for the late fusion object detection. 
+
+% \section{Model Performance} \label{performance}
+% \subfile{sections/performance}
+% This section will hold all results from analysis from the YOLO, GB cache, and late fusion techniques. 
+
+\subsection{YOLO} \label{performance_yolo}
+\subfile{sections/performance_yolo}
+
+\subsection{GB-CACHE} \label{performance_gbcache}
+\subfile{sections/performance_gbcache}
+
+
+
 
 
 
@@ -440,13 +458,13 @@ The following sections describe the methods and results of this calibration proc
 \chapter{Image Transform} \label{img_tform}
 \subfile{sections/img_tform}
 
-\chapter{Video Encoding and Timestamp Pipeline} \label{appendix:video_pipeline}
+\chapter{Video Encoding and Timestamp Pipeline} \label{append_video_pipeline}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{Images/gstreamer_block.png}
 \caption{Block diagram of the NVIDIA Jetson's video pipeline. Green rectangles represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue rectangles with chamfered corners denote timestamp acquisition and application operations within the pipeline.}
-\label{video_pipeline}
+\label{fig_video_pipeline}
 \end{figure}
 
 

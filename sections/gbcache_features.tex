@@ -1,0 +1,65 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../Images/}}}
+\begin{document}
+
+GB-CACHE employs a \acl{MGC} to specify what class of object it has identified. 
+Much like other classification methods, it utilizes a list of detected features to distinguish one class from another.
+Each of the ten features it observes is provided with a brief description in Table \ref{tab:gbcache_features}.
+The magnitude of an object's observed individual features may change based on distance to the object or viewing angle, but their relative values still provide valuable information.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\hline
+\multicolumn{3}{c}{GB-CACHE: Object Classification Features}\\
+\hline
+\hline
+\textbf{No.} & \textbf{Feature Type} & \textbf{Description} \\ 
+\hline
+1 & Intensity (Max) & Peak LiDAR return intensity \\
+2 & Intensity (Min) & Lowest LiDAR return intensity \\
+3 & Intensity (Avg) & Mean LiDAR return intensity \\
+4 & Intensity (Std. Deviation) & Variation in return intensity \\
+5 & Height (Max) & Vertical extent of the object \\
+6 & Filled Cell Count & Number of occupied grid cells \\
+7 & Polygon Perimeter & Length of 2D concave hull boundary \\
+8 & Polygon Area & Area of enclosed 2D concave hull \\
+9 & Major Axis Length & Longer principal axis of object polygon \\
+10 & Minor Axis Length & Shorter principal axis of object polygon \\
+\hline
+\end{tabular}
+\caption{Features used for GB-CACHE multivariate classification.}
+\label{tab:gbcache_features}
+\end{table}
+
+In \ac{MGC}, the values of these features are assumed to follow Gaussian distributions within each class.
+By modeling the joint distribution of all ten features at once (a multivariate Gaussian), the classifier can compute a \acl{PDF} for each object class.
+This enables the classifier to assign the most probable class label to the object based on the vector of all ten features, even as the individual values may fluctuate.
+
+% \subsection{Mutual Information Analysis of Features} \label{sec:gbcache_MI_features}
+
+While the ten-feature set provides comprehensive object characterization, not all features contribute equally to classification performance, and some features exhibit redundancy through correlation.
+I applied information-theoretic feature selection methodology to identify the optimal feature subset that maximizes classification accuracy while minimizing computational burden and correlation-induced instability.
+
+The minimum Redundancy Maximum Relevance (mRMR) criterion provides a principled framework for feature selection by simultaneously considering two competing objectives: maximizing the mutual information between selected features and class labels (relevance) while minimizing the mutual information among selected features themselves (redundancy).
+Mutual information quantifies the reduction in uncertainty about one variable given knowledge of another, providing a model-agnostic measure of statistical dependence applicable to both linear and nonlinear relationships.
+
+Analysis of feature-class mutual information reveals varying discriminative power across the ten features, with intensity-based and geometric features exhibiting complementary strengths for different object classes.
+Pairwise feature redundancy analysis identifies multiple correlated feature pairs that provide overlapping information, suggesting opportunities for dimensionality reduction without classification performance degradation.
+The mRMR optimization procedure balances these considerations, progressively selecting features that contribute novel discriminative information while avoiding redundant measurements.
+
+Information-theoretic analysis identified an optimal feature subset substantially smaller than the complete ten-feature set, demonstrating that effective maritime object classification can be achieved with reduced feature dimensionality.
+This finding has practical implications for computational efficiency, as feature extraction and Gaussian density evaluation scale with feature dimensionality.
+The reduced feature set maintains robust classification performance while decreasing processing requirements and reducing the risk of overfitting when training data is limited.
+
+The classifier requires training data comprising labeled examples of each object class with corresponding feature vectors.
+Training involves computing maximum likelihood estimates of Gaussian distribution parameters for each class, specifically the mean vector and covariance matrix that characterize the feature space distribution.
+These parameters fully specify the class models, enabling rapid inference through simple multivariate Gaussian density evaluation without iterative optimization or complex neural network forward passes.
+
+Classification performance depends critically on the separability of object classes in the chosen feature space and the validity of the Gaussian distribution assumption.
+When classes exhibit significant overlap in feature space or when feature distributions deviate substantially from Gaussian, classification accuracy degrades.
+However, for maritime objects with distinct geometric profiles and size ranges, the feature-based Gaussian approach provides robust classification with minimal training requirements.
+
+
+
+\end{document}

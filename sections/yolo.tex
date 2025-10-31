@@ -7,7 +7,7 @@
 The eighth generation of the \ac{YOLO} object detection framework developed by Ultralytics was selected to provide a high-performance, real-time vision baseline for this research. 
 % \textcolor{red}{add something about semantic and information-rich data?}
 This method of detection gained popularity for its ease of use and implementation for detecting and localizing objects within an image.
-Once detected, an object is bounded by a rectangle that defines the minimum and maximum extremes of the pixel coordinates it occupies - known as the bounding box.
+Once an object is detected, the pixel coordinates it occupies within the image frame is bounded with a rectangle known as the bounding box (see Figure \ref{fig:YOLO_tower}).
 Its open-source models are pretrained on the COCO dataset, a large repository containing approximately 1.5 million labeled images, and are provided in various sizes and qualities, which can be deployed on a wide variety of edge computing hardware.
 Additionally, transfer learning is simple to apply, allowing these models to be tailored for more specific use cases, such as maritime environments.
 
@@ -28,6 +28,46 @@ This "anchor-free" architectural change not only makes localization of the detec
 The widespread adoption of YOLOv8 and the fundamental architectural changes in this version make it the optimal choice to provide a baseline visual detection method.
 % However, this mode of detection is not without its compromises, \textcolor{red}{as will be detailed in Section ____.}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Training Data} \label{sec:yolo_training_data}
+% \subfile{sections/training_data_yolo}
+
+
+A manually labeled image dataset was constructed to support the transfer learning and evaluation of the YOLO object detection network. 
+All YOLO training images were obtained from video recorded directly on the Jetson.
+Rosbag data was recorded intermittently, whereas the cameras operated and streamed continuously.
+This ensured that a large pool of video data remained separate from the main dataset and available for YOLO training.
+
+The complete dataset contained 778 annotated images with a total of 1934 labeled maritime objects from the six classes defined in Table \ref{tab:class_map} 
+Each annotation was produced through a manual labeling process for objects present within each 2880 $\times$ 860 frame. 
+
+The final dataset contained 778 annotated images and 1934 labeled maritime objects. 
+Data were divided into training, validation, and test subsets following a 70:20:10 ratio.
+Each subset preserved the relative class proportions observed in the complete dataset, which contained an average of 2.5 labeled objects per image across the five categories listed in Table~\ref{tab:class_map}.
+The A2 and A3 buoy variants are virtually identical when viewed in isolation, as their size difference can only be inferred through comparison or with additional depth information in the image frame. 
+Because YOLO operates purely on two-dimensional image data without access to spatial depth cues, there was no practical benefit to treating these as separate classes; both were therefore labeled collectively as \texttt{round\_buoy}.
+% \textcolor{blue}{Based on field observations, it is likely that A2 buoys were predominantly red, green, or blue, whereas A3 and larger buoys appeared black. 
+% However, since visually similar large black buoys were also observed throughout the rosbag dataset without verified size information, these classes were merged to maintain labeling consistency.}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lccccccc}
+\hline
+Subset & Images & Labels & Tall Buoy & Round Buoy & Light Tower & Jon Boat & Sailboat \\
+\hline
+Train & 543 & 1,343 & 12.0\% & 1.4\% & 11.2\% & 15.8\% & 59.6\% \\
+Validation & 158 & 390 & 14.1\% & 1.3\% & 13.1\% & 12.8\% & 58.7\% \\
+Test & 77 & 201 & 16.4\% & 1.5\% & 9.5\% & 12.4\% & 59.7\% \\
+\hline
+Total & 778 & 1,934 &  &  &  &  &  \\
+\hline
+\end{tabular}
+\caption{YOLO dataset composition and class distribution across training, validation, and test subsets.}
+\label{table:yolo_data_split}
+\end{table}
+
+\noindent The relative consistency across all three subsets demonstrates that the temporal stratification preserved real-world object frequency while maintaining balance for training and evaluation. 
+The test set was reserved exclusively for the final performance assessment described in Chapter~\ref{realtime_object_detection}.
 
 
 
