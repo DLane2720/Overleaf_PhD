@@ -1,34 +1,37 @@
 chapter, Introduction, significance_of_study, sections/introduction, 112
 section, Significance of Study, significance_of_study, sections/significance_of_study, 115
 section, Problem Statement: Performance Comparison Gap, problem_statement1, sections/problem_statement1, 118
-chapter, Literature Review, litReview, , 121
-chapter, Sensing Platform, sensing_platform, sections/sensing_platform_intro, 128
-section, Perception Geometry, perception_geometry, sections/perception_geometry, 131
-section, Sensors, sensors, , 134
-subsection, LiDAR, sensors_LiDAR, sections/LiDAR, 137
-subsection, Visible Spectrum Cameras, visual_cameras, sections/cameras, 140
-subsection, PinPoint GPS/INS, sensors_GPS, sections/pinpoint, 143
-section, Compute Hardware and Network, sec:Atlas_LAN, sections/hardware, 146
-section, Sensor Calibration, sec:calibration, sections/calibration, 149
-subsection, Spatial Calibration, spatial_calibration, , 160
-subsubsection, Extrinsic Calibration, extrinsic_tform, sections/extrinsic_tform, 169
-subsubsection, Camera Intrinsics, camera_intrinsics, sections/cam_intrinsics, 180
-subsubsection, Camera to LiDAR Extrinsic Calibration, camLidar_calib, sections/camlidar_calib, 205
-subsection, Results: Spatial Calibration, sec:spatial_calib_results, sections/results_lidarlidar, 230
-subsubsection, LiDAR–LiDAR Calibration, results_lidarLidar_calib, sections/results_lidarlidar, 231
-subsubsection, Camera Calibration, sec:camera_intriniscs_results, sections/cam_intrinsics, 241
-subsubsection, Camera–LiDAR Calibration, sec:camera-lidar_results, sections/results_camera-lidar, 265
-subsection, Temporal Calibration, time_sync, sections/time_sync, 314
-subsubsection, Camera Synchronization, time_sync_cam, sections/time_sync_cam, 317
-subsubsection, Network Synchronization, time_sync_lan, sections/lan_sync, 320
-subsection, Results: Temporal Synchronization, results)time_sync_cam, sections/results_time_sync, 323
-section, Sensor Data and Dataset, sec:sensor_data_dataset, sections/sensor_data, 326
-chapter, Real-time Object Detection, realtime_object_detection, sections/real_time_obj_det, 332
-section, YOLO, yolo, sections/yolo, 336
-section, GB-CACHE, gbcache, sections/gbcache, 340
-section, Late Fusion, late_fusion, sections/late_fusion, 344
-section, Model Performance, performance, sections/performance, 348
-chapter, Conclusions, , , 353
-chapter, Recommendations and Future Work, chap:recommendations, , 374
-section, Future Work, futurework, , 381
-chapter, Image Transform, img_tform, sections/img_tform, 414
+chapter, Literature Review, litReview, , 124
+chapter, Sensing Platform, sensing_platform, sections/sensing_platform_intro, 131
+section, Perception Geometry, perception_geometry, sections/perception_geometry, 134
+section, Sensors, sensors, , 137
+subsection, LiDAR, sensors_LiDAR, sections/LiDAR, 140
+subsection, Visible Spectrum Cameras, visual_cameras, sections/cameras, 143
+subsection, PinPoint GPS/INS, sensors_GPS, sections/pinpoint, 146
+section, Compute Hardware and Network, sec:Atlas_LAN, sections/hardware, 149
+section, Sensor Calibration, sec:calibration, sections/calibration, 152
+subsection, Spatial Calibration, spatial_calibration, , 163
+subsubsection, Extrinsic Calibration, extrinsic_tform, sections/extrinsic_tform, 172
+subsubsection, Camera Intrinsics, camera_intrinsics, sections/cam_intrinsics, 183
+subsubsection, Camera to LiDAR Extrinsic Calibration, camLidar_calib, sections/camlidar_calib, 208
+subsection, Results: Spatial Calibration, sec:spatial_calib_results, sections/results_lidarlidar, 233
+subsubsection, LiDAR–LiDAR Calibration, results_lidarLidar_calib, sections/results_lidarlidar, 234
+subsubsection, Camera Calibration, sec:camera_intriniscs_results, sections/cam_intrinsics, 244
+subsubsection, Camera–LiDAR Calibration, sec:camera-lidar_results, sections/results_camera-lidar, 268
+subsection, Temporal Calibration, time_sync, sections/time_sync, 317
+subsubsection, Camera Synchronization, time_sync_cam, sections/time_sync_cam, 320
+subsubsection, Network Synchronization, time_sync_lan, sections/lan_sync, 323
+subsection, Results: Temporal Synchronization, results)time_sync_cam, sections/results_time_sync, 326
+section, Sensor Data and Dataset, sec:sensor_data_dataset, sections/sensor_data, 329
+chapter, Real-time Object Detection, realtime_object_detection, sections/real_time_obj_det, 335
+section, YOLO, yolo, sections/yolo, 339
+section, GB-CACHE, gbcache, sections/gbcache, 343
+section, Late Fusion, late_fusion, sections/late_fusion, 348
+section, Model Performance, performance, , 352
+subsection, YOLO, performance_yolo, sections/performance_yolo, 356
+subsection, GB-CACHE, performance_gbcache, sections/performance_gbcache, 359
+chapter, Conclusions, , , 379
+chapter, Recommendations and Future Work, chap:recommendations, , 400
+section, Future Work, futurework, , 407
+chapter, Image Transform, img_tform, sections/img_tform, 440
+chapter, Video Encoding and Timestamp Pipeline, appendix:video_pipeline, , 443

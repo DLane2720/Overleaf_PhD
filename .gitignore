@@ -43,3 +43,15 @@ Thumbs.db
 *.md
 
 03_paper/03_Sensing_Platform/01_USV_Platform/01_Sensors/thompson2023_sensor_platforn.pdf
+
+scripts/parse_main_2subfiles.py
+
+scripts/querry_tex_imgs.sh
+
+scripts/querry_tex_toc_labels.sh
+
+scripts/querry_tex_toc.sh
+
+scripts/querry_tex_w_sub_csv.sh
+
+scripts/querry_tex_w_sub.sh
