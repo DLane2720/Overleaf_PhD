@@ -110,13 +110,86 @@ Any opinions, findings, conclusions, or recommendations expressed in this materi
 \mainmatter
 \newpage
 \chapter{Introduction}
-\subfile{sections/introduction}
+\subfile{sections/introduction_02}
+% \section{Significance of Study} \label{significance_of_study}
+% \subfile{sections/significance_of_study}
+% \section{Problem Statement: Performance Comparison Gap} \label{problem_statement1}
+% \subfile{sections/problem_statement1}
 
-\section{Significance of Study} \label{significance_of_study}
-\subfile{sections/significance_of_study}
+% \chapter{Introduction} \label{ch:introduction}
 
-\section{Problem Statement: Performance Comparison Gap} \label{problem_statement1}
-\subfile{sections/problem_statement1}
+% % \section{Background and Motivation}
+% The rise of autonomous systems is transforming numerous industries, and the maritime sector is no exception. 
+% Autonomous surface vessels (ASVs) have the potential to enhance operational safety by performing dull, dirty, and dangerous tasks traditionally handled by humans. 
+% A critical enabler of these capabilities is reliable environmental perception. Real-time object detection and classification underpin autonomous navigation and situational awareness, ensuring that vessels can respond safely to dynamic maritime conditions.
+
+% While the automotive industry has achieved substantial progress in perception and control for autonomous vehicles, comparable developments in maritime autonomy remain limited. 
+% This disparity is reflected in the relative volume of published research: automotive detection strategies are extensively studied, whereas maritime detection and classification methods are less mature. 
+% Although detection algorithms from the automotive domain can be adapted for ASVs, direct translation is nontrivial. 
+% The maritime domain is inherently less structured, with dynamic, unbounded scenes and significant environmental variability, especially in littoral regions.
+
+% % \section{Challenges in Maritime Perception}
+% Maritime object detection presents distinct challenges absent from land-based environments. 
+% Turbulent wave motion, specular reflections, atmospheric haze, and fluctuating illumination conditions degrade visual and ranging sensor performance. 
+% Conventional marine radar provides extended range but insufficient spatial resolution for close- and mid-range perception. 
+% Cameras and LiDAR sensors offer denser data but remain sensitive to lighting and weather conditions. 
+% These factors necessitate sensor fusion approaches capable of combining complementary information from multiple sensing modalities to enhance robustness and reliability. 
+% However, optimal real-time fusion strategies for maritime applications remain an open research problem.
+
+% % \section{Problem Statement}
+% Despite recent advances in both LiDAR- and camera-based perception, autonomous surface vessels continue to face significant limitations in real-time object detection and classification. 
+% Existing solutions often rely on single-modality sensing or are adapted from automotive systems without full consideration of maritime dynamics, environmental conditions, or computational constraints. 
+% There is a need for validated fusion frameworks that integrate spatial and temporal calibration with efficient detection pipelines to enable reliable perception on embedded maritime platforms.
+
+% % \section{Knowledge Gap}
+% Prior research demonstrates the potential of multimodal fusion in terrestrial and aerial robotics, but only limited experimental work has been conducted using real-world maritime datasets. 
+% Many studies focus on simulated or controlled environments, and few address real-time performance constraints or synchronization between sensors. 
+% Consequently, there is insufficient understanding of how LiDAR and camera modalities complement one another under operational maritime conditions, and how their integration affects detection accuracy, computational load, and latency.
+
+% % \section{Research Objectives}
+% Within the domain of surface-level maritime perception under daylight and near-optimal conditions, this research aims to:
+% \begin{enumerate}
+%     \item Develop and validate spatial and temporal calibration frameworks for LiDAR–camera fusion that achieve sub-pixel projection accuracy and maintain synchronization latency below 150~ms.
+%     \item Quantitatively compare the independent performance of visual and LiDAR-based detection networks by:
+%     \begin{itemize}
+%         \item Assessing the training data requirements for accurate classification across modalities,
+%         \item Evaluating detection and classification performance across maritime object classes that exhibit geometric and visual variability, and
+%         \item Identifying the complementary strengths of each sensing modality for integration in fusion architectures.
+%     \end{itemize}
+%     \item Design, implement, and benchmark early, mid, and late fusion frameworks to evaluate:
+%     \begin{itemize}
+%         \item Computational efficiency and end-to-end detection latency,
+%         \item Classification accuracy of fused modalities, and
+%         \item Performance tradeoffs relevant to embedded maritime ASV platforms.
+%     \end{itemize}
+% \end{enumerate}
+
+% % \section{Scope of the Research}
+% This study focuses on detecting and classifying maritime objects such as buoys, navigational markers, and small to medium-sized watercraft using LiDAR and HDR camera sensors integrated on Embry-Riddle Aeronautical University’s \textit{Minion} ASV platform. 
+% Data are collected under controlled and open-water conditions, limited to daylight hours and clear weather to isolate the effects of sensor modality rather than environmental degradation. Evaluation emphasizes real-time performance and comparative accuracy rather than extreme-weather resilience or multi-vessel coordination.
+
+% % \section{Methodological Overview}
+% The research employs a comparative framework that evaluates each sensing modality independently and within fused configurations. The visual detection pipeline utilizes a fine-tuned YOLO network, while LiDAR-based detection applies the GB-CACHE clustering and classification algorithm. 
+% Fusion strategies are implemented within the Robot Operating System (ROS) to ensure reproducible timing and message synchronization through recorded bag files. 
+% Detection performance is quantified using precision, recall, and intersection-over-union (IoU) metrics, while computational load and latency are measured through CPU, GPU, and memory utilization during real-time inference.
+
+% % \section{Expected Contributions}
+% This dissertation contributes to the field of maritime perception through:
+% \begin{enumerate}
+%     \item A validated calibration and synchronization framework for LiDAR–camera fusion on embedded ASV systems.
+%     \item A quantitative evaluation of modality-specific and fused detection networks using real-world maritime data.
+%     \item A performance benchmarking methodology that integrates accuracy, latency, and computational efficiency metrics for real-time ASV perception.
+%     \item Recommendations for selecting and deploying fusion strategies optimized for resource-constrained maritime platforms.
+% \end{enumerate}
+
+% % \section{Dissertation Structure}
+% The remainder of this dissertation is organized as follows.  
+% Chapter~\ref{litReview} reviews related work on maritime sensing, multimodal fusion, and real-time object detection frameworks.  
+% Chapter~\ref{sensing_platform} details the sensing hardware and system architecture of the Minion ASV platform.  
+% Section~\ref{sec:calibration} presents spatial and temporal calibration methodologies.  
+% Chapter~\ref{realtime_object_detection} discusses the visual and LiDAR detection algorithms and their fusion strategies.  
+% Section~\ref{detect_results} reports performance results and analyzes comparative findings.  
+% Finally, Chapter~\ref{chap:recommendations} summarizes contributions and outlines future research directions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,8 +443,8 @@ The following sections describe the methods and results of this calibration proc
 % \subsection{GB-CACHE Performance} \label{performance_gbcache}
 % \subfile{sections/performance_gbcache}
 
-% \subsection{Feature Relevance} \label{gbcache_features}
-% \subfile{sections/gbcache_features}
+% \subsection{Feature Relevance} \label{features_gbcache}
+% \subfile{sections/features_gbcache}
 
 % \begin{figure}
 %     \centering
@@ -653,7 +726,7 @@ With precise object boundaries known, they can be inflated to accommodate naviga
 % For each detected object, a ten-dimensional feature vector is extracted that captures both spatial geometry and surface reflectivity characteristics.
 % The geometric features describe object shape and scale, while the intensity-based features provide cues related to material properties and orientation of reflective surfaces.
 % These complementary measurements form a compact yet discriminative representation suitable for statistical classification.
-% The selected features are summarized in Table~\ref{tab:gbcache_features}.
+% The selected features are summarized in Table~\ref{tab:features_gbcache}.
 
 % \begin{table}[htbp]
 % \centering
@@ -740,7 +813,6 @@ Performance metrics include mean Average Precision (mAP@50), precision-recall cu
 
 Results indicate consistent detection performance across lighting conditions with minimal false positives on horizon clutter.
 Retraining improved small-object detection by approximately X\% compared to baseline COCO-trained weights, confirming the benefit of domain adaptation for maritime imagery.
-
 
 The fine-tuned YOLOv8 network serves as the visual baseline for comparison with LiDAR-based object detection methods presented in Section~\ref{gbcache}.
 By isolating timing metrics for each processing stage, the performance comparison remains hardware-agnostic.
@@ -908,7 +980,11 @@ Overall, the analysis demonstrates that GB-CACHE can sustain real-time performan
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Feature Relevance} \label{gbcache_features}
+\subsection{Feature Relevance} \label{features}
+
+\subsubsection{YOLO Features} \label{features_yolo}
+
+\subsubsection{GB-CACHE Features} \label{features_gbcache}
 
 GB-CACHE employs a \acl{MGC} to specify what class of object it has identified. 
 Much like other classification methods, it utilizes a list of detected features to distinguish one class from another.
