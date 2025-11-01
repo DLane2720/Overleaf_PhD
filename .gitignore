@@ -55,3 +55,5 @@ scripts/querry_tex_toc.sh
 scripts/querry_tex_w_sub_csv.sh
 
 scripts/querry_tex_w_sub.sh
+
+sections/literatureReview_v04.txt
