@@ -671,6 +671,24 @@
   file = {/Users/dplane/Zotero/storage/E56CK556/Landaeta - Assessing High Dynamic Range Imagery Performance f.pdf}
 }
 
+@misc{lang2019,
+  title = {{{PointPillars}}: {{Fast Encoders}} for {{Object Detection}} from {{Point Clouds}}},
+  shorttitle = {{{PointPillars}}},
+  author = {Lang, Alex H. and Vora, Sourabh and Caesar, Holger and Zhou, Lubing and Yang, Jiong and Beijbom, Oscar},
+  year = 2019,
+  month = may,
+  number = {arXiv:1812.05784},
+  eprint = {1812.05784},
+  primaryclass = {cs, stat},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.1812.05784},
+  urldate = {2024-05-19},
+  abstract = {Object detection in point clouds is an important aspect of many robotics applications such as autonomous driving. In this paper we consider the problem of encoding a point cloud into a format appropriate for a downstream detection pipeline. Recent literature suggests two types of encoders; fixed encoders tend to be fast but sacrifice accuracy, while encoders that are learned from data are more accurate, but slower. In this work we propose PointPillars, a novel encoder which utilizes PointNets to learn a representation of point clouds organized in vertical columns (pillars). While the encoded features can be used with any standard 2D convolutional detection architecture, we further propose a lean downstream network. Extensive experimentation shows that PointPillars outperforms previous encoders with respect to both speed and accuracy by a large margin. Despite only using lidar, our full detection pipeline significantly outperforms the state of the art, even among fusion methods, with respect to both the 3D and bird's eye view KITTI benchmarks. This detection performance is achieved while running at 62 Hz: a 2 - 4 fold runtime improvement. A faster version of our method matches the state of the art at 105 Hz. These benchmarks suggest that PointPillars is an appropriate encoding for object detection in point clouds.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Computer Vision and Pattern Recognition,Computer Science - Machine Learning,Statistics - Machine Learning},
+  file = {/Users/dplane/Zotero/storage/5H22KDMX/Lang et al. - 2019 - PointPillars Fast Encoders for Object Detection f.pdf;/Users/dplane/Zotero/storage/YQFJ7M66/1812.html}
+}
+
 @article{lecun1998,
   title = {Gradient-Based Learning Applied to Document Recognition},
   author = {Lecun, Y. and Bottou, L. and Bengio, Y. and Haffner, P.},
@@ -859,6 +877,20 @@
   file = {/Users/dplane/Zotero/storage/BIPU636R/Mills - 1991 - Internet time synchronization the network time protocol.pdf}
 }
 
+@inproceedings{moe2017,
+  title = {Set-{{Based}} Line-of-Sight ({{LOS}}) Path Following with Collision Avoidance for Underactuated Unmanned Surface Vessels under the Influence of Ocean Currents},
+  booktitle = {2017 {{IEEE Conference}} on {{Control Technology}} and {{Applications}} ({{CCTA}})},
+  author = {Moe, Signe and Pettersen, Kristin Y.},
+  year = 2017,
+  month = aug,
+  pages = {241--248},
+  doi = {10.1109/CCTA.2017.8062470},
+  urldate = {2024-08-19},
+  abstract = {An essential ability of an autonomous unmanned surface vessel (USV) is to follow a predefined path in the presence of unknown ocean currents while avoiding collisions with both stationary and dynamic obstacles. This paper combines recent results for path following and collision avoidance for USVs, resulting in a switched guidance system with a designated path following and a collision avoidance mode. The closed-loop system relies on absolute velocity measurements only, and it is shown that a previously suggested guidance law for collision avoidance guarantees tracking of a safe radius about a dynamic obstacle also under the influence of unknown ocean currents. The guidance law is constructed to ensure collision avoidance while following the International Regulations for Preventing Collisions at Sea (COLREGs). Note that this set-based approach is highly generic and may be applied with any combination of methods for path following and collision avoidance. It is proven that the USV evades the obstacles in a COLREGs compliant manner and converges to the desired path in path following mode. Simulations results validate the theoretical results.},
+  keywords = {Collision avoidance,Sea surface,Surges,Velocity measurement},
+  file = {/Users/dplane/Zotero/storage/FHUS8IYM/Moe_Pettersen_2017_Set-Based line-of-sight (LOS) path following with collision avoidance for.pdf;/Users/dplane/Zotero/storage/682MGK43/8062470.html}
+}
+
 @article{norbye,
   title = {Camera-{{Lidar}} Sensor Fusion in Real Time for Autonomous Surface Vehicles},
   author = {Norbye, H{\aa}kon Gjertsen},
@@ -929,6 +961,24 @@
   abstract = {A protocol is provided in this standard that enables precise synchronization of clocks in measurement and control systems implemented with technologies such as network communication, local computing, and distributed objects. The protocol is applicable to systems communicating via packet networks. Heterogeneous systems are enabled that include clocks of various inherent precision, resolution, and stability to synchronize. System-wide synchronization accuracy and precision in the sub-microsecond range are supported with minimal network and local clock computing resources. Simple systems are installed and operated without requiring the management attention of users because the default behavior of the protocol allows for it.},
   keywords = {1588-2008,boundary clock,Boundary Clock,clock,Clocks,distributed system,Grandmaster Clock,IEEE 1588,IEEE Standards,management,master clock,measurement and control system,Ordinary Clock,Patents,Protocols,real-time clock,security,Security,Standards,synchronization,Synchronization,synchronized clock,Trademarks,transparent clock,Transparent Clock},
   file = {/Users/dplane/Zotero/storage/DFF4IHWT/2008 - IEEE Standard for a Precision Clock Synchronization Protocol for Networked Measurement and Control S.pdf;/Users/dplane/Zotero/storage/HGT5G7MU/2020 - IEEE Standard for a Precision Clock Synchronization Protocol for Networked Measurement and Control S.pdf}
+}
+
+@misc{qi2017,
+  title = {{{PointNet}}: {{Deep Learning}} on {{Point Sets}} for {{3D Classification}} and {{Segmentation}}},
+  shorttitle = {{{PointNet}}},
+  author = {Qi, Charles R. and Su, Hao and Mo, Kaichun and Guibas, Leonidas J.},
+  year = 2017,
+  month = apr,
+  number = {arXiv:1612.00593},
+  eprint = {1612.00593},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.1612.00593},
+  urldate = {2024-05-19},
+  abstract = {Point cloud is an important type of geometric data structure. Due to its irregular format, most researchers transform such data to regular 3D voxel grids or collections of images. This, however, renders data unnecessarily voluminous and causes issues. In this paper, we design a novel type of neural network that directly consumes point clouds and well respects the permutation invariance of points in the input. Our network, named PointNet, provides a unified architecture for applications ranging from object classification, part segmentation, to scene semantic parsing. Though simple, PointNet is highly efficient and effective. Empirically, it shows strong performance on par or even better than state of the art. Theoretically, we provide analysis towards understanding of what the network has learnt and why the network is robust with respect to input perturbation and corruption.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Computer Vision and Pattern Recognition},
+  file = {/Users/dplane/Zotero/storage/FHUK6T4U/Qi et al. - 2017 - PointNet Deep Learning on Point Sets for 3D Class.pdf;/Users/dplane/Zotero/storage/E89F79XX/1612.html}
 }
 
 @article{qi2018,
@@ -1279,6 +1329,23 @@
   file = {/Users/dplane/Zotero/storage/FLRQEEBL/Wang et al_2020_Multi-Sensor Fusion in Automated Driving.pdf}
 }
 
+@inproceedings{westenberger2011,
+  title = {Temporal Synchronization in Multi-Sensor Fusion for Future Driver Assistance Systems},
+  booktitle = {2011 {{IEEE International Symposium}} on {{Precision Clock Synchronization}} for {{Measurement}}, {{Control}} and {{Communication}}},
+  author = {Westenberger, Antje and Huck, Tobias and Fritzsche, Martin and Schwarz, Tilo and Dietmayer, Klaus},
+  year = 2011,
+  month = sep,
+  pages = {93--98},
+  publisher = {IEEE},
+  address = {Munich, Germany},
+  doi = {10.1109/ISPCS.2011.6070146},
+  urldate = {2023-12-08},
+  abstract = {A new approach to precise timestamping and temporal synchronization in a multi-sensor setup is presented. Modern driver assistance systems use an increasing amount of different sensors that do not provide the exact timestamps of the measurements, nor the period of time between two measurements. This paper describes a method to determine these timestamps up to millisecond accuracy. Possible drifts of the internal sensor clocks are taken into account. In addition, a frequent problem are lost measurements that lead to large errors in the timestamping. These framedrops are detected reliably and handled adequately via the method at hand. Finally a method to evaluate the performance of the whole timestamping procedure is described and real-world results are presented.},
+  isbn = {978-1-61284-893-8},
+  langid = {english},
+  file = {/Users/dplane/Zotero/storage/5VBSS2YD/Westenberger et al. - 2011 - Temporal synchronization in multi-sensor fusion fo.pdf}
+}
+
 @article{wu2021,
   title = {This {{Is}} the {{Way}}: {{Sensors Auto-Calibration Approach Based}} on {{Deep Learning}} for {{Self-Driving Cars}}},
   shorttitle = {This {{Is}} the {{Way}}},
@@ -1385,6 +1452,27 @@
   langid = {english},
   keywords = {autonomous ship,bibliometric analysis,evolutionary trends,inland waterway transport,VOSviewer},
   file = {/Users/dplane/Zotero/storage/B83VP59J/Xue et al. - 2025 - A bibliometric analysis of the development of autonomous ships in inland waterway transport.pdf}
+}
+
+@article{yan2018,
+  title = {{{SECOND}}: {{Sparsely Embedded Convolutional Detection}}},
+  shorttitle = {{{SECOND}}},
+  author = {Yan, Yan and Mao, Yuxing and Li, Bo},
+  year = 2018,
+  month = oct,
+  journal = {Sensors},
+  volume = {18},
+  number = {10},
+  pages = {3337},
+  publisher = {Multidisciplinary Digital Publishing Institute},
+  issn = {1424-8220},
+  doi = {10.3390/s18103337},
+  urldate = {2024-05-19},
+  abstract = {LiDAR-based or RGB-D-based object detection is used in numerous applications, ranging from autonomous driving to robot vision. Voxel-based 3D convolutional networks have been used for some time to enhance the retention of information when processing point cloud LiDAR data. However, problems remain, including a slow inference speed and low orientation estimation performance. We therefore investigate an improved sparse convolution method for such networks, which significantly increases the speed of both training and inference. We also introduce a new form of angle loss regression to improve the orientation estimation performance and a new data augmentation approach that can enhance the convergence speed and performance. The proposed network produces state-of-the-art results on the KITTI 3D object detection benchmarks while maintaining a fast inference speed.},
+  copyright = {http://creativecommons.org/licenses/by/3.0/},
+  langid = {english},
+  keywords = {3D object detection,autonomous driving,convolutional neural networks,LIDAR},
+  file = {/Users/dplane/Zotero/storage/NG9XXWA6/Yan et al. - 2018 - SECOND Sparsely Embedded Convolutional Detection.pdf}
 }
 
 @article{yang2024,
