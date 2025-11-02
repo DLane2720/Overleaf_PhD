@@ -3,7 +3,23 @@
 \begin{document}
 
 \section{Modern Vision-Based Object Detection for Autonomy}
+\subsection{Vision-based object detection}
+Deep convolutional neural networks (CNNs) established the modern baseline for visual object detection by learning hierarchical feature representations from raw pixels.
+Early work adapted image-classification CNNs into detectors by combining feature extraction with region proposal mechanisms.  Two-stage detectors in the R-CNN family formalized that strategy: generate candidate regions, then apply a classifier and bounding-box regressor to each proposal [5].  Two-stage pipelines remain attractive for accuracy but incur runtime overhead from proposal generation and per-proposal processing.
 
+Single-stage detectors reframed detection as a direct, end-to-end regression from image features to object classes and box coordinates.  Early single-stage methods prioritized throughput over peak accuracy and enabled real-time inference on GPU platforms.
+The YOLO family exemplifies this approach by predicting object locations and classes in a single forward pass [6].
+Subsequent YOLO revisions improved backbone efficiency, introduced multi-scale detection heads, and refined loss and label-assignment strategies to boost accuracy without abandoning the single-pass design [6].  
+Recent YOLO variants move toward anchor-free heads and multi-head outputs.
+Anchor-free heads predict object centers and scalar size parameters directly instead of regressing offsets relative to predefined anchor boxes.  This removes a set of hyperparameters, simplifies training, and can improve localization for objects with varied aspect ratios and scales.
+
+Model families such as EfficientDet introduced compound scaling to jointly balance network depth, width, and input resolution for a given compute budget [8].  Transformer-based detectors (for example DETR and its derivatives) recast detection as a set-prediction problem solved by attention mechanisms [9].  Attention models can capture long-range context and handle complex occlusion patterns.  They also demand larger memory and compute budgets than compact convolutional detectors, which limits straightforward deployment on embedded edge platforms.
+
+Most practical detectors rely on transfer learning from large, curated datasets.  ImageNet pretraining provides general low-level and mid-level features, while COCO remains the principal large-scale benchmark for instance detection and localization [10–12].  Transfer learning reduces labeled-data requirements but introduces domain-shift vulnerabilities when target domains differ from the pretraining distribution.  In maritime environments these vulnerabilities appear as extreme dynamic range, low-texture backgrounds, and reflective water surfaces.  Such conditions often require domain-specific fine-tuning, specialized preprocessing, or more expressive models, all of which increase computational cost.  For these reasons vision methods are commonly paired with geometric sensors for maritime perception; LiDAR provides complementary spatial precision independent of illumination, discussed next.
+
+\begin{equation}
+    =======
+\end{equation}
 Deep learning has fundamentally transformed visual object detection, establishing convolutional neural networks as the dominant paradigm for autonomous perception. 
 Modern architectures extract hierarchical features through successive convolutional layers, learning representations that capture both low-level edges and high-level semantic concepts. 
 These models have demonstrated remarkable performance on large-scale benchmarks, achieving human-level accuracy on many object categories \cite{lecun1998, he2016}.
@@ -13,12 +29,12 @@ While accurate, these architectures impose computational overhead that challenge
 Single-stage detectors emerged as an alternative, sacrificing some accuracy for substantial speed improvements. 
 The YOLO family exemplifies this approach, treating detection as a direct regression problem from image pixels to bounding box coordinates and class probabilities \cite{ultralytics}.
 
-Recent iterations—YOLOv5 through YOLOv8—have progressively refined this architecture through innovations in backbone design, feature pyramid networks, and anchor-free detection heads \cite{ultralytics}. 
+Iterations of YOLO from version five through eight progressively refined the architecture through innovations in backbone design, feature pyramid networks, and anchor-free detection heads \cite{ultralytics}. 
 These models achieve real-time frame rates on GPU-accelerated platforms while maintaining competitive accuracy \cite{kim2022}. 
 % For example, YOLOv8-nano achieves approximately 45 frames per second on the Jetson AGX Xavier at 15-watt power consumption, while YOLOv8-medium reduces to 20 frames per second at 25 watts \cite{ultralytics, kim2022}. 
 \textcolor{red}{However, achieving such performance typically requires model quantization, reduced input resolution, or architectural modifications. 
-The computational constraints become particularly acute when processing high-resolution imagery or when scenes contain many small objects that require fine-grained feature extraction. 
-Maritime-specific challenges such as HDR scenes, low-texture backgrounds, and specular reflections often necessitate larger models or specialized preprocessing, further exacerbating the computational burden.}
+The computational constraints become particularly acute when processing high-resolution imagery or when scenes contain many small objects that require fine-grained feature extraction.}
+\textcolor{blue}{Maritime-specific challenges such as HDR scenes, low-texture backgrounds, and specular reflections often necessitate larger models or specialized preprocessing, further exacerbating the computational burden.}
 
 EfficientDet introduced compound scaling that jointly optimizes network depth, width, and input resolution to maximize accuracy within computational budgets \cite{tan2020}. 
 \textcolor{blue}{This approach demonstrates substantial performance-efficiency trade-offs on terrestrial datasets; however, the reliance on dense texture features limits its effectiveness in environments dominated by low-texture regions. }
