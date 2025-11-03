@@ -53,34 +53,37 @@ Maritime scenarios exacerbate this difficulty, as vessels and navigation markers
 Shao et al.~\cite{shao2022} addressed this through multi-scale detection strategies and deformable convolution modules.
 Maritime detection research remains fragmented, lacking standardized large-scale datasets analogous to KITTI or COCO~\cite{zhang2021, yang2024, su2023}.
 
-\subsection{Synthesis: Gaps in Vision-Based Maritime Detection}
+% \subsection{Synthesis: Gaps in Vision-Based Maritime Detection}
 
-The reviewed literature reveals substantial gaps across three critical dimensions relevant to real-time embedded maritime perception.
+% The reviewed literature reveals substantial gaps across three critical dimensions relevant to real-time embedded maritime perception.
 
-First, image quality and resolution trade-offs remain uncharacterized for maritime applications.
-Model performance on small maritime objects degrades substantially at reduced input resolutions, yet native HDR resolution processing exceeds embedded GPU throughput constraints~\cite{shao2022, rekavandi2022}.
-The optimal resolution-accuracy-latency trade-off for embedded maritime platforms remains unquantified.
-Furthermore, systematic evaluation of HDR preprocessing for maritime YOLO variants is absent, with available studies reporting contradictory findings~\cite{landaeta, liebergall}, leaving uncertainty about whether HDR provides practical advantages sufficient to justify computational overhead.
+% First, image quality and resolution trade-offs remain uncharacterized for maritime applications.
+% Model performance on small maritime objects degrades substantially at reduced input resolutions
+% % yet native HDR resolution processing exceeds embedded GPU throughput constraints
+% ~\cite{shao2022, rekavandi2022}.
+% The optimal resolution-accuracy-latency trade-off for embedded maritime platforms remains unquantified.
+% Furthermore, systematic evaluation of HDR preprocessing for maritime YOLO variants is absent, with available studies reporting contradictory findings~\cite{landaeta, liebergall}, leaving uncertainty about whether HDR provides practical advantages sufficient to justify computational overhead.
 
-Second, embedded platform characterization gaps prevent informed deployment decisions.
-While qualitative descriptions of YOLO model variants exist~\cite{kim2022, guo2023}, quantitative characterization of accuracy-latency-power consumption trade-offs on representative embedded hardware for maritime-specific object classes is missing.
-Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy, making it impossible to predict operational range impacts of algorithm selection.
+% Second, embedded platform characterization gaps prevent informed deployment decisions.
+% While qualitative descriptions of YOLO model variants exist~\cite{kim2022, guo2023}, quantitative characterization of accuracy-latency-power consumption trade-offs on representative embedded hardware for maritime-specific object classes is missing.
+% Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy, making it impossible to predict operational range impacts of algorithm selection.
 
-Third, training and domain adaptation requirements for maritime deployment lack systematic investigation.
-Limited evidence exists regarding fine-tuning data requirements for adapting terrestrial pre-trained models to maritime environments~\cite{guo2023}.
-The relationship between training set size, environmental diversity, and generalization performance remains unestablished, creating uncertainty about dataset collection efforts needed for reliable maritime detection.
+% Third, training and domain adaptation requirements for maritime deployment lack systematic investigation.
+% Limited evidence exists regarding fine-tuning data requirements for adapting terrestrial pre-trained models to maritime environments~\cite{guo2023}.
+% The relationship between training set size, environmental diversity, and generalization performance remains unestablished, creating uncertainty about dataset collection efforts needed for reliable maritime detection.
 
-These interconnected gaps—spanning image preprocessing, hardware deployment, and training requirements—motivate this dissertation's systematic evaluation of YOLO variants under maritime-specific conditions with emphasis on embedded platform feasibility.
+% These interconnected gaps—spanning image preprocessing, hardware deployment, and training requirements—motivate this dissertation's systematic evaluation of YOLO variants under maritime-specific conditions with emphasis on embedded platform feasibility.
 
-While vision-based detection faces illumination-dependent challenges, geometric sensing modalities offer complementary capabilities through illumination-independent three-dimensional measurements.
+% While vision-based detection faces illumination-dependent challenges, geometric sensing modalities offer complementary capabilities through illumination-independent three-dimensional measurements.
 
 \section{LiDAR-Based Object Detection for Autonomous Systems}
 
 \subsection{Point Cloud Processing Architectures}
 
 \acl{LiDAR} sensors provide three-dimensional geometric measurements independent of illumination by measuring the time-of-flight of laser pulses.
-Kunz et al.~\cite{kunz2005} demonstrated that \ac{LiDAR} reflections from small maritime targets produce significantly stronger returns than sea surface returns, with small buoys detectable at ranges exceeding 9 kilometers under adverse weather.
-Processing point cloud data presents unique computational challenges: unlike images with a regular grid structure, point clouds constitute unordered sets with non-uniform spatial distributions~\cite {zhou2018, shi2019}.
+% Kunz et al.~\cite{kunz2005} demonstrated that \ac{LiDAR} reflections from small maritime targets produce significantly stronger returns than sea surface returns, with small buoys detectable at ranges exceeding 9 kilometers under adverse weather.
+Processing point cloud data presents unique computational challenges: unlike images with a regular grid structure, point clouds present non-uniform three-dimensional sampling of the surroundng area~\cite {zhou2018, shi2019}.
+This sparse sampling presents opportunities for a variety of methods of detection.
 
 Point-based networks (PointNet~\cite{qi2017}) process raw coordinates directly; however, they scale unfavorably with point cloud size~\cite{shi2019}.
 Voxelization methods address scalability by discretizing point clouds into regular grids.
@@ -191,28 +194,28 @@ Computational requirements, power consumption, and latency characteristics on re
 Systematic evaluation sweeping timing offsets to establish acceptable synchronization tolerances for maritime platforms is absent~\cite{huang2024a}, and wave-induced motion creates time-varying calibration errors differing from static errors typical of ground vehicles~\cite{cui2022}.
 Most fusion studies report performance without rigorous comparison against optimized single-modality baselines~\cite{farahnakian2020, haghbayan2018, Clunie2021}.
 
-\section{Temporal and Spatial Alignment in Fusion Systems}
+% \section{Temporal and Spatial Alignment in Fusion Systems}
 
-Accurate fusion depends on establishing spatial and temporal correspondence between sensors.
-Spatial calibration defines rigid-body transformation relating sensor coordinate frames, while temporal synchronization ensures observations represent the exact moment in time.
-Precision requirements vary with the fusion paradigm—early fusion demands tighter tolerances than late fusion due to the need for pixel-level data alignment.
+% Accurate fusion depends on establishing spatial and temporal correspondence between sensors.
+% Spatial calibration defines rigid-body transformation relating sensor coordinate frames, while temporal synchronization ensures observations represent the exact moment in time.
+% Precision requirements vary with the fusion paradigm—early fusion demands tighter tolerances than late fusion due to the need for pixel-level data alignment.
 
-Extrinsic calibration establishes a geometric relationship between sensors, typically represented as a rotation matrix and a translation vector.
-Traditional calibration employs fiducial targets, such as checkerboards or AprilTags, visible to both sensors, solving for the transformation through least-squares optimization.
-Manual calibration remains standard for many research systems, as it provides the precision necessary for reliable geometric correspondence.
-Automated calibration methods have emerged as alternatives. Iyer et al.~\cite{iyer2018} developed CalibNet, which uses deep learning to predict calibration parameters directly from sensor data.
-Xiao et al.~\cite{xiao2024} proposed CalibFormer, a transformer-based automatic LiDAR-camera calibration network~\cite{schneider2017, wu2021}.
-However, these automated approaches require sufficient scene structure and may fail in textureless maritime environments, which are often dominated by sky and water.
+% Extrinsic calibration establishes a geometric relationship between sensors, typically represented as a rotation matrix and a translation vector.
+% Traditional calibration employs fiducial targets, such as checkerboards or AprilTags, visible to both sensors, solving for the transformation through least-squares optimization.
+% Manual calibration remains standard for many research systems, as it provides the precision necessary for reliable geometric correspondence.
+% Automated calibration methods have emerged as alternatives. Iyer et al.~\cite{iyer2018} developed CalibNet, which uses deep learning to predict calibration parameters directly from sensor data.
+% Xiao et al.~\cite{xiao2024} proposed CalibFormer, a transformer-based automatic LiDAR-camera calibration network~\cite{schneider2017, wu2021}.
+% However, these automated approaches require sufficient scene structure and may fail in textureless maritime environments, which are often dominated by sky and water.
 
-Calibration accuracy directly affects fusion quality.
-Rotation errors exceeding one degree or translation errors exceeding 10 millimeters significantly degrade early and mid-fusion performance.
-These tolerances become more stringent as sensor separation increases.
+% Calibration accuracy directly affects fusion quality.
+% Rotation errors exceeding one degree or translation errors exceeding 10 millimeters significantly degrade early and mid-fusion performance.
+% These tolerances become more stringent as sensor separation increases.
 
-Temporal synchronization ensures observations represent the same world state~\cite{westenberger2011}.
-Timing offsets create spatial misalignment: a vessel moving at 5 meters per second experiences 0.5-meter displacement in 100 milliseconds.
-IEEE 1588 Precision Time Protocol achieves sub-microsecond accuracy~\cite{ptp2008}, while Network Time Protocol provides millisecond-level accuracy~\cite{furgale2013, liu2021}.
-Early fusion requires synchronization within 10 milliseconds; late fusion tolerates 50-100 milliseconds.
-Maritime wave-induced motion produces apparent object movement requiring motion compensation beyond timestamp alignment.
+% Temporal synchronization ensures observations represent the same world state~\cite{westenberger2011}.
+% Timing offsets create spatial misalignment: a vessel moving at 5 meters per second experiences 0.5-meter displacement in 100 milliseconds.
+% IEEE 1588 Precision Time Protocol achieves sub-microsecond accuracy~\cite{ptp2008}, while Network Time Protocol provides millisecond-level accuracy~\cite{furgale2013, liu2021}.
+% Early fusion requires synchronization within 10 milliseconds; late fusion tolerates 50-100 milliseconds.
+% Maritime wave-induced motion produces apparent object movement requiring motion compensation beyond timestamp alignment.
 
 \section{Maritime Perception Datasets and Benchmarks}
 
@@ -228,7 +231,7 @@ Kim et al.~\cite{kim2022} improved the Singapore Maritime Dataset, providing RGB
 Recent maritime datasets~\cite{huang2025, thompson2023} provide multimodal observations but remain limited in scale, weather diversity, and public availability.
 Small datasets restrict model complexity without overfitting; limited weather coverage prevents robust evaluation; sparse annotations leave uncertainty about detection reliability~\cite{su2023}.
 
-This research contributes synchronized \ac{LiDAR}-camera dataset collected aboard \acl{WAMV} research vessel during extended operational deployments, addressing key gaps through HDR camera imagery capturing extreme dynamic range conditions, synchronized Livox Horizon \ac{LiDAR} data, diverse maritime object annotations (vessels, buoys, navigation markers), varied weather and lighting conditions spanning multiple sea states, and platform motion data enabling motion compensation validation.
+% This research contributes synchronized \ac{LiDAR}-camera dataset collected aboard \acl{WAMV} research vessel during extended operational deployments, addressing key gaps through HDR camera imagery capturing extreme dynamic range conditions, synchronized Livox Horizon \ac{LiDAR} data, diverse maritime object annotations (vessels, buoys, navigation markers), varied weather and lighting conditions spanning multiple sea states, and platform motion data enabling motion compensation validation.
 
 \section{Research Gaps and Dissertation Motivation}
 
