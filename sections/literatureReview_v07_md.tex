@@ -44,8 +44,10 @@ Guo et al.~\cite{guo2023} found that zero-shot transfer of YOLOv5 across maritim
 
 Visual detection in maritime environments presents challenges that are fundamentally distinct from those in terrestrial scenarios.
 Prasad et al.~\cite{prasad2017} identify background motion from waves and wakes, low contrast objects, and environmental degradation as primary failure modes.
-High dynamic range presents persistent challenges; studies report contradictory findings regarding HDR benefits~\cite{landaeta, liebergall, wang2019a}, with SDR-trained networks achieving 10\% higher recall despite HDR's theoretical advantages, likely due to pre-training dataset biases~\cite{landaeta, liebergall}.
-The scarcity of HDR training data limits the effectiveness of transfer learning.
+High dynamic range presents persistent challenges for maritime detection.
+While HDR imaging offers theoretical advantages for high-contrast maritime environments, empirical studies report counterintuitive results~\cite{landaeta, liebergall, wang2019a}.
+Networks pre-trained on standard dynamic range (SDR) datasets achieve 10\% higher recall than HDR-based approaches~\cite{landaeta, liebergall}.
+This performance gap stems from pre-training bias: networks learn feature extraction strategies optimized for SDR characteristics, and the scarcity of HDR training data prevents effective adaptation through transfer learning.
 Atmospheric conditions impose additional constraints: Zhang et al.~\cite{zhang2022a} addressed foggy maritime detection through preprocessing and attention mechanisms. In contrast, Rekavandi et al.~\cite{rekavandi2022} note that objects occupying less than 10\% of image area yield insufficient information for reliable classification.
 Maritime scenarios exacerbate this difficulty, as vessels and navigation markers often appear near the horizon, occupying a minimal pixel area.
 Shao et al.~\cite{shao2022} addressed this through multi-scale detection strategies and deformable convolution modules.
@@ -53,14 +55,22 @@ Maritime detection research remains fragmented, lacking standardized large-scale
 
 \subsection{Synthesis: Gaps in Vision-Based Maritime Detection}
 
-The reviewed literature reveals several key findings relevant to this dissertation's focus on real-time embedded maritime perception.
+The reviewed literature reveals substantial gaps across three critical dimensions relevant to real-time embedded maritime perception.
+
+First, image quality and resolution trade-offs remain uncharacterized for maritime applications.
 Model performance on small maritime objects degrades substantially at reduced input resolutions, yet native HDR resolution processing exceeds embedded GPU throughput constraints~\cite{shao2022, rekavandi2022}.
 The optimal resolution-accuracy-latency trade-off for embedded maritime platforms remains unquantified.
-% Systematic evaluation of HDR preprocessing for maritime YOLO variants is absent, with available studies reporting contradictory findings~\cite{landaeta, liebergall}.
+Furthermore, systematic evaluation of HDR preprocessing for maritime YOLO variants is absent, with available studies reporting contradictory findings~\cite{landaeta, liebergall}, leaving uncertainty about whether HDR provides practical advantages sufficient to justify computational overhead.
+
+Second, embedded platform characterization gaps prevent informed deployment decisions.
 While qualitative descriptions of YOLO model variants exist~\cite{kim2022, guo2023}, quantitative characterization of accuracy-latency-power consumption trade-offs on representative embedded hardware for maritime-specific object classes is missing.
-Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy.
+Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy, making it impossible to predict operational range impacts of algorithm selection.
+
+Third, training and domain adaptation requirements for maritime deployment lack systematic investigation.
 Limited evidence exists regarding fine-tuning data requirements for adapting terrestrial pre-trained models to maritime environments~\cite{guo2023}.
-These gaps motivate a systematic evaluation of YOLO variants under maritime-specific conditions, with an emphasis on embedded platform feasibility.
+The relationship between training set size, environmental diversity, and generalization performance remains unestablished, creating uncertainty about dataset collection efforts needed for reliable maritime detection.
+
+These interconnected gaps—spanning image preprocessing, hardware deployment, and training requirements—motivate this dissertation's systematic evaluation of YOLO variants under maritime-specific conditions with emphasis on embedded platform feasibility.
 
 While vision-based detection faces illumination-dependent challenges, geometric sensing modalities offer complementary capabilities through illumination-independent three-dimensional measurements.
 
@@ -128,11 +138,11 @@ Each fusion paradigm offers distinct trade-offs between peak accuracy potential,
 
 \subsection{Early Fusion: Data-Level Integration}
 
-Early fusion combines raw sensor data before feature extraction, projecting measurements from different modalities into a common representation~\cite {cui2022}.
-Cui et al.~\cite{cui2022} note that early fusion enables networks to learn joint features during training but imposes stringent calibration and synchronization requirements.
+Early fusion combines raw sensor data before feature extraction, projecting measurements from different modalities into a common representation~\cite{cui2022}.
+Cui et al.~\cite{cui2022} note that early fusion enables networks to learn joint features during training.
 PointPainting exemplifies this paradigm by projecting \ac{LiDAR} points into camera image coordinates, assigning semantic labels from segmentation networks, then processing the semantically enriched point cloud through object detectors~\cite{cui2022}.
 
-However, early fusion's tight coupling between modalities creates practical deployment challenges.
+However, early fusion imposes stringent calibration and synchronization requirements, creating practical deployment challenges.
 Projection errors of even a few degrees of rotation or centimeters of translation misalign features, corrupting the joint representation~\cite{cui2022}.
 Temporal synchronization must be precise; misaligned timestamps create spatial inconsistencies, degrading fusion quality.
 Sensor-specific noise and failures propagate directly: corrupted camera images from lens occlusion or extreme lighting produce degraded semantic labels affecting all projected \ac{LiDAR} points~\cite{cui2022}.
