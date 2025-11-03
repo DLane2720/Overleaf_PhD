@@ -76,11 +76,15 @@ While vision-based detection faces illumination-dependent challenges, geometric 
 
 \section{LiDAR-Based Object Detection for Autonomous Systems}
 
-\subsection{Point Cloud Processing Architectures}
+\subsection{Deep Learning Approaches for Point Cloud Processing}
 
 \acl{LiDAR} sensors provide three-dimensional geometric measurements independent of illumination by measuring the time-of-flight of laser pulses.
 Kunz et al.~\cite{kunz2005} demonstrated that \ac{LiDAR} reflections from small maritime targets produce significantly stronger returns than sea surface returns, with small buoys detectable at ranges exceeding 9 kilometers under adverse weather.
 Processing point cloud data presents unique computational challenges: unlike images with a regular grid structure, point clouds constitute unordered sets with non-uniform spatial distributions~\cite {zhou2018, shi2019}.
+
+Deep learning has emerged as the dominant paradigm for point cloud object detection, with neural networks designed to learn hierarchical feature representations from three-dimensional data.
+These learned approaches leverage large labeled datasets to extract spatial patterns and semantic information directly from point coordinates.
+The following architectural families represent the evolution of neural network-based methods, progressing from point-based processing to voxelization strategies and hybrid architectures.
 
 Point-based networks (PointNet~\cite{qi2017}) process raw coordinates directly; however, they scale unfavorably with point cloud size~\cite{shi2019}.
 Voxelization methods address scalability by discretizing point clouds into regular grids.
@@ -98,9 +102,9 @@ Beyond computational constraints, learned approaches face fundamental limitation
 Enforcing strict rules in neural networks, such as ensuring object separation distances, is difficult due to their non-deterministic nature.
 This limitation is particularly problematic when using spatial data for navigational purposes and obstacle avoidance~\cite{coyleE}.
 
-\subsection{Deterministic Geometric Methods}
+\subsection{Deterministic Geometric Alternatives}
 
-While learned approaches dominate current research, deterministic geometric algorithms continue to offer advantages for resource-constrained embedded platforms, where runtime predictability and minimal training data requirements are highly valued.
+In contrast to neural network-based approaches, deterministic geometric algorithms offer advantages for resource-constrained embedded platforms, where runtime predictability and minimal training data requirements are highly valued.
 Coyle~\cite{coyleE} developed Grid-Based Clustering and Concave Hull Extraction (GB-CACHE), a deterministic approach specifically designed for unmanned systems perceiving objects on flat surfaces, including water.
 GB-CACHE efficiently segments point clouds through grid-based spatial partitioning, then extracts concave hull boundaries that accurately represent objects with irregular geometries.
 Computational efficiency analysis demonstrates real-time feasibility on low to mid-grade computing platforms~\cite{coyleE}.
