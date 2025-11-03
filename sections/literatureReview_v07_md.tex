@@ -128,11 +128,11 @@ Kunz et al.~\cite{kunz2005} measured return rates over calm water as low as 10\%
 The sparsity of water returns poses challenges to detection algorithms designed for dense point clouds in automotive applications.
 Maritime applications lack dense reference, necessitating alternative spatial reasoning strategies when objects appear isolated without contextual grounding.
 Atmospheric effects reduce effective range by 50-70\% in heavy haze~\cite{roriz2022}, while wave-induced motion requires IMU-based motion compensation, introducing processing latency~\cite{xie2024, ahmed2024}.
-Platform motion introduces maritime-specific complexity: continuous wave-induced pitch, roll, and heave motions vary dynamically with sea state.
+Platform motion caused by continuous wave-induced pitch, roll, and heave motions vary dynamically with sea state.
 Ahmed et al.~\cite{ahmed2024} developed specialized Kalman filtering approaches tailored for maritime platform motion, reporting 25-30\% improvement in detection accuracy when compensating for tilt-induced point cloud distortions.
 
 Recent maritime \ac{LiDAR} detection work demonstrates growing interest yet reveals substantial validation gaps.
-Xie et al.~\cite{xie2024} achieved an overall detection accuracy of 74.1% by integrating state-of-the-art networks for ship detection, although performance degraded for vessels under 5 meters and at ranges exceeding 40 meters.
+Xie et al.~\cite{xie2024} achieved an overall detection accuracy of 74.1\% by integrating state-of-the-art networks for ship detection, although performance degraded for vessels under 5 meters and at ranges exceeding 40 meters.
 Detection methods designed for dense ground plane returns require fundamental adaptation for sparse maritime point clouds where objects lack grounding context~\cite{kunz2005}.
 A systematic evaluation of detection performance versus water surface characteristics, motion compensation quality, and embedded platform profiling (including latency, power, and throughput) is absent from the reviewed literature~\cite{xie2024, ahmed2024}.
 
@@ -236,7 +236,39 @@ Kim et al.~\cite{kim2022} improved the Singapore Maritime Dataset, providing RGB
 Recent maritime datasets~\cite{huang2025, thompson2023} provide multimodal observations but remain limited in scale, weather diversity, and public availability.
 Small datasets restrict model complexity without overfitting; limited weather coverage prevents robust evaluation; sparse annotations leave uncertainty about detection reliability~\cite{su2023}.
 
+
+\begin{table}[]
+\begin{tabular}{lcc}
+\hline
+Dataset                          & Image & PointCloud \\
+\hline
+\hline
+\multicolumn{3}{l}{AGV}                                \\
+\hline
+nuScenes \cite{caesar2020}          & x     & x          \\
+Cityscapes \cite{cordts2016}        & x     &            \\
+BDD100K\cite{yu2020}                & x     &            \\
+Waymo \cite{sun2020}                & x     & x          \\
+KITTI \cite{geiger2012}             & x     & x          \\
+SYNTHIA \cite{ros2016}              & x     &            \\
+Apolloscape \cite{huang2020}        & x     & x          \\
+CADC \cite{pitropov2021}            & x     & x          \\
+\hline
+\multicolumn{3}{l}{USV}                            \\
+\hline
+MaSTr1325 \cite{bovcon2019}         & x     &            \\
+MaSTr1478 \cite{zust2022}           & x     &            \\
+MODS \cite{bovcon2022}              & x     &            \\
+SMD \cite{prasad2017}               & x     &            \\
+Maritime Perception \cite{lin2022}  &       & x         \\
+\hline
+\end{tabular}
+\caption{A comparison of recent and popular datasets for ground-based and surface vessels}
+\label{tbl:agv_usv_datasets}
+\end{table}
 % This research contributes synchronized \ac{LiDAR}-camera dataset collected aboard \acl{WAMV} research vessel during extended operational deployments, addressing key gaps through HDR camera imagery capturing extreme dynamic range conditions, synchronized Livox Horizon \ac{LiDAR} data, diverse maritime object annotations (vessels, buoys, navigation markers), varied weather and lighting conditions spanning multiple sea states, and platform motion data enabling motion compensation validation.
+
+
 
 \section{Research Gaps and Dissertation Motivation}
 
