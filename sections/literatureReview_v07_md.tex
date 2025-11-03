@@ -101,9 +101,10 @@ Recent innovations demonstrate continued advancement, but with substantial compu
 BEVFusion~\cite{liang2022, liu2023b} achieves state-of-the-art accuracy but requires approximately 300 watts of power consumption and achieves only 15-20 frames per second on desktop-class GPUs~\cite{liu2023a}—this power budget alone exceeds total available power for many small autonomous vessels.
 Transformer-based architectures that apply self-attention to point clouds offer theoretical advantages but require multi-GPU configurations with power consumption of 200-400 watts and have not been validated under maritime-specific conditions~\cite{vaswani2017, liu2023a, xie2024}.
 
-Beyond computational constraints, learned approaches face fundamental limitations for safety-critical maritime applications.
+Beyond computational constraints, these neural network-based approaches face limitations for safety-critical maritime applications.
 Enforcing strict rules in neural networks, such as ensuring object separation distances, is difficult due to their non-deterministic nature.
 This limitation is particularly problematic when using spatial data for navigational purposes and obstacle avoidance~\cite{coyleE}.
+Given this persistent challenge, there is a continued need to investigate deterministic approaches that can provide stricter guarantees for safety-critical applications. 
 
 \subsection{Deterministic Geometric Alternatives}
 
