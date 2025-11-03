@@ -1,0 +1,252 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../images/}}}
+\begin{document}
+
+Real-time perception for autonomous surface vessels has evolved substantially over the past decade, driven by advances in deep learning architectures and sensor technologies initially developed for terrestrial autonomous vehicles.
+Vision-based detection methods, particularly single-stage architectures such as YOLO~\cite{ultralytics}, have achieved near-human accuracy on automotive benchmarks~\cite{geiger2012}.
+In contrast, \ac{LiDAR}-based approaches offer geometric precision independent of illumination~\cite{zhou2018}.
+Recent surveys of maritime autonomy~\cite{bae2023, zhang2021, xue2025, ferreira2022, bai2022} identify perception as a critical enabling technology, yet systematic performance characterization of these methods in maritime operational conditions remains limited.
+
+The maritime environment presents distinct challenges compared to terrestrial scenarios.
+Studies of visual detection in coastal and harbor settings report substantial performance degradation due to water reflections, high dynamic range, and low-texture backgrounds~\cite{prasad2017}.
+\ac{LiDAR} systems face complementary difficulties with sparse water-surface returns and atmospheric scattering~\cite{kunz2005}.
+While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024a, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets~\cite{geiger2012, tufekci2023}, and its direct applicability to maritime platforms operating under power and computational constraints has not been thoroughly validated~\cite{wang2020a}.
+
+This review synthesizes research across vision-based detection, \ac{LiDAR}-based methods, and multimodal fusion to establish the foundation for maritime perception system evaluation.
+The review examines detection methods independently before addressing fusion architectures and calibration requirements, concluding by identifying specific research gaps motivating this dissertation's contributions.
+
+\section{Modern Vision-Based Object Detection for Autonomy}
+
+\subsection{Deep Learning Foundations and Single-Stage Detectors}
+
+The application of convolutional neural networks to visual recognition gained widespread adoption following Krizhevsky et al.'s demonstration that deep architectures trained on large-scale datasets could achieve superior performance on ImageNet~\cite{krizhevsky2017}.
+Subsequent architectural innovations, including residual learning frameworks~\cite{he2016}, demonstrated that network depth correlates with representational capacity for complex visual recognition tasks.
+Early object detection methods adapted these classification networks into two-stage pipelines.
+Girshick et al.~\cite{girshick2014} introduced R-CNN, applying convolutional neural networks to region proposals, though computational overhead limited throughput.
+Ren et al.~\cite{ren2016} addressed these limitations with Faster R-CNN, introducing region proposal networks that enabled end-to-end training and substantially improved inference speed.
+
+Single-stage detectors emerged to address latency constraints by reformulating detection as direct regression from image features to object classes and bounding box coordinates.
+The YOLO family exemplifies this paradigm, enabling real-time operation through unified spatial prediction~\cite{prasad2017, zhang2021, krizhevsky2017}.
+Subsequent YOLO iterations introduced architectural refinements, including multi-scale detection heads and anchor-free prediction mechanisms~\cite{kim2022, guo2023}.
+
+YOLOv8, released in 2023, introduced architectural innovations addressing limitations of earlier single-stage detectors~\cite{ultralytics}.
+The anchor-free detection strategy employs dual detection heads that independently identify object presence and predict bounding box coordinates, simplifying transfer learning and enhancing adaptability to varying aspect ratios.
+The backbone incorporates Cross-Stage Partial Fusion (C2f) modules that enhance feature reuse while reducing computational overhead compared to earlier designs.
+Modern loss functions, including Complete Intersection-over-Union (CIoU) and Distribution Focal Loss (DFL), improve localization precision and boundary regression stability.
+However, the multi-scale detection architecture with feature-map strides of 8, 16, and 32 pixels imposes fundamental constraints: objects smaller than approximately 16-32 pixels produce low-confidence or unstable detections due to progressive downsampling~\cite{rekavandi2022}.
+For maritime applications processing 640×640 pixel inputs, this corresponds to objects occupying less than 0.5-1\% of frame area—a relevant limitation for distant targets near the horizon.
+These architectural properties make YOLOv8 suitable for real-time maritime perception where computational efficiency is crucial, though small-object detection constraints motivate investigation of resolution scaling strategies and complementary sensing modalities.
+
+Transfer learning from large-scale terrestrial datasets (ImageNet, COCO~\cite{krizhevsky2017, lin2015, feng2021}) has become standard practice for maritime detection, yet introduces domain adaptation challenges.
+Guo et al.~\cite{guo2023} found that zero-shot transfer of YOLOv5 across maritime datasets yields poor performance, though limited fine-tuning from the target domain substantially improves accuracy, suggesting learned features encode distributional assumptions about texture, spatial layouts, and illumination that fail to generalize across domains~\cite{tzeng2017}.
+
+\subsection{Maritime-Specific Detection Challenges}
+
+Visual detection in maritime environments faces challenges fundamentally distinct from terrestrial scenarios.
+Prasad et al.~\cite{prasad2017} identify background motion from waves and wakes, low contrast objects, and environmental degradation as primary failure modes.
+High dynamic range presents persistent challenges; studies report contradictory findings regarding HDR benefits~\cite{landaeta, liebergall, wang2019a}, with SDR-trained networks achieving 10\% higher recall despite HDR's theoretical advantages, likely due to pre-training dataset biases~\cite{krizhevsky2017}.
+The scarcity of HDR training data limits effectiveness of transfer learning.
+Atmospheric conditions impose additional constraints: Zhang et al.~\cite{zhang2022a} addressed foggy maritime detection through preprocessing and attention mechanisms, while Rekavandi et al.~\cite{rekavandi2022} note that objects occupying less than 10\% of image area yield insufficient information for reliable classification.
+Maritime scenarios exacerbate this difficulty as vessels and navigation markers often appear near the horizon occupying minimal pixel area.
+Shao et al.~\cite{shao2022} addressed this through multi-scale detection strategies and deformable convolution modules.
+Maritime detection research remains fragmented, lacking standardized large-scale datasets analogous to KITTI or COCO~\cite{zhang2021, yang2024, su2023}.
+
+\subsection{Synthesis: Gaps in Vision-Based Maritime Detection}
+
+The reviewed literature reveals several key findings relevant to this dissertation's focus on real-time embedded maritime perception.
+Model performance on small maritime objects degrades substantially at reduced input resolutions, yet native HDR resolution processing exceeds embedded GPU throughput constraints~\cite{shao2022, rekavandi2022}.
+The optimal resolution-accuracy-latency trade-off for embedded maritime platforms remains unquantified.
+Systematic evaluation of HDR preprocessing for maritime YOLO variants is absent, with available studies reporting contradictory findings~\cite{landaeta, liebergall}.
+While qualitative descriptions of YOLO model variants exist~\cite{kim2022, guo2023}, quantitative characterization of accuracy-latency-power consumption trade-offs on representative embedded hardware for maritime-specific object classes is missing.
+Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy.
+Limited evidence exists regarding fine-tuning data requirements for adapting terrestrial pre-trained models to maritime environments~\cite{guo2023}.
+These gaps motivate systematic evaluation of YOLO variants under maritime-specific conditions emphasizing embedded platform feasibility.
+
+While vision-based detection faces illumination-dependent challenges, geometric sensing modalities offer complementary capabilities through illumination-independent three-dimensional measurements.
+
+\section{LiDAR-Based Object Detection for Autonomous Systems}
+
+\subsection{Point Cloud Processing Architectures}
+
+\acl{LiDAR} sensors provide three-dimensional geometric measurements independent of illumination by measuring time-of-flight of laser pulses.
+Kunz et al.~\cite{kunz2005} demonstrated that \ac{LiDAR} reflections from small maritime targets produce significantly stronger returns than sea surface returns, with small buoys detectable at ranges exceeding 9 kilometers under adverse weather.
+Processing point cloud data presents unique computational challenges: unlike images with regular grid structure, point clouds constitute unordered sets with non-uniform spatial distribution~\cite{zhou2018, shi2019}.
+
+Point-based networks (PointNet~\cite{qi2017}) process raw coordinates directly but scale unfavorably with point cloud size~\cite{shi2019}.
+Voxelization methods address scalability by discretizing point clouds into regular grids.
+Zhou and Tuzel~\cite{zhou2018} developed VoxelNet, which transforms sparse point clouds into dense volumetric representations.
+Yan et al.~\cite{yan2018} extended this with SECOND, introducing sparse convolutional operations that improve efficiency by processing only occupied voxels.
+Lang et al.~\cite{lang2019} proposed PointPillars, which encodes point clouds into vertical columns enabling efficient 2D convolutional processing.
+The fundamental trade-off in voxelization is quantization error: small objects or fine geometric details may be lost during discretization~\cite{zhou2018}.
+Hybrid architectures (PV-RCNN~\cite{shi2019, shi2020}) combine strengths of point-based and voxel-based processing, achieving state-of-the-art automotive accuracy but assuming dense ground plane returns that do not hold for maritime applications~\cite{feng2021}.
+
+Recent innovations demonstrate continued advancement but with substantial computational requirements.
+BEVFusion~\cite{liang2022, liu2023b} achieves state-of-the-art accuracy but requires approximately 300 watts power consumption and achieves only 15-20 frames per second on desktop-class GPUs~\cite{liu2023a}—this power budget alone exceeds total available power for many small autonomous vessels.
+Transformer-based architectures applying self-attention to point clouds offer theoretical advantages but require multi-GPU configurations with 200-400 watts power consumption and have not been validated under maritime-specific conditions~\cite{vaswani2017, liu2023a, xie2024}.
+
+Beyond computational constraints, learned approaches face fundamental limitations for safety-critical maritime applications.
+Enforcing strict rules in neural networks, such as ensuring object separation distances, is difficult due to their non-deterministic nature.
+This limitation is particularly problematic with spatial data used for navigational purposes and obstacle avoidance~\cite{coyleE}.
+
+\subsection{Deterministic Geometric Methods}
+
+While learned approaches dominate current research, deterministic geometric algorithms maintain advantages for resource-constrained embedded platforms where runtime predictability and minimal training data requirements are valued.
+Coyle~\cite{coyleE} developed Grid-Based Clustering and Concave Hull Extraction (GB-CACHE), a deterministic approach specifically designed for unmanned systems perceiving objects on flat surfaces including water.
+GB-CACHE efficiently segments point clouds through grid-based spatial partitioning, then extracts concave hull boundaries that accurately represent objects with irregular geometries.
+Computational efficiency analysis demonstrates real-time feasibility on low to mid-grade computing platforms~\cite{coyleE}.
+
+The deterministic nature of GB-CACHE provides specific operational advantages.
+Processing latency remains bounded and predictable, eliminating variable inference times characteristic of neural networks where batch size and scene complexity affect throughput.
+Rule enforcement for spatial constraints—critical for obstacle avoidance and navigation—can be rigorously guaranteed, whereas neural approaches provide probabilistic outputs without strict guarantees~\cite{coyleE}.
+Training data requirements are minimal; the algorithm requires only geometric parameters rather than extensive labeled datasets—a practical advantage for maritime deployment where training data scarcity persists.
+
+\subsection{Maritime-Specific LiDAR Challenges}
+
+Maritime \ac{LiDAR} performance differs fundamentally from automotive scenarios.
+Automotive systems achieve near 100\% return rates on asphalt, providing dense point clouds with abundant ground plane context~\cite{roriz2022}.
+Water surfaces produce specular reflection yielding only 10\% return rates versus near-100\% on asphalt~\cite{kunz2005, roriz2022}, creating sparse point clouds lacking dense ground plane context exploited by automotive algorithms~\cite{zhou2018, shi2019}.
+Kunz et al.~\cite{kunz2005} measured return rates over calm water as low as 10\% of emitted pulses, noting that water surface characteristics produce significantly weaker returns than small floating targets, creating favorable contrast for target detection despite sparse environmental context.
+
+The sparsity of water returns poses challenges to detection algorithms designed for dense automotive point clouds.
+Maritime applications lack dense reference, necessitating alternative spatial reasoning strategies when objects appear isolated without contextual grounding.
+Atmospheric effects reduce effective range by 50-70\% in heavy haze~\cite{roriz2022}, while wave-induced motion requires IMU-based motion compensation introducing processing latency~\cite{xie2024, ahmed2024}.
+Platform motion introduces maritime-specific complexity: continuous wave-induced pitch, roll, and heave motions vary dynamically with sea state.
+Ahmed et al.~\cite{ahmed2024} developed specialized Kalman filtering approaches tailored for maritime platform motion, reporting 25-30\% improvement in detection accuracy when compensating for tilt-induced point cloud distortions.
+
+Recent maritime \ac{LiDAR} detection work demonstrates growing interest yet reveals substantial validation gaps.
+Xie et al.~\cite{xie2024} achieved 74.1\% overall detection accuracy integrating state-of-the-art networks for ship detection, though performance degraded for vessels under 5 meters and at ranges exceeding 40 meters.
+Detection methods designed for dense ground plane returns require fundamental adaptation for sparse maritime point clouds where objects lack grounding context~\cite{kunz2005}.
+Systematic evaluation of detection performance versus water surface characteristics, motion compensation quality, and embedded platform profiling (latency, power, throughput) remains absent from reviewed literature~\cite{xie2024, ahmed2024}.
+
+The complementary limitations of camera and \ac{LiDAR} modalities—vision failing under extreme lighting while LiDAR struggles with sparse returns—suggest potential benefits from sensor fusion.
+
+\section{Sensor Fusion Paradigms}
+
+Sensor fusion combines information from multiple modalities to overcome individual sensor limitations.
+Recent surveys~\cite{feng2021, tufekci2023, huang2024a} identify fusion level—early, mid, or late—as the primary architectural distinction determining computational requirements, calibration sensitivity, and failure mode propagation relevant to maritime deployment.
+Each fusion paradigm offers distinct trade-offs between peak accuracy potential, robustness to sensor degradation, and real-time implementation feasibility~\cite{feng2021}.
+
+\subsection{Early Fusion: Data-Level Integration}
+
+Early fusion combines raw sensor data before feature extraction, projecting measurements from different modalities into common representations~\cite{cui2022}.
+Cui et al.~\cite{cui2022} note that early fusion enables networks to learn joint features during training but imposes stringent calibration and synchronization requirements.
+PointPainting exemplifies this paradigm by projecting \ac{LiDAR} points into camera image coordinates, assigning semantic labels from segmentation networks, then processing the semantically enriched point cloud through object detectors~\cite{cui2022}.
+
+However, early fusion's tight coupling between modalities creates practical deployment challenges.
+Projection errors of even a few degrees rotation or centimeters translation misalign features, corrupting the joint representation~\cite{cui2022}.
+Temporal synchronization must be precise; misaligned timestamps create spatial inconsistencies degrading fusion quality.
+Sensor-specific noise and failures propagate directly: corrupted camera images from lens occlusion or extreme lighting produce degraded semantic labels affecting all projected \ac{LiDAR} points~\cite{cui2022}.
+For maritime platforms experiencing continuous wave-induced motion and intermittent sun glare, calibration sensitivity and failure propagation of early fusion represent significant operational risks.
+
+\subsection{Mid Fusion: Feature-Level Integration}
+
+Mid fusion extracts features independently from each modality before combining them in intermediate network layers~\cite{huang2024a}.
+Huang et al.~\cite{huang2024a} systematically compare fusion paradigms, finding that mid fusion balances accuracy and robustness: independent feature extraction prevents raw sensor corruption from propagating between modalities, yet learned fusion layers capture cross-modal correlations unavailable to late fusion.
+
+BEVFusion~\cite{liang2022, liu2023b} transforms camera features into bird's-eye-view representations compatible with \ac{LiDAR} BEV features, combining them through efficient convolution operations.
+Liu et al.~\cite{liu2023a} note that BEVFusion achieves state-of-the-art performance but requires approximately 300 watts power consumption, exceeding embedded platform capabilities by an order of magnitude.
+For battery-powered maritime platforms where 30-50 watts represents typical total system power budget, mid-fusion's computational demands preclude direct deployment without substantial architectural optimization.
+
+\subsection{Late Fusion: Decision-Level Integration}
+
+Late fusion operates on independent object detections from each modality, combining outputs through spatial association~\cite{wang2020a, pang2020}.
+This approach maintains modular detection pipelines, fusing results at decision level after individual sensor processing is complete.
+While sacrificing joint feature learning enabled by earlier fusion, late fusion offers architectural properties advantageous for resource-constrained maritime deployments.
+
+Wang et al.~\cite{wang2020a} survey multi-sensor fusion in automated driving, emphasizing that late fusion enables graceful degradation: sensor failures affect only individual detection streams without corrupting fusion outputs.
+Pang et al.~\cite{pang2020} developed CLOCs, which fuse detection candidates before non-maximum suppression, training networks to predict fused detection quality based on geometric and semantic consistency between modalities.
+
+Late fusion's modular architecture provides several practical advantages for maritime deployment.
+Computational requirements scale approximately linearly with sensor count rather than exponentially as with joint processing~\cite{wang2020a}.
+Processing latency remains predictable because each modality follows fixed pipelines without runtime cross-modal dependencies during feature extraction.
+Adding or removing sensors requires minimal system redesign—new detection streams integrate through updated fusion modules without modifying existing pipelines~\cite{feng2021}.
+Most critically for maritime applications, individual sensor failures degrade performance gracefully rather than causing catastrophic fusion failure~\cite{huang2024a}.
+Temporal synchronization requirements are relaxed compared to early fusion: late fusion spatial association operates on object-level regions rather than pixel-level correspondences, tolerating larger timing offsets—50 to 100 milliseconds versus 10 milliseconds for early fusion~\cite{huang2024a}.
+For maritime platforms where precise hardware synchronization may be impractical and wave-induced motion creates apparent object movement, relaxed timing tolerances represent operational advantages.
+
+\subsection{Comparative Analysis and Maritime Fusion Gaps}
+
+Huang et al.~\cite{huang2024a} systematically evaluate fusion paradigms under simulated sensor degradation and synchronization error.
+Late fusion maintains superior robustness when individual sensors fail or produce degraded outputs through graceful degradation.
+However, under ideal conditions with clean data and perfect calibration, mid fusion achieves higher peak accuracy by learning cross-modal correlations unavailable to late fusion~\cite{huang2024a}.
+Wang et al.~\cite{wang2020a} note that mid-fusion architectures approximately double processing requirements compared to single-modality detection.
+For battery-powered maritime platforms, doubled power consumption directly reduces mission endurance.
+
+These findings from automotive research suggest operational requirements and constraints should inform fusion strategy selection.
+Early and mid fusion optimize for peak accuracy under ideal conditions but require precise calibration, tight synchronization, and substantial computational resources~\cite{feng2021, cui2022}.
+Late fusion prioritizes robustness and computational efficiency under degraded conditions, accepting reduced peak accuracy compared to deeper fusion strategies~\cite{huang2024a, wang2020a}.
+
+Automotive fusion methods~\cite{feng2021, cui2022, huang2024a} evaluate performance on terrestrial datasets where environmental characteristics differ fundamentally from maritime scenarios—water reflections, extreme dynamic range, sparse \ac{LiDAR} returns, and platform motion require empirical validation.
+Computational requirements, power consumption, and latency characteristics on representative embedded hardware are rarely reported~\cite{liu2023a}.
+Systematic evaluation sweeping timing offsets to establish acceptable synchronization tolerances for maritime platforms is absent~\cite{huang2024a}, and wave-induced motion creates time-varying calibration errors differing from static errors typical of ground vehicles~\cite{cui2022}.
+Most fusion studies report performance without rigorous comparison against optimized single-modality baselines~\cite{farahnakian2020, haghbayan2018, Clunie2021}.
+
+\section{Temporal and Spatial Alignment in Fusion Systems}
+
+Accurate fusion depends on establishing spatial and temporal correspondence between sensors.
+Spatial calibration defines rigid-body transformation relating sensor coordinate frames, while temporal synchronization ensures observations represent the same moment in time.
+Precision requirements vary with fusion paradigm—early fusion demands tighter tolerances than late fusion due to pixel-level data alignment.
+
+Extrinsic calibration establishes geometric relationship between sensors, typically represented as rotation matrix and translation vector.
+Traditional calibration employs fiducial targets such as checkerboards or AprilTags visible to both sensors, solving for transformation through least-squares optimization.
+Manual calibration remains standard for many research systems, as it provides precision necessary for reliable geometric correspondence.
+Automated calibration methods have emerged as alternatives: Iyer et al.~\cite{iyer2018} developed CalibNet using deep learning to predict calibration parameters directly from sensor data.
+Xiao et al.~\cite{xiao2024} proposed CalibFormer, a transformer-based automatic LiDAR-camera calibration network~\cite{schneider2017, wu2021}.
+However, these automated approaches require sufficient scene structure and may fail in textureless maritime environments dominated by sky and water.
+
+Calibration accuracy directly affects fusion quality.
+Rotation errors exceeding one degree or translation errors exceeding 10 millimeters significantly degrade early and mid-fusion performance.
+These tolerances become more stringent as sensor separation increases.
+
+Temporal synchronization ensures observations represent the same world state~\cite{westenberger2011}.
+Timing offsets create spatial misalignment: a vessel moving at 5 meters per second experiences 0.5-meter displacement in 100 milliseconds.
+IEEE 1588 Precision Time Protocol achieves sub-microsecond accuracy~\cite{ptp2008}, while Network Time Protocol provides millisecond-level accuracy~\cite{furgale2013, liu2021}.
+Early fusion requires synchronization within 10 milliseconds; late fusion tolerates 50-100 milliseconds.
+Maritime wave-induced motion produces apparent object movement requiring motion compensation beyond timestamp alignment.
+
+\section{Maritime Perception Datasets and Benchmarks}
+
+Dataset availability fundamentally shapes algorithm development and validation.
+Automotive perception benefits from large-scale benchmarks (KITTI, Waymo, nuScenes~\cite{geiger2012, feng2021}) providing millions of labeled examples with synchronized camera-LiDAR data.
+These benchmarks enable quantitative comparison across algorithms and have accelerated progress in terrestrial autonomous vehicle perception.
+
+Maritime perception lacks comparable resources; most datasets provide only monocular RGB imagery without depth information~\cite{su2023}.
+Those including \ac{LiDAR} often lack precise temporal synchronization or provide only sparse annotations covering limited object categories.
+Weather diversity remains underrepresented—most datasets capture clear conditions with few examples of rain, fog, or heavy seas.
+Su et al.~\cite{su2023} provide comprehensive survey of maritime vision datasets, documenting available resources and identifying critical gaps.
+Kim et al.~\cite{kim2022} improved Singapore Maritime Dataset, providing RGB, infrared, \ac{LiDAR}, and radar modalities, though sparse ground truth limits scope for training deep networks.
+Recent maritime datasets~\cite{huang2025, thompson2023} provide multimodal observations but remain limited in scale, weather diversity, and public availability.
+Small datasets restrict model complexity without overfitting; limited weather coverage prevents robust evaluation; sparse annotations leave uncertainty about detection reliability~\cite{su2023}.
+
+This research contributes synchronized \ac{LiDAR}-camera dataset collected aboard WAM-V research vessel during extended operational deployments, addressing key gaps through HDR camera imagery capturing extreme dynamic range conditions, synchronized Livox Horizon \ac{LiDAR} data, diverse maritime object annotations (vessels, buoys, navigation markers), varied weather and lighting conditions spanning multiple sea states, and platform motion data enabling motion compensation validation.
+
+\section{Research Gaps and Dissertation Motivation}
+
+Despite substantial progress in multimodal perception for autonomous systems, several critical gaps remain for maritime applications.
+These gaps span algorithmic approaches, computational implementation, and empirical validation resources.
+
+Most published fusion research emphasizes early or mid-level integration, with limited evaluation of decision-level approaches under maritime conditions.
+Comparative studies in automotive contexts demonstrate that late fusion offers superior robustness under sensor dropout or environmental degradation—conditions frequently encountered during maritime operations~\cite{huang2024a, wang2020a}.
+However, these findings primarily derive from terrestrial datasets where environmental characteristics and sensor failure modes differ substantially from maritime scenarios.
+Whether late fusion maintains similar robustness advantages under maritime-specific challenges including water reflections, HDR lighting extremes, and platform motion remains open empirical question.
+
+Real-time fusion implementation on embedded maritime hardware remains underexplored.
+Early and mid-fusion methods often exceed computational budgets of embedded platforms, requiring desktop-class GPUs consuming 200-400 watts for real-time operation—specifications incompatible with small battery-powered autonomous vessels.
+Late fusion's reduced computational requirements suggest potential feasibility for embedded deployment; however, systematic evaluation of accuracy-latency-power trade-offs on representative hardware (NVIDIA Jetson AGX Xavier, 30-watt power consumption) is lacking.
+Power consumption is particularly critical for battery-operated platforms where computing loads directly affect mission endurance.
+
+Few labeled multimodal maritime datasets exist with synchronized \ac{LiDAR} and camera observations under diverse conditions.
+Existing datasets are either single-modality limiting fusion research, lack precise synchronization preventing temporal analysis, or provide limited weather and lighting diversity restricting generalization assessment.
+This data gap directly impedes algorithm development and validation.
+
+Relationship between calibration accuracy and fusion performance under maritime conditions requires empirical characterization.
+While automotive research established general calibration tolerances~\cite{cui2022}, maritime platform dynamics may impose different requirements.
+Wave-induced motion can create time-varying calibration errors even when initial alignment is precise, requiring empirical characterization.
+
+This dissertation develops and validates late-fusion framework for real-time \ac{LiDAR}-camera perception on embedded maritime platforms.
+Approach is motivated by advantages of late fusion for maritime deployment: modular architecture isolating sensor failures, computational efficiency compatible with embedded hardware constraints, and robustness to calibration and synchronization errors compared to tightly coupled fusion approaches.
+Research methodology quantitatively evaluates accuracy, timing, and computational efficiency through controlled experiments and real-world validation aboard WAM-V research platform.
+
+The following chapter describes experimental methodology employed to address these research questions, including detailed hardware configuration, sensor calibration procedures, data collection protocols, and late fusion algorithm design.
+
+\end{document}
