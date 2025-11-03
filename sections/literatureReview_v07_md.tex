@@ -10,7 +10,7 @@ Recent surveys of maritime autonomy~\cite{bae2023, zhang2021, xue2025, ferreira2
 The maritime environment presents distinct challenges compared to terrestrial scenarios.
 Studies of visual detection in coastal and harbor settings report substantial performance degradation due to water reflections, high dynamic range, and low-texture backgrounds~\cite{prasad2017}.
 \ac{LiDAR} systems face complementary difficulties with sparse water-surface returns and atmospheric scattering~\cite{kunz2005}.
-While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024a, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets such as KITTI~\cite{geiger2012}, and its direct applicability to maritime platforms operating under power and computational constraints has not been thoroughly validated~\cite{wang2020a}.
+While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024a, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets at a 10:1 ratio for maritime application.
 
 This review synthesizes research across vision-based detection, \ac{LiDAR}-based methods, and multimodal fusion to establish the foundation for maritime perception system evaluation.
 The review examines detection methods independently before addressing fusion architectures and calibration requirements, concluding by identifying specific research gaps motivating this dissertation's contributions.
@@ -207,7 +207,7 @@ Maritime wave-induced motion produces apparent object movement requiring motion 
 \section{Maritime Perception Datasets and Benchmarks}
 
 Dataset availability fundamentally shapes algorithm development and validation.
-Automotive perception benefits from large-scale benchmarks (KITTI~\cite{geiger2012}, Waymo, nuScenes~\cite{caesar2020}) providing millions of labeled examples with synchronized camera-LiDAR data.
+Automotive perception benefits from large-scale benchmarks (KITTI~\cite{geiger2012}, Waymo~\cite{sun2020}, nuScenes~\cite{caesar2020}) providing millions of labeled examples with synchronized camera-LiDAR data.
 These benchmarks enable quantitative comparison across algorithms and have accelerated progress in terrestrial autonomous vehicle perception.
 
 Maritime perception lacks comparable resources; most datasets provide only monocular RGB imagery without depth information~\cite{su2023}.
