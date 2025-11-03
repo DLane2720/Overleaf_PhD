@@ -10,7 +10,7 @@ Recent surveys of maritime autonomy~\cite{bae2023, zhang2021, xue2025, ferreira2
 The maritime environment presents distinct challenges compared to terrestrial scenarios.
 Studies of visual detection in coastal and harbor settings report substantial performance degradation due to water reflections, high dynamic range, and low-texture backgrounds~\cite{prasad2017}.
 \ac{LiDAR} systems face complementary difficulties with sparse water-surface returns and atmospheric scattering~\cite{kunz2005}.
-While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024a, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets at a 10:1 ratio for maritime application.
+While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024a, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets at a 10:1 ratio for maritime applications.
 
 This review synthesizes research across vision-based detection, \ac{LiDAR}-based methods, and multimodal fusion to establish the foundation for maritime perception system evaluation.
 The review examines detection methods independently before addressing fusion architectures and calibration requirements, concluding by identifying specific research gaps motivating this dissertation's contributions.
@@ -19,10 +19,10 @@ The review examines detection methods independently before addressing fusion arc
 
 \subsection{Deep Learning Foundations and Single-Stage Detectors}
 
-The application of convolutional neural networks to visual recognition gained widespread adoption following Krizhevsky et al.'s demonstration that deep architectures trained on large-scale datasets could achieve superior performance on ImageNet~\cite{krizhevsky2017}.
+The widespread adoption of convolutional neural networks (CNNs) for visual object detection followed Krizhevsky et al.'s breakthrough with ImageNet, which demonstrated that deep CNNs (DCNN) trained on large-scale datasets could achieve remarkable detection performance~\cite{krizhevsky2017}.
 Subsequent architectural innovations, including residual learning frameworks~\cite{he2016}, demonstrated that network depth correlates with representational capacity for complex visual recognition tasks.
 Early object detection methods adapted these classification networks into two-stage pipelines.
-Girshick et al.~\cite{girshick2014} introduced R-CNN, which applies convolutional neural networks to region proposals; however, the computational overhead limited throughput.
+Girshick et al.~\cite{girshick2014} introduced R-CNN, which applies CNNs to region proposals; however, the computational overhead limited throughput.
 Ren et al.~\cite{ren2016} addressed these limitations with Faster R-CNN, introducing region proposal networks that enabled end-to-end training and substantially improved inference speed.
 
 Single-stage detectors emerged to address latency constraints by reformulating detection as direct regression from image features to object classes and bounding box coordinates.
@@ -42,25 +42,31 @@ Guo et al.~\cite{guo2023} found that zero-shot transfer of YOLOv5 across maritim
 
 \subsection{Maritime-Specific Detection Challenges}
 
-Visual detection in maritime environments presents challenges that are fundamentally distinct from those in terrestrial scenarios.
-Prasad et al.~\cite{prasad2017} identify background motion from waves and wakes, low contrast objects, and environmental degradation as primary failure modes.
-High dynamic range presents persistent challenges; studies report contradictory findings regarding HDR benefits~\cite{landaeta, liebergall, wang2019a}, with SDR-trained networks achieving 10\% higher recall despite HDR's theoretical advantages, likely due to pre-training dataset biases~\cite{landaeta, liebergall}.
-The scarcity of HDR training data limits the effectiveness of transfer learning.
-Atmospheric conditions impose additional constraints: Zhang et al.~\cite{zhang2022a} addressed foggy maritime detection through preprocessing and attention mechanisms. In contrast, Rekavandi et al.~\cite{rekavandi2022} note that objects occupying less than 10\% of image area yield insufficient information for reliable classification.
-Maritime scenarios exacerbate this difficulty, as vessels and navigation markers often appear near the horizon, occupying a minimal pixel area.
-Shao et al.~\cite{shao2022} addressed this through multi-scale detection strategies and deformable convolution modules.
-Maritime detection research remains fragmented, lacking standardized large-scale datasets analogous to KITTI or COCO~\cite{zhang2021, yang2024, su2023}.
+% Visual detection in maritime environments presents challenges that are fundamentally distinct from those in terrestrial scenarios.
+% Prasad et al.~\cite{prasad2017} identify background motion from waves and wakes, low contrast objects, and environmental degradation as primary failure modes.
+% Atmospheric conditions impose additional constraints: Zhang et al.~\cite{zhang2022a} addressed foggy maritime detection through preprocessing and attention mechanisms. In contrast, Rekavandi et al.~\cite{rekavandi2022} note that objects occupying less than 10\% of image area yield insufficient information for reliable classification.
+% Maritime scenarios exacerbate this difficulty, as vessels and navigation markers often appear near the horizon, occupying a minimal pixel area.
+% Shao et al.~\cite{shao2022} addressed this through multi-scale detection strategies and deformable convolution modules.
+% Maritime detection research remains fragmented, lacking standardized large-scale datasets analogous to KITTI or COCO~\cite{zhang2021, yang2024, su2023}.
+% High Dynamic Range (HDR) imaging aims to capture a broader range of luminance levels than Standard Dynamic Range (SDR), thereby preserving scene details in both bright and dark regions. 
+% In vision-based object detection, HDR is theoretically advantageous for handling challenging lighting conditions such as glare, strong shadows, or backlit scenarios—common in maritime environments. 
+% However, in practice, studies have reported mixed results: networks trained on SDR imagery sometimes outperform those trained on HDR data, potentially because conventional networks are typically pre-trained on large SDR datasets~\cite{landaeta, liebergall}. 
+% This mismatch may introduce biases, limiting the benefits of HDR processing for object detection tasks.
+% The scarcity of HDR training data limits the effectiveness of transfer learning.
+
+Visual detection in maritime environments presents challenges that are fundamentally different from those in terrestrial settings. Background motion from waves and wakes, low contrast objects, and environmental degradation are major sources of error according to Prasad et al.\cite{prasad2017}. Atmospheric conditions also complicate detection. For example, Zhang et al.\cite{zhang2022a} addressed maritime fog by using image preprocessing and attention mechanisms. Detecting small objects remains a challenge. As noted by Rekavandi et al.\cite{rekavandi2022}, objects that occupy less than ten percent of the image area rarely provide enough information for accurate classification. This problem is even greater in maritime scenarios because vessels and navigation markers often appear near the horizon and take up only a few pixels. Shao et al.\cite{shao2022} approached these issues with multi-scale detection techniques and deformable convolution modules. Progress in maritime detection has been limited because there are no standardized large-scale datasets like KITTI or COCO\cite{zhang2021, yang2024, su2023}.
+High Dynamic Range imaging is another approach used to address the lighting conditions in maritime environments. HDR captures both bright and dark details in the same image. This can help detect objects in situations with glare, strong shadows, or backlighting, which are common at sea. In practice, however, networks trained only on Standard Dynamic Range images sometimes perform better than those trained on HDR images. This may be because most existing training datasets use SDR images\cite{landaeta, liebergall}. The lack of HDR training data and the bias toward SDR limit the effectiveness of HDR for object detection and also hinder transfer learning.
 
 \subsection{Synthesis: Gaps in Vision-Based Maritime Detection}
 
 The reviewed literature reveals several key findings relevant to this dissertation's focus on real-time embedded maritime perception.
-Model performance on small maritime objects degrades substantially at reduced input resolutions, yet native HDR resolution processing exceeds embedded GPU throughput constraints~\cite{shao2022, rekavandi2022}.
+Model performance on small maritime objects degrades substantially at reduced input resolutions~\cite{shao2022, rekavandi2022}.
 The optimal resolution-accuracy-latency trade-off for embedded maritime platforms remains unquantified.
-% Systematic evaluation of HDR preprocessing for maritime YOLO variants is absent, with available studies reporting contradictory findings~\cite{landaeta, liebergall}.
+Research evaluating the use of high dynamic range cameras to address dynamic lighting conditions in maritime environments is limited, and published results are conflicting.~\cite{landaeta, liebergall}.
 While qualitative descriptions of YOLO model variants exist~\cite{kim2022, guo2023}, quantitative characterization of accuracy-latency-power consumption trade-offs on representative embedded hardware for maritime-specific object classes is missing.
-Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy.
+% Power consumption directly affects mission endurance for battery-operated vessels, yet few studies report energy efficiency metrics alongside detection accuracy.
 Limited evidence exists regarding fine-tuning data requirements for adapting terrestrial pre-trained models to maritime environments~\cite{guo2023}.
-These gaps motivate a systematic evaluation of YOLO variants under maritime-specific conditions, with an emphasis on embedded platform feasibility.
+% These gaps motivate a systematic evaluation of YOLO variants under maritime-specific conditions, with a focus on the feasibility of embedded platforms.
 
 While vision-based detection faces illumination-dependent challenges, geometric sensing modalities offer complementary capabilities through illumination-independent three-dimensional measurements.
 
