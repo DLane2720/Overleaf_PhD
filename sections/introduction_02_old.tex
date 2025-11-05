@@ -1,0 +1,113 @@
+\documentclass[../main.tex]{subfiles}
+\graphicspath{{\subfix{../images/}}}
+\begin{document}
+
+% \chapter{Introduction} \label{ch:introduction}
+
+% Opening Context
+The rise of autonomous systems is transforming various industries, and the maritime sector is no exception. 
+Autonomous surface vessels (ASVs) have the potential to improve safety in traditionally human-operated vessels, taking on dull, dirty, and dangerous jobs.
+Because these missions often carry critical safety or mission objectives, ASVs require accurate and immediate awareness of their surroundings. 
+Real-time object detection and classification provide the environmental understanding needed for autonomous navigation and safe operation in complex settings.
+% The rise of autonomous systems is transforming numerous industries, and the maritime sector is no exception. 
+% Autonomous surface vessels (ASVs) have the potential to improve safety and operational efficiency by performing the dull, dirty, and dangerous tasks traditionally done by humans. 
+% Reliable environmental perception is fundamental to this capability. 
+% Real-time object detection and classification enable autonomous navigation and situational awareness, ensuring safe and efficient operation in complex maritime environments.
+
+The automotive industry has seen significant advances in autonomous vehicle technology, but these have yet to be fully realized for marine ASVs. 
+This is directly reflected in the volume of literature published for each application, where object detection strategies for the automotive environment outnumber those for marine environments by an order of magnitude.
+
+While detection strategies can be adapted from the automotive environment, the marine environment is less structured yet retains significant complexity and object density, particularly in littoral zones.
+Reliable maritime perception, therefore, requires high-fidelity sensing. 
+Traditional marine radar lacks sufficient spatial resolution at short ranges. Unmanned perception instead relies on optical and ranging sensors. 
+Cameras provide rich color and texture cues that support recognition and classification. 
+Their performance degrades under specular reflections, atmospheric haze, fog and variable illumination. Camera imagery also lacks direct depth information unless supplemented by additional sensing or estimation. 
+LiDAR supplies precise three-dimensional range and geometric detail independent of lighting. It does not provide the spectral information needed to interpret color-coded or visually distinctive targets.
+
+Those strengths and weaknesses are complementary. Fusing camera and LiDAR data reduces single-sensor failure modes and yields improved detection accuracy, stronger classification confidence and more reliable localization. 
+For maritime edge platforms fusion must be low latency and computationally efficient. Many ASVs are constrained by size, weight and power, and their compute, thermal and energy budgets are limited. Designing practical fusion systems therefore requires tradeoffs in fusion architecture, model size and compression, sensor scheduling and selective feature transmission, hardware acceleration and precise time synchronization.
+
+Effectiveness should be judged on measurable outcomes. Key metrics include detection accuracy, classification recall, end-to-end latency, throughput, power consumption and robustness under adverse environmental conditions.
+
+% Problem Statement
+The central problem addressed by this research is the lack of quantitative, empirical evidence comparing the performance of \ac{LiDAR} and vision-based object detection systems in maritime environments, and the absence of validated real-time fusion strategies that improve detection accuracy beyond single-modality approaches while meeting the computational limits of embedded \ac{ASV} platforms.
+
+% Knowledge Gap
+% Although research in maritime autonomy continues to expand, several critical gaps persist.  
+% First, while many studies have demonstrated the success of vision or \ac{LiDAR}-based detection individually, few provide direct, quantitative comparisons of performance across modalities using identical object classes and conditions.  
+% % \textcolor{blue}{Second, the training data requirements and computational efficiency of different sensing modalities have not been systematically characterized, hindering optimal sensor selection for resource-limited platforms. 
+% Second, although sensor fusion is widely recognized as advantageous, the tradeoff between the accuracy gains of late fusion and its computational overhead remains poorly quantified for real-time \ac{ASV} applications.  
+% Finally, reproducible procedures for spatial calibration and temporal synchronization in multi-sensor maritime platforms are inconsistently documented, limiting experimental repeatability and validation.  
+% Addressing these gaps requires controlled, empirical evaluation of single- and multi-sensor perception systems using a unified testing framework.
+Researchers in maritime perception have primarily focused on vision and \ac{LiDAR} modalities individually, often relying on heterogeneous datasets and differing evaluation protocols. Consequently, few studies conduct rigorous quantitative comparisons of identical object classes under tightly controlled conditions. Although many propose late fusion to enhance detection robustness, few studies consistently or comprehensively characterize the computational cost of fusion in real-time \ac{ASV} deployments.. 
+Additionally, reports on spatial calibration and temporal synchronization vary widely in scope and detail, which undermines reproducibility and complicates cross-study comparisons. 
+This work presents a unified experimental framework for the systematic evaluation of individual detection modalities and introduces a late fusion approach, along with reproducible procedures for sensor synchronization.
+
+% Research Objectives
+Within the domain of surface-level maritime perception under daylight and near-optimal conditions, this research pursues the following objectives:
+
+\begin{enumerate}
+    \item Develop and validate sensor calibration and time-synchronization frameworks for \ac{LiDAR}–camera fusion that:
+    \begin{enumerate}
+        \item Achieve sub-pixel spatial calibration accuracy for point cloud projection, and
+        \item Maintain temporal synchronization with less than 150~ms latency.
+    \end{enumerate}
+
+    \item Quantify and compare the independent performance of vision- and \ac{LiDAR}-based perception by:
+    \begin{enumerate}
+        \item Determining training data requirements for accurate classification across modalities,
+        \item Evaluating detection and classification performance across representative maritime object classes that vary in geometry and visual characteristics, and
+        \item Identifying the complementary strengths of each modality for integration into fusion architectures.
+    \end{enumerate}
+
+    \item Implement and evaluate a real-time late-fusion strategy for maritime \ac{ASV} applications by:
+    \begin{enumerate}
+        \item Designing and benchmarking a prototype late-fusion framework,
+        \item Comparing computational load and end-to-end latency across detection methods, and
+        \item Establishing quantitative benchmarks to guide future fusion research in maritime perception.
+    \end{enumerate}
+\end{enumerate}
+
+% Methodological Overview
+To accomplish these objectives, a modular perception system was developed and deployed on \ac{ERAU}’s \ac{ASV} research platform, \textit{Minion}.
+The system integrates multiple cameras and \ac{LiDAR} sensors with validated spatial and temporal calibration procedures.
+A comprehensive dataset was collected during the 2024 Maritime RobotX Challenge and dedicated training missions, focusing on six classes of maritime objects. Data acquisition was limited to daylight and clear-weather conditions, ensuring consistency and control for baseline performance evaluation.
+Evaluating every available detection approach is impractical. 
+Instead, this work compares two representative models: a vision-based object detector using a fine-tuned YOLOv8 model and a LiDAR-based method employing Grid-Based Clustering and Convex Hull Extraction (GB-CACHE).
+YOLOv8 was selected due to its status as a leading and widely adopted deep learning detection algorithm. For LiDAR, employing two neural network approaches for comparison was deemed illogical, especially given the inherent limitations of neural networks in enforcing strict spatial rules such as object separation. 
+This limitation is particularly problematic for spatial data required in navigational and obstacle avoidance tasks. 
+Deterministic methods, by contrast, can ensure rule enforcement, making their investigation highly relevant for the situational awareness of uncrewed vehicles.
+GB-CACHE, being a deterministic, real-time capable approach, was therefore selected for LiDAR detection. 
+Subsequently, a real-time, confidence-weighted late-fusion scheme is developed to integrate the outputs of these two modalities, aiming to enhance detection performance further.
+% \textcolor{blue}{A confidence-weighted late-fusion scheme integrates outputs from both modalities.}
+All data are recorded and analyzed within the \ac{ROS} framework to ensure consistent timing and reproducible evaluation across modalities and fusion configurations.
+
+% Contributions and Significance
+This research makes three principal contributions to the field of maritime autonomy:
+
+\begin{enumerate}
+    \item Quantitative performance benchmarks for \ac{LiDAR} and camera-based object detection in maritime environments, including detection range, classification accuracy, and computational requirements across six representative object classes.
+    \item Characterization of training data requirements and model convergence behavior for both modalities, providing practical guidance for dataset design and sensor selection on embedded platforms.
+    \item \textcolor{blue}{Demonstration and validation of a real-time late-fusion framework that achieves measurable improvements in detection accuracy over the individual sensing-mode detection methods.}
+\end{enumerate}
+
+% These findings directly support \ac{DoN} applications such as autonomous harbor navigation, mine countermeasures, and persistent surveillance. They also inform the development of commercial \ac{ASV} systems for environmental monitoring, offshore infrastructure inspection, and autonomous logistics.
+
+% Scope and Limitations
+This study investigates sensor fusion for detecting and classifying marine objects using \ac{LiDAR} and \ac{HDR} camera data collected under daylight and clear-weather conditions. 
+The six primary object classes include navigational markers and small to mid-sized vessels, each presenting distinct detection challenges across modalities. 
+Navigational markers and buoys exhibit regular geometry favorable to \ac{LiDAR}-based methods yet encode essential color cues detectable only by cameras. 
+Conversely, watercraft exhibit variable shapes and appearances that test both sensing modalities.
+
+Data collection was limited to controlled marine environments and open-water scenarios to ensure a representative dataset. 
+Restricting the scope to favorable environmental conditions allowed for a rigorous baseline performance evaluation before addressing degraded conditions in future studies. 
+Nighttime, fog, rain, and heavy-sea operations fall outside the present scope due to their additional complexity and are identified as future research extensions.
+
+% Dissertation Structure
+The remainder of this dissertation is organized as follows.  
+Chapter~\ref{litReview} reviews the related literature and research in maritime object detection and sensor fusion. 
+Chapter~\ref{sensing_platform} details the sensing platform architecture and hardware integration, and calibration methodologies utilized for data collection.  
+Chapter~\ref{realtime_object_detection} presents the object detection methods used for visual LiDAR-based and late-fusion object detection methods, with a comparative discussion of model performance and detection results.  
+Finally, Chapter~\ref{chap:recommendations} concludes with a summary of findings and recommendations for future research.
+
+\end{document}
