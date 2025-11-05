@@ -24,15 +24,15 @@ The resulting dataset represents a multi-modal maritime perception package that 
 Data were collected using the ROS 1 \texttt{Noetic} framework on Ubuntu 20.04, 
 leveraging custom C++ packages developed for LiDAR–camera fusion and object detection.  
 % Figure \ref{fig:ros} outlines the software architecture.  
-ROS 1 Noetic was selected because the Minion software stack had not yet been fully migrated or validated under ROS 2, while the ROS 1 implementation was stable, field-tested, and fully operational across all sensing subsystems.
+ROS 1 Noetic was the stable version of Minion's autonomy software at the time of the 2024 Competition, where data was initially collected, and was used for all subsequent data collection/% while ROS 2 software was  
+% because the Minion software stack had not yet been fully migrated or validated under ROS 2, while the ROS 1 implementation was stable, field-tested, and fully operational across all sensing subsystems.
 
 Raw data from the Pinpoint GPS, Livox LiDAR units, and the RTSP video stream are converted into individual ROS messages through separate ROS nodes and published to sensor-specific topics as visualized in Figure \ref{fig:ros}.  
-Temporal synchronization was achieved by applying original hardware timestamps to each ROS message header: LiDAR packets were time-stamped by the Livox\_SDK driver, while the RTSP video stream was decoded frame-by-frame, with timing extracted from H.264 metadata and applied to each image message before publication, as detailed in Section~\ref{time_sync_cam}.
+Temporal synchronization was achieved by applying  original hardware timestamps to each ROS message header: LiDAR packets were time-stamped by the Livox\_SDK driver, while a custom rosnode de-serialized the timestamp embedded within the \ac{RTSP} video stream (as detailed in Section~\ref{time_sync_cam}) to each image message before publication.
+% RTSP video stream was decoded frame-by-frame, with timing extracted from H.264 metadata and applied to each image message before publication, as detailed in Section~\ref{time_sync_cam}.
 
 All sensor topics were recorded using the standard rosbag record utility without compression. 
 The resulting bag files constitute the dataset itself, recorded in real-time during field operations and later parsed offline for analysis and model training.
-
-
 
 % \subsubsection{LiDAR Pipeline}  
 % Four nodes implemented object detection, filtering, and 3-D clustering.  
@@ -46,7 +46,6 @@ The resulting bag files constitute the dataset itself, recorded in real-time dur
     \caption{Software architecture used to acquire synchronized LiDAR, HDR video, GPS, and IMU data within the ROS 1 Noetic framework. Each node publishes time-stamped sensor messages to modality-specific topics, allowing for the raw data to be played back with accurate timing.}
     \label{fig:ros}
 \end{figure}
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,7 +79,7 @@ Summer 2025  & May 29, 2025 & 31 & 10,488,090 & 3,010 \\
 
 Peak collection occurred during November 2024 in preparation for the Maritime RobotX Challenge, with additional data gathered during Summer 2025 to expand environmental variety.  
 Data collection was limited to favorable weather conditions to ensure team and equipment safety. 
-All sessions were conducted under calm seas, low winds, and generally clear or partly cloudy skies, with no recordings made during inclement or low-visibility conditions.
+All sessions were conducted under calm seas, low winds, and clear or partly cloudy skies, with no recordings made during inclement weather or low-visibility conditions.
 Each recording included synchronized data from three Livox Horizon LiDARs  (\texttt{/livox/lidar\_front}, \texttt{/livox/lidar\_port}, and  \texttt{/livox/lidar\_starboard}), one Leopard Imaging HDR camera publishing  \texttt{/camera/image} and \texttt{/camera/info}, and the IMU and GPS topics defining the  \texttt{map\_to\_base\_link} and \texttt{base\_link\_to\_sensor} transforms.
 For clarity, topic and sensor identifiers are presented here using descriptive names (e.g., \texttt{/livox/lidar\_front}), whereas the original recorded topics used serial-number-based identifiers corresponding to each LiDAR unit.
 

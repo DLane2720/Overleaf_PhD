@@ -273,7 +273,7 @@ The following sections describe the methods and results of this calibration proc
         \label{fig:cam_calib_2}
     \end{subfigure}%
 }
-\caption{Checkerboard images are processed to detect corners. Agreement between detected (green circles) and reprojected (red crosses) points demonstrates corner localization and mapping of the image coordinate system.(left), which enable intrinsic parameters to be estimated and validated by reprojecting known targets into 3D space (right).}
+\caption{Checkerboard images are processed to detect corners. Agreement between detected (green circles) and reprojected (red crosses) points demonstrates corner localization and mapping of the image coordinate system.(left), which enable intrinsic parameters to be estimated and validated by reprojecting known targets into three-dimension space (right).}
 \label{fig:cam_calib}
 \end{figure}
 
@@ -478,33 +478,43 @@ Effective detection requires identifying, classifying, and localizing objects ra
 In this work, these challenges are examined through vision and LiDAR detection pipelines implemented on the Minion sensing platform.
 
 The central focus of this investigation is the development of a late-fusion framework that integrates information from both sensing domains to enhance detection robustness and confidence.
-This framework represents the primary contribution of the research and demonstrates how visual and LiDAR detections can be combined at the decision level to exploit the complementary strengths of each sensing modality while mitigating their individual limitations.
+This framework represents the primary contribution of the research, demonstrating how visual and LiDAR detections can be combined at the decision level to leverage the complementary strengths of each sensing modality while mitigating their individual limitations.
 
 To establish a meaningful basis for evaluation, two single-modality detection systems were selected as comparative baselines.
-YOLOv8 represents the class of data-driven neural network detectors optimized for vision-based perception, while GB-CACHE represents the class of deterministic, geometry-based algorithms used for LiDAR clustering and segmentation.
-These methods were not chosen to exhaust all available detection approaches, but because they are broadly representative of the state of the art within their respective sensing domains.
-
-YOLOv8 was selected for its status as one of the most widely adopted and optimized real-time vision networks, capable of achieving high detection accuracy and efficient inference on GPU-based platforms.
-Its inclusion provides a mature and well-understood benchmark for camera-based perception and a reliable reference for evaluating the complementary benefits of late fusion.
-
-GB-CACHE was selected as a deterministic counterpart to YOLO that performs real-time clustering and segmentation without the computational overhead or data dependency of neural network–based LiDAR methods.
-Its use of concave-hull extraction provides boundary representations more meaningful for maritime navigation than the simplified 3D bounding boxes produced by models such as PointNet or VoxelNet.
-This geometry-driven approach broadens the scope of the comparative study, especially given that the advantages of neural LiDAR methods for real-time deployment remain unproven.
-
-These two approaches represent two distinct strategies for real-time perception, and the late-fusion method developed in this work integrates their complementary strengths to achieve higher confidence detections across a range of operating conditions.
-The following sections examine each detection method in sequence.
+YOLOv8 exemplifies data-driven neural network detectors optimized for vision-based perception, and was selected for its status as one of the most widely adopted vision-based object detection methods.
+GB-CACHE is a deterministic algorithm designed for LiDAR-based object detection and classification.
+% Each of these models was selected for its robust nature and real-time capability, and provides contrast between neural network and deterministic-based approaches.
+% ---
+% These two approaches represent two distinct strategies for real-time perception, and the late-fusion method developed in this work integrates their complementary strengths to achieve higher confidence detections across a range of operating conditions.
+% YOLOv8 was selected for its status as one of the most widely adopted and optimized real-time vision networks, capable of achieving high detection accuracy and efficient inference on GPU-based platforms.
+% Its inclusion provides a mature and well-understood benchmark for camera-based perception, as well as a reliable reference for evaluating the complementary benefits of late fusion.
+% ---
+% GB-CACHE was selected as the real-time object detection method with LiDAR data. 
+% This method was designed specifically for the sparse nature of maritime point clouds and performs clustering, segmentation, and classification of objects without the computational overhead or data dependency of neural network–based LiDAR methods. 
+% The deterministic nature of this algorithm provides an excellent comparison to YOLO and also a robust method for late fusion, as described in Section~\ref{late_fusion}.
+% This enables strict, transparent rule enforcement in clustering and segmentation, providing a level of interpretability and control not inherently available in black-box deep learning architectures.
+% Its use of concave-hull extraction provides boundary representations more meaningful for maritime navigation than the simplified three-dimension bounding boxes produced by models such as PointNet or VoxelNet.
+% This geometry-driven approach broadens the scope of the comparative study, especially given that the advantages of neural LiDAR methods for real-time deployment remain unproven.
+% ---
+Each of these models was selected for its robust, real-time capabilities and to provide a clear contrast between neural network and deterministic approaches. 
+This chapter examines both models, detailing its methods, training, efficiency, detection, and classification results.
 Section~\ref{yolo} presents the YOLOv8 vision-based detector and its implementation for real-time object recognition.
 Section~\ref{gbcache} describes the GB-CACHE algorithm for LiDAR-based clustering and object segmentation.
-Finally, Section~\ref{fusion} introduces the late-fusion framework developed in this research and evaluates its performance relative to the single-modality detectors through a comparative analysis of detection accuracy, computational efficiency, and real-time operation.
+Finally, this research combines the decisions from each of these detection modes in a late-fusion framework in Section~\ref{fusion} and evaluates the performance of fused results relative to the single-modality detectors through a comparative analysis of detection accuracy, computational efficiency, and real-time operation.
+
+% These two approaches represent two distinct strategies for real-time perception, and the late-fusion method developed in this work integrates their complementary strengths to achieve higher confidence detections across a range of operating conditions.
+% The following sections examine each detection method in sequence.
+% Section~\ref{yolo} presents the YOLOv8 vision-based detector and its implementation for real-time object recognition.
+% Section~\ref{gbcache} describes the GB-CACHE algorithm for LiDAR-based clustering and object segmentation.
+% Finally, Section~\ref{fusion} introduces the late-fusion framework developed in this research and evaluates its performance relative to the single-modality detectors through a comparative analysis of detection accuracy, computational efficiency, and real-time operation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{YOLO} \label{yolo}
 
 % Purpose and Context
-The eighth generation of the \ac{YOLO} object detection framework developed by Ultralytics was selected to provide a high-performance, real-time vision baseline for this research. 
-% \textcolor{red}{add something about semantic and information-rich data?}
+The eighth generation of the \ac{YOLO} framework was selected to provide a baseline performance for real-time vision-based detection in this research. 
 This method of detection gained popularity for its ease of use and implementation for detecting and localizing objects within an image.
-Once an object is detected, the pixel coordinates it occupies within the image frame is bounded with a rectangle known as the bounding box (see Figure \ref{fig:YOLO_tower}).
+Once an object is detected, the pixel coordinates it occupies within the image frame are bounded with a rectangle known as the bounding box (see Figure \ref{fig:YOLO_tower}).
 Its open-source models are pretrained on the COCO dataset, a large repository containing approximately 1.5 million labeled images, and are provided in various sizes and qualities, which can be deployed on a wide variety of edge computing hardware.
 Additionally, transfer learning is simple to apply, allowing these models to be tailored for more specific use cases, such as maritime environments.
 
@@ -515,14 +525,13 @@ Additionally, transfer learning is simple to apply, allowing these models to be 
     \label{fig:YOLO_tower}
 \end{figure}
 
-The name YOLO refers to the one-shot convolutional neural network utilized to perform both detection and localization in a single pass of the network.
-This architecture is what makes it fast, and for real-time object detection applications. 
-Before the release of version 8 in 2023, the dual action of detection and localization required that the location and dimension of the bounding box also had to be encoded into the model.
-Version 8 was the first to utilize dual-detection heads at the end of the CNN.
-The first detection head identifies if and where an object is present within the image, and the second is used to determine the bounding box for the object.
-This "anchor-free" architectural change not only makes localization of the detected objects more reliable, but also alleviates some of the intense transfer learning burden that was required for fine-tuning the pretrained models in earlier versions \cite{ultralytics}.
+The name YOLO refers to the single-shot convolutional neural network architecture used to perform both detection and localization in a single pass.
+While this design was key to achieving real-time detection speeds, the accuracy of an object’s bounding box within an image was limited by the available training data. 
+Prior to the release of version 8 in 2023, the model required that the center and bounds of each detected object be explicitly encoded within the model, requiring a large corpus of labeled data for training.
+Version 8 introduced dual detection heads at the end of the CNN architecture: the first head identifies if and where an object is present within the image, while the second head determines the object's bounding box.
+This “anchor-free” architectural change not only improves the reliability of object localization but also reduces the burden of transfer learning required for fine-tuning pre-trained models in earlier versions\cite{ultralytics}.
 
-The widespread adoption of YOLOv8 and the fundamental architectural changes in this version make it the optimal choice to provide a baseline visual detection method.
+The widespread adoption and speed of YOLOv8 make it the optimal choice for providing a baseline visual detection method, and the fundamental architectural changes in this version validate its selection for a late-fusion approach.
 % However, this mode of detection is not without its compromises, \textcolor{red}{as will be detailed in Section ____.}
 
 
@@ -566,13 +575,15 @@ The widespread adoption of YOLOv8 and the fundamental architectural changes in t
 \subsection{YOLO Training Data} \label{sec:yolo_training_data}
 
 A manually labeled image dataset was constructed to support the transfer learning and evaluation of the YOLO object detection network. 
-All YOLO training images were obtained from video recorded directly on the Jetson.
-Rosbag data was recorded intermittently, whereas the cameras operated and streamed continuously.
+All YOLO training images were obtained from video frames that are not present within the rosbag data.
+Due to the rate of data accumulated within each rosbag described in section~\ref{sec:data_overview}, this data was recorded strategically,  whereas the cameras operated and streamed continuously.
 This ensured that a large pool of video data remained separate from the main dataset and available for YOLO training.
 
 The complete dataset contained 778 annotated images with a total of 1934 labeled maritime objects from the six classes defined in Table \ref{tab:class_map} 
 Each annotation was produced through a manual labeling process for objects present within each 2880 $\times$ 860 frame. 
 
+For this research, YOLOv8 was trained on a custom maritime dataset derived from sensor recordings collected aboard the Minion platform.
+The dataset includes labeled examples of navigation markers, buoys, vessels, and other relevant maritime objects.
 The final dataset contained 778 annotated images and 1934 labeled maritime objects. 
 Data were divided into training, validation, and test subsets following a 70:20:10 ratio.
 Each subset preserved the relative class proportions observed in the complete dataset, which contained an average of 2.5 labeled objects per image across the five categories listed in Table~\ref{tab:class_map}.
@@ -581,37 +592,57 @@ Because YOLO operates purely on two-dimensional image data without access to spa
 % \textcolor{blue}{Based on field observations, it is likely that A2 buoys were predominantly red, green, or blue, whereas A3 and larger buoys appeared black. 
 % However, since visually similar large black buoys were also observed throughout the rosbag dataset without verified size information, these classes were merged to maintain labeling consistency.}
 
+% \begin{table}[htbp]
+% \centering
+% \begin{tabular}{lccccccc}
+% \hline
+% Subset & Images & Labels & Tall Buoy & Round Buoy & Light Tower & Jon Boat & Sailboat \\
+% \hline
+% Train & 543 & 1,343 & 12.0\% & 1.4\% & 11.2\% & 15.8\% & 59.6\% \\
+% Validation & 158 & 390 & 14.1\% & 1.3\% & 13.1\% & 12.8\% & 58.7\% \\
+% Test & 77 & 201 & 16.4\% & 1.5\% & 9.5\% & 12.4\% & 59.7\% \\
+% \hline
+% Total & 778 & 1,934 &  &  &  &  &  \\
+% \hline
+% \end{tabular}
+% \caption{YOLO dataset composition and class distribution across training, validation, and test subsets.}
+% % \label{table:yolo_data_split}
+% \end{table}
+
 \begin{table}[htbp]
 \centering
-\begin{tabular}{lccccccc}
+\begin{tabular}{lcccc}
 \hline
-Subset & Images & Labels & Tall Buoy & Round Buoy & Light Tower & Jon Boat & Sailboat \\
+& Train & Validation & Test & Total \\
 \hline
-Train & 543 & 1,343 & 12.0\% & 1.4\% & 11.2\% & 15.8\% & 59.6\% \\
-Validation & 158 & 390 & 14.1\% & 1.3\% & 13.1\% & 12.8\% & 58.7\% \\
-Test & 77 & 201 & 16.4\% & 1.5\% & 9.5\% & 12.4\% & 59.7\% \\
+Images & 543 & 158 & 77 & 778 \\
+Labels & 1,343 & 390 & 201 & 1,934 \\
 \hline
-Total & 778 & 1,934 &  &  &  &  &  \\
+Tall Buoy & 12.0\% & 14.1\% & 16.4\% &  \\
+Round Buoy & 1.4\% & 1.3\% & 1.5\% &  \\
+Light Tower & 11.2\% & 13.1\% & 9.5\% &  \\
+Jon Boat & 15.8\% & 12.8\% & 12.4\% &  \\
+Sailboat & 59.6\% & 58.7\% & 59.7\% &  \\
 \hline
 \end{tabular}
 \caption{YOLO dataset composition and class distribution across training, validation, and test subsets.}
 \label{table:yolo_data_split}
 \end{table}
 
-\noindent The relative consistency across all three subsets demonstrates that the temporal stratification preserved real-world object frequency while maintaining balance for training and evaluation. 
-The test set was reserved exclusively for the final performance assessment described in Chapter~\ref{realtime_object_detection}.
+% \noindent The relative consistency across all three subsets demonstrates that the temporal stratification preserved real-world object frequency while maintaining balance for training and evaluation. 
+% The test set was reserved exclusively for the final performance assessment described in Chapter~\ref{realtime_object_detection}.
 
-For this research, YOLOv8 was trained on a custom maritime dataset derived from sensor recordings collected aboard the Minion platform.
-The dataset includes labeled examples of navigation markers, buoys, vessels, and other relevant maritime objects captured under diverse lighting conditions, sea states, and viewing angles.
-Transfer learning was employed by initializing the network with weights pre-trained on a general-purpose dataset, then fine-tuning on the maritime-specific data to adapt the model to the target domain.
-
+% \noindent Transfer learning was employed by initializing the network with weights pre-trained on a general-purpose dataset, then fine-tuning on the maritime-specific data to adapt the model to the target domain.
 Fine-tuning was conducted using the Ultralytics YOLOv8 framework. \cite{ultralytics} %, employing a combination of data augmentation techniques—including random horizontal flips, exposure shifts, and image rotations—to improve robustness under varying lighting and sea-state conditions.
 % Hyperparameters such as learning rate, batch size, and the number of epochs were optimized empirically to achieve stable convergence while minimizing overfitting.
-To assess the tradeoff between detection accuracy and inference speed, three YOLOv8 model size variants (YOLOv8n, YOLOv8s, and YOLOv8m) were trained using the default parameters and evaluated over a set of training epochs.
+To assess the tradeoff between detection accuracy and inference speed, three YOLOv8 model size variants —nano (YOLOv8n), small (YOLOv8s), and medium (YOLOv8m) were trained using the default parameters and evaluated over a set of training epochs.
 Each model’s number of trainable parameters, summarized in Table~\ref{tab:yolo_variants}, corresponds to differences in backbone depth and channel width that balance model capacity against computational efficiency.
-Training was performed over multiple epochs to identify the most efficient configuration for the dataset.
-The YOLOv8m model exhibited no measurable improvement in mean average precision compared to YOLOv8s, while requiring substantially greater computational resources.
+This means that smaller models can perform faster and with fewer computational resources, but will likely not achieve the same levels of performance as a larger model with more parameters.
+Training was performed over a range of epochs to identify the most efficient configuration for the dataset.
+
+The medium-sized model (YOLOv8m) exhibited no measurable improvement in mean average precision compared to the small model (YOLOv8s), while containing more than twice the parameters and only processing image frames at $\approx 74\%$ the speed of the small model.
 The YOLOv8s model achieved full convergence within approximately 80 epochs without signs of overtraining and was therefore selected for subsequent testing and deployment.
+The precision, recall, and other performance metrics for each model's training are provided over 100 epochs in Appendix~\ref{append_yolo}.
 
 \begin{table}[htbp]
 \centering
@@ -624,7 +655,7 @@ YOLOv8s & 11.2 &  85 & 0.84 \\
 YOLOv8m & 25.9 &  63 & 0.87 \\
 \hline
 \end{tabular}
-\caption{YOLOv8 model comparison for visual detection tasks.}
+\caption{YOLOv8 model size comparison and mAP scores after 100 epochs.}
 \label{tab:yolo_variants}
 \end{table}
 
@@ -1135,7 +1166,6 @@ However, for maritime objects with distinct geometric profiles and size ranges, 
 \label{fig_video_pipeline}
 \end{figure}
 
-
 % \chapter{test 2}
 
 % \begin{figure}[htbp]
@@ -1145,6 +1175,40 @@ However, for maritime objects with distinct geometric profiles and size ranges, 
 %                 recording, and timestamp logging.}
 %        \label{fig:hdr_pipeline}
 %    \end{figure}
+
+\chapter{YOLO Transfer learning} \label{append_yolo}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/yolo/model_test/train_loss.png}
+    % \caption{YOLOv8 transfer learning convergence showing loss and mean Average Precision (mAP) trends over 80 epochs with the small model.}
+    % \label{fig:yolo_training_curve}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/yolo/model_test/val_loss.png}
+    % \caption{YOLOv8 transfer learning convergence showing loss and mean Average Precision (mAP) trends over 80 epochs with the small model.}
+    % \label{fig:yolo_training_curve}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/yolo/model_test/precision.png}
+    % \caption{YOLOv8 transfer learning convergence showing loss and mean Average Precision (mAP) trends over 80 epochs with the small model.}
+    % \label{fig:yolo_training_curve}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/yolo/model_test/recall.png}
+    % \caption{YOLOv8 transfer learning convergence showing loss and mean Average Precision (mAP) trends over 80 epochs with the small model.}
+    % \label{fig:yolo_training_curve}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/yolo/model_test/mAP.png}
+    % \caption{YOLOv8 transfer learning convergence showing loss and mean Average Precision (mAP) trends over 80 epochs with the small model.}
+    % \label{fig:yolo_training_curve}
+\end{figure}
+
 
 
 \end{document}
