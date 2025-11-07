@@ -572,7 +572,7 @@ The widespread adoption and speed of YOLOv8 make it the optimal choice for provi
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{YOLO Training Data} \label{sec:yolo_training_data}
+\subsection{Training Data} \label{sec:yolo_training_data}
 
 A manually labeled image dataset was constructed to support the transfer learning and evaluation of the YOLO object detection network. 
 All YOLO training images were obtained from video frames that are not present within the rosbag data.
@@ -669,160 +669,7 @@ This timing-based comparison allows fair assessment against non-GPU LiDAR pipeli
     \label{fig:yolo_training_curve}
 \end{figure}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{GB-CACHE} \label{gbcache}
-%\subfile{sections/gbcache}
-
-In parallel with vision-based detection, this research employs the LiDAR-centric method GB-CACHE to represent the class of geometry-driven clustering and segmentation algorithms.
-% optimized for sparse maritime environments.
-Its name is derived from the methodology it utilizes for object detection: grid-based clustering and concave hull extraction.
-
-The segmentation approach is designed for maritime use, where point cloud data is concentrated on only a few nearby objects.
-By ignoring large volumes of unoccupied space, GB-CACHE reduces memory demands and improves processing efficiency.
-Its deterministic design and bounded computational complexity make it an optimal choice for real-time operation, and provide a meaningful contrast to the data-intensive, black-box nature of neural-network-based algorithms.
-A block diagram of the algorithm is provided in Figure \ref{fig:gbcache_flow}
-
-The algorithm begins by projecting unstructured point cloud data into a spatially organized grid defined in the global fixed frame.
-Each point is associated with a primary set of $x$ and $y$ coordinates, and a tertiary $z$ coordinate to preserve vertical geometry.
-Segmentation is then performed by clustering adjacent occupied cells in the $x,y$ plane according to a configurable distance parameter.
-This dimensionality reduction from three to two spatial dimensions greatly reduces the computational overhead and allows the algorithm to scale linearly with size.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\linewidth]{Images/gbcache/gbcache_flow.png}
-    \caption{Block diagram of GB-CACHE process flow.}
-    \label{fig:gbcache_flow}
-\end{figure}
-
-Each segmented object is then identified by a concave hull formed from the $x$ and $y$ vertices of a perimeter-matched polygon.
-Compared to axis-aligned bounding boxes or circular boundary approximations, concave hulls more accurately reflect object geometry without overgeneralizing the object’s spatial extent.
-
-For autonomous navigation, concave hulls offer a balance between fidelity and operational safety.
-This is especially relevant in ground-based and maritime environments, where the ability to navigate between closely spaced objects depends on accurately estimating navigable pathways.
-Overly conservative bounds may exaggerate the extent of objects as viewed from the vessel.
-With precise object boundaries known, they can be inflated to accommodate navigational safety while maintaining an accurate representation of the object's structure.
-
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.95\linewidth]{Images/gbcache_flow.png}
-%     \caption{Rectangular bounding boxes placed around maritime objects detected by a re-trained YOLO detection model.}
-%     \label{fig:gbcache_flow}
-% \end{figure}
-
-% The YOLO Framework
-% Describe the principle succinctly:
-
-% YOLOv8 Architecture
-
-% This section should flow from general framework to version-specific improvements:
-
-% Image Resolution and Input Scaling
-% Transition to operational detail and experimental consistency:
-
-% Detection Scale and Spatial Sensitivity
-% Discuss how feature maps relate to the detection limit:
-
-% Model Constraints and Applicability
-% Then note practical limitations and their relevance:
-
-% Implications for Real-Time Fusion
-% Conclude the section by connecting to your larger research goal:
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \subsection{Grid-Based Indexing} \label{sec:grid-based_indexing}
-
-% Reliable object detection from LiDAR data is essential for safe maritime autonomy. To process large three-dimensional point clouds efficiently, this work applies the Grid-Based Clustering and Concave Hull Extraction (GB-CACHE) framework, an existing method developed for real-time segmentation of sparse LiDAR data. The approach enables rapid separation of individual objects while maintaining computational efficiency compatible with embedded vessel hardware.
-
-% GB-CACHE operates by organizing each LiDAR scan into a structured spatial grid, allowing nearby points to be grouped without requiring full pairwise distance comparisons. This grid representation simplifies the process of identifying discrete clusters that correspond to physical objects such as buoys, vessels, or markers. By tuning grid size and connectivity thresholds, the method balances sensitivity to small targets against computational cost. In maritime environments—where LiDAR returns are sparse and concentrated on a few floating objects—the grid structure efficiently isolates relevant regions while ignoring the large volumes of empty space above and below the water surface.
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.5\linewidth]{Images/gbcache_flow.png}
-%     \caption{Functional block diagram of the GB-CACHE workflow.}
-%     \label{fig:gbcache_flow}
-% \end{figure}
-
-% Once potential objects are identified, GB-CACHE extracts geometric boundaries that define their overall shape. Each detected cluster is represented by a concave hull, which conforms closely to the true object outline rather than enclosing it with a simple convex boundary. This representation preserves important geometric details for irregular maritime targets, such as navigation buoys or vessel superstructures, while remaining compact for downstream processing. The resulting shape models form the basis for feature extraction and classification in subsequent stages of the perception pipeline.
-
-% The algorithm’s design emphasizes computational efficiency and predictable timing. Grid-based indexing ensures that processing time scales linearly with the number of points in a scan, allowing consistent real-time performance. Each LiDAR frame is processed independently—populating the grid, segmenting occupied regions, and generating hulls—without maintaining historical state or iterative refinement. This stateless design simplifies implementation and guarantees bounded latency, which is critical for collision-avoidance and control tasks.
-
-% GB-CACHE’s lightweight memory requirements further support real-time operation. Because memory usage scales with grid dimensions rather than total point count, resource consumption remains stable across varying environmental conditions. The method thus provides a practical and computationally efficient means of segmenting maritime LiDAR data into meaningful object candidates, serving as the front-end detection stage for the overall perception system.
-
-% The segmentation stage of \ac{GB-CACHE} produces a structured list of clustered objects, each represented by a polygonal boundary and associated point statistics.
-% The multivariate Gaussian classifier (MGC) operates in parallel to this process, classifying each object in the list based on geometric and intensity-derived features computed from its segmented point cloud.
-% This architecture separates detection from classification, enabling each to be optimized and evaluated independently while maintaining real-time operation.
-
-% For each detected object, a ten-dimensional feature vector is extracted that captures both spatial geometry and surface reflectivity characteristics.
-% The geometric features describe object shape and scale, while the intensity-based features provide cues related to material properties and orientation of reflective surfaces.
-% These complementary measurements form a compact yet discriminative representation suitable for statistical classification.
-% The selected features are summarized in Table~\ref{tab:features_gbcache}.
-
-% \begin{table}[htbp]
-% \centering
-% \begin{tabular}{lll}
-% \hline
-% \multicolumn{3}{c}{GB-CACHE: Object Classification Features}\\
-% \hline
-% \hline
-% \textbf{No.} & \textbf{Feature Type} & \textbf{Description} \\ 
-% \hline
-% 1 & Maximum Intensity & Peak LiDAR return intensity \\
-% 2 & Minimum Intensity & Lowest LiDAR return intensity \\
-% 3 & Average Intensity & Mean LiDAR return intensity \\
-% 4 & Intensity Standard Deviation & Variation in return intensity \\
-% 5 & Maximum Height & Vertical extent of the object \\
-% 6 & Filled Cell Count & Number of occupied grid cells \\
-% 7 & Polygon Perimeter & Boundary length of concave hull \\
-% 8 & Polygon Area & Enclosed area of concave hull \\
-% 9 & 2D Minor Axis Length & Shorter principal axis of object shape \\
-% 10 & 2D Major Axis Length & Longer principal axis of object shape \\
-% \hline
-% \end{tabular}
-% \caption{Features used for GB-CACHE multivariate classification.}
-% \label{tab:gbcache_features}
-% \end{table}
-
-% The MGC models the joint probability distribution of these features for each object class under the assumption of Gaussian statistics.
-% Each class is represented by its mean vector and covariance matrix, estimated from labeled training data.
-% During inference, the classifier computes the likelihood of an observed feature vector under each class model and assigns the class with the highest posterior probability.
-% This probabilistic formulation captures correlations among features and yields confidence estimates that can be used downstream in fusion or decision logic.
-
-% Feature-based classification offers several advantages for real-time maritime perception.
-% It requires minimal training data, provides interpretability of the decision process, and imposes negligible computational overhead.
-% Unlike deep-learning models that operate directly on raw point clouds, the MGC approach allows rapid retraining or adaptation to new object categories without altering the underlying clustering framework.
-% This modularity supports continuous improvement and integration within the real-time perception pipeline illustrated in Figure~\ref{fig:gbcache_flow}.
-
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.95\linewidth]{Images/info_theory_chart_1.png}
-%     \caption{Caption}
-%     \label{fig:infoTheory_chartsA}
-% \end{figure}
-
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.8\linewidth]{Images/info_theory_chart_2.png}
-%     \caption{Caption}
-%     \label{fig:infoTheory_charts}
-% \end{figure}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{GB-CACHE Training Data} \label{training_data_gbcache}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Classification Comparison} \label{sec:classify}
-\subsection{Metrics} \label{classify_metrics}
-\subsection{Accuracy} \label{classify_accuracy}
-\subsection{Timing} \label{classify_timing}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{YOLO Performance} \label{performance_yolo}
-
-
-
+\subsection{Results} \label{sec:yolo_results}
 
 The fine-tuned YOLOv8-s model achieved the best balance of accuracy and speed for maritime operations.
 Model evaluation was performed using a holdout dataset collected under variable illumination and sea states.
@@ -850,48 +697,145 @@ By isolating timing metrics for each processing stage, the performance compariso
 This approach emphasizes algorithmic latency, rather than total frame rate, as the primary metric for evaluating real-time feasibility in multi-sensor fusion.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{GB-CACHE Performance} \label{performance_gbcache}
+\section{GB-CACHE} \label{gbcache}
+%\subfile{sections/gbcache}
 
-A mutual information (MI) framework was used to quantify the statistical dependence between each LiDAR-derived feature and the corresponding object class label used in the multivariate Gaussian classifier. 
-The objective of this analysis was to determine which features contributed the greatest amount of information for class discrimination, as well as to identify any redundant or weakly informative features.
+Grid-Based Clustered Adaptive Concave Hull Extraction (GB-CACHE) is a spatial indexing and clustering methodology specifically designed for efficient processing of three-dimensional point cloud data in maritime environments. 
+The algorithm provides rapid object segmentation through grid-based spatial partitioning followed by concave hull boundary extraction, enabling the real-time detection performance essential for autonomous navigation safety.
 
-Each feature vector consisted of ten geometric and intensity-based descriptors extracted from clustered LiDAR objects, including metrics such as concave-hull perimeter, projected area, principal axis lengths, circularity, and statistical measures of return intensity. 
-The feature set was standardized to zero mean and unit variance prior to analysis to prevent scale-dependent bias in the estimator.
+\subsection{Grid-Based Spatial Indexing and Clustering} \label{gbcache_clustering}
+% ### Grid-Based Spatial Indexing and Clustering
 
-Mutual information values were computed between each individual feature $x_i$ and the discrete class label $y$ using
-\[
-I(x_i; y) = \sum_{x_i,y} p(x_i, y) \log \frac{p(x_i, y)}{p(x_i) p(y)},
-\]
-where $p(x_i, y)$ is the joint probability distribution estimated from the dataset.
-Continuous-valued features were discretized into an adaptive number of bins based on quantiles to balance estimator bias and variance.
-The resulting $I(x_i; y)$ values represent the reduction in uncertainty of the class label given knowledge of each feature.
+The fundamental principle underlying GB-CACHE involves partitioning the three-dimensional LiDAR point cloud into a regular grid structure that facilitates efficient spatial queries and proximity-based clustering. Rather than evaluating pairwise distances among all points, the grid-based approach achieves linear complexity by organizing points into fixed spatial bins. Each grid cell represents a discrete volumetric region, and points falling within the same cell or adjacent cells are considered spatially proximate.
+This spatial indexing approach proves particularly advantageous for maritime LiDAR data. 
+% The majority of returns originate from discrete floating objects rather than continuous surfaces, and the predominantly planar water surface produces minimal returns. 
+The sparse nature of maritime point clouds enables the grid structure to efficiently isolate regions containing potential objects while discarding empty space, thereby reducing both memory consumption and computational overhead.
 
-Pairwise feature–feature mutual information values $I(x_i; x_j)$ were also computed to evaluate redundancy among features and to support subsequent feature selection using the minimum redundancy–maximum relevance (mRMR) criterion.
+% Once the point cloud is organized spatially, connected component analysis identifies clusters of occupied grid cells representing distinct physical objects. 
+% The clustering operation employs 26-connectivity criteria (vertex-connected), grouping cells that share faces, edges, or vertices. 
+% This connectivity threshold preserves object integrity for maritime targets that may exhibit irregular geometric configurations, particularly navigation buoys with narrow mounting hardware or vessels with complex superstructures. 
+% Following initial clustering, size-based filtering removes clusters that are inconsistent with the target object dimensions, thereby eliminating obvious false positives before feature extraction.
 
-Features related to object geometry, such as perimeter and projected area, exhibited the highest mutual information with class labels, indicating that spatial extent and shape are the most discriminative descriptors within the dataset. 
-Intensity-based and statistical features showed moderate information gain, while derived ratios and higher-order shape factors contributed marginally.
+% ### Concave Hull Extraction and Feature Calculation
+\subsection{Concave Hull and Feature Extraction} \label{gbcache_features}
 
-Pairwise feature–feature analysis revealed moderate redundancy between perimeter and area, as expected from their geometric relationship, but limited redundancy across the remaining features. 
-The mRMR ranking procedure identified [placeholder feature names] as the most informative subset for classification, providing a compact feature set with minimal information overlap.
+For each cluster identified through the grid-based segmentation, GB-CACHE extracts a concave hull boundary that defines the object's spatial extent. 
+While convex hulls guarantee computational efficiency and provide simple bounding representations, concave hulls more accurately capture object shape by allowing inward boundary curvature. 
+This distinction proves critical for maritime objects with non-convex geometries, including U-shaped channel markers or vessels with significant superstructure features.
 
-Overall, the mutual information results confirm that geometric descriptors carry the dominant class-discriminative content in the LiDAR feature set, while statistical and textural measures provide supplementary but nonessential information. 
-These findings guided the dimensionality reduction and feature selection strategies adopted for the multivariate Gaussian classifier.
+The concave hull generation process balances boundary accuracy against computational cost through a configurable complexity parameter that controls the degree of boundary concavity. 
+The resulting polygon provides a compact geometric representation suitable for both visualization and feature extraction for subsequent classification. 
+Beyond simple bounding boxes, concave hull boundaries enable the calculation of geometric features, such as area and perimeter, that support object classification. 
 
-
-
-% \subsection{Computational Efficiency} \label{sec:gbcache_efficiency}
-
-The algorithmic design of \ac{GB-CACHE} prioritizes computational efficiency to enable real-time processing on autonomous surface vessel hardware with limited computing resources.
-Grid-based spatial indexing reduces clustering complexity from quadratic to linear in the number of points, while the regular grid structure enables vectorized operations and cache-efficient memory access patterns.
-These optimizations prove essential for maintaining detection frame rates sufficient for autonomous navigation, where delayed perception degrades collision avoidance performance.
-
-The GB-CACHE processing pipeline operates incrementally on each \ac{LiDAR} scan, maintaining no temporal history and requiring no iterative refinement.
-This design guarantees bounded worst-case execution time, critical properties for safety-critical autonomous systems.
-Each scan undergoes independent processing: grid population, clustering, hull extraction, and feature calculation, producing object detections with consistent latency.
-
+The algorithmic design prioritizes computational efficiency to enable real-time processing on autonomous surface vessel hardware with limited computing resources. 
+The processing pipeline operates incrementally on each LiDAR scan, maintaining no temporal history and requiring no iterative refinement. 
+This stateless design simplifies implementation and guarantees bounded worst-case execution time, a critical property for safety-critical autonomous systems. 
 Memory requirements scale with grid dimensions rather than point count, providing predictable resource consumption independent of scene complexity.
-The grid representation compresses sparse maritime point clouds into compact occupancy structures, reducing memory bandwidth requirements compared to maintaining full point coordinates.
-This compression proves particularly advantageous for maritime environments where objects occupy a small fraction of the sensor's field of view.
+
+
+% \begin{figure}[htpb]
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{Images/gbcache/gbcache_flow.png}
+%     \caption{A block diagram of GB-CACHE process flow. Clock colors correspond to measured segments of the GB-CACHE process: Ground Plane Removal (blue), Add Points (lime green), and clustering/Convex Hull Extraction/Classification (teal).}
+%     \label{fig:gbcache_flow}
+% \end{figure}
+
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{Images/gbcache_flow.png}
+%     \caption{Rectangular bounding boxes placed around maritime objects detected by a re-trained YOLO detection model.}
+%     \label{fig:gbcache_flow}
+% \end{figure}
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.5\linewidth]{Images/gbcache_flow.png}
+%     \caption{Functional block diagram of the GB-CACHE workflow.}
+%     \label{fig:gbcache_flow}
+% \end{figure}
+
+
+% \begin{table}[htbp]
+% \centering
+% \begin{tabular}{lll}
+% \hline
+% \multicolumn{3}{c}{GB-CACHE: Object Classification Features}\\
+% \hline
+% \hline
+% \textbf{No.} & \textbf{Feature Type} & \textbf{Description} \\ 
+% \hline
+% 1 & Maximum Intensity & Peak LiDAR return intensity \\
+% 2 & Minimum Intensity & Lowest LiDAR return intensity \\
+% 3 & Average Intensity & Mean LiDAR return intensity \\
+% 4 & Intensity Standard Deviation & Variation in return intensity \\
+% 5 & Maximum Height & Vertical extent of the object \\
+% 6 & Filled Cell Count & Number of occupied grid cells \\
+% 7 & Polygon Perimeter & Boundary length of concave hull \\
+% 8 & Polygon Area & Enclosed area of concave hull \\
+% 9 & 2D Minor Axis Length & Shorter principal axis of object shape \\
+% 10 & 2D Major Axis Length & Longer principal axis of object shape \\
+% \hline
+% \end{tabular}
+% \caption{Features used for GB-CACHE multivariate classification.}
+% \label{tab:gbcache_features}
+% \end{table}
+
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{Images/info_theory_chart_1.png}
+%     \caption{Caption}
+%     \label{fig:infoTheory_chartsA}
+% \end{figure}
+
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.8\linewidth]{Images/info_theory_chart_2.png}
+%     \caption{Caption}
+%     \label{fig:infoTheory_charts}
+% \end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Training Data} \label{training_data_gbcache}
+
+% Training data for the GB-CACHE's MGC was obtained from data within the rosbag dataset described in Section~\ref{sec:data_overview}.
+
+% In general, each class of object was observed in a stationary position at a range of 40 to 60 meters as the Minion \ac{USV} approached the object to a range of 5 meters. 
+% In total, this results in approximately 20 to 30 seconds of training data for each object class.
+% The only notable exception to this method is for the Jon boat class. 
+% Due to constraints on available time for data collection, training data for this class consisted of Minion remaining stationary, and the Jon boat approaching the \ac{USV} from a similar range and rate.
+% At least one rosbag within the dataset was recorded for training each of the six object classes, and these bag IDs are listed in Table \textcolor{red}{insert table}.
+
+% The training bagfiles are post-processed with MATLAB to extract the target object ID and metadata from the \texttt{obj\_w\_class} topic over the identified time period.
+% This metadata is processed to extract 10 features used for classification, which are provided in Table~\ref{tab:gbcache_features}.
+
+
+
+
+\subsection{Results} \label{sec:gbcache_results}
+
+To evaluate computational performance, the GB-CACHE processing sequence is grouped into three subroutines.
+These subroutines correspond to the sequential stages that handle LiDAR data input, spatial filtering, and map updating during each processing cycle.
+The first subroutine, "Filter Points," removes points reflected from the water's surface, reducing noise and false positives with object detection.
+The second routine, "Add Points," assigns the remaining raw LiDAR returns to the occupancy grid, \textcolor{blue}{listing them as unprocessed}.
+The final subroutine, "Map Points", combines segmentation, clustering, and classification.
+Figure~\ref{fig:gbcache_flow_analysis} provides a block diagram of the GB-CACHE workflow with these three subroutines windowing the related tasks.
+
+---
+
+Each rosbag was replayed on the same Minion PC hardware that recorded it, providing only the raw LiDAR data and navigational topics to the GB-CACHE ROS node. 
+This approach perfectly simulates the operational data processing environment. 
+The execution time of each subroutine was measured along with the number of points processed by each function. 
+Overall, more than 1.7 million executions of "Filter Points" and "Add Points" and more than 45 thousand executions of "Update Map" were measured across the entire dataset.
+
+The LiDAR data is transmitted at a rate of 100 Hz from three Livox Horizon units, while the output ROS topic \texttt{Obj\_w\_class} that this algorithm generates is published at 5 Hz. 
+The first two subroutines examined, "Filter Points" and "Add Points", execute sequentially without parallelization. 
+These processes must handle raw data from all three LiDAR units at 100 Hz; therefore, these two subroutines must execute at least once every 3.33 milliseconds. 
+The "Update Map" subroutine receives the output of the first two, but only outputs detections at 5 Hz, providing an allotted execution time of 200 milliseconds per cycle.
+
+
 
 \begin{figure}
     \centering
@@ -900,26 +844,7 @@ This compression proves particularly advantageous for maritime environments wher
     \label{fig:gbcache_flow_analysis}
 \end{figure}
 
-Performance analysis of the \ac{GB-CACHE} implementation on the Minion platform demonstrates exceptional computational efficiency compatible with real-time autonomous navigation requirements.
-The spatial filtering and point addition operations execute with sub-millisecond latency, consuming negligible fractions of available processing time at sensor frame rates.
-The map update operation, while more computationally intensive, exhibits strong linear correlation with object geometric complexity, specifically polygon perimeter and surface area.
-This predictable scaling behavior enables reliable worst-case execution time estimation for safety-critical autonomous systems.
-Hardware resource utilization remains minimal during typical operation, with both processor and memory consumption well below capacity thresholds, providing substantial computational headroom for concurrent navigation and control processes.
-Detailed performance characterization across diverse maritime object encounters validates the algorithm's suitability for sustained real-time operation under operational constraints.
 
-% \subsection{GB-CACHE Execution Performance}
-%%%% GPT analysis of results
-To evaluate computational performance, execution times were recorded for each GB-CACHE subroutine across all processed ROS bag datasets. 
-Each subroutine timing corresponded to a complete call of its respective function, and timestamps were generated on a single synchronized host computer to ensure consistent temporal reference.
-
-Three primary subroutines within the GB-CACHE processing loop were instrumented for timing, as illustrated in Figure~\ref{fig:gbcache_flow_analysis}. 
-These correspond to the sequential stages that handle LiDAR data input, spatial filtering, and map updating during each processing cycle. 
-Each subroutine represents a distinct computational task within the overall workflow, encompassing the removal of irrelevant ground-plane returns, the insertion of new point data into the cache, and the segmentation and classification of clustered features used for object detection.
-
-Each event was logged during runtime and later analyzed in MATLAB to determine average duration, execution frequency, and utilization of available processing time. 
-Outliers above the 99.5th or 99.9th percentile were discarded to remove statistical noise caused by transient load conditions.
-
-% \subsubsection*{Results}
 \begin{table}[htbp]
 \centering
 \begin{tabular}{lccccc}
@@ -935,16 +860,47 @@ Update Map & 45,746 & 8.002 & 200 & 4.00 \% \\
 \label{tbl:gbcache_subroutine_results}
 \end{table}
 
-The results show that all GB-CACHE operations complete well within their real-time deadlines. 
-The \textit{Filter Points} and \textit{Add Points} stages execute on the order of microseconds to sub-milliseconds, together consuming less than five percent of their available 3.33~ms cycle time. 
-The \textit{Update Map} stage, which performs segmentation and classification, operates at 5~Hz and occupies approximately four percent of its 200~ms time window.
+% timing analysis
+Performance analysis of the GB-CACHE implementation on the Minion platform demonstrates exceptional computational efficiency compatible with real-time autonomous navigation requirements. 
+The combined point-processing stages execute well within the available time budget. 
 
-% \subsubsection*{Interpretation}
-The findings indicate that GB-CACHE’s computational performance is dominated by the segmentation and classification phase, yet remains well below the latency threshold required for real-time operation. 
-The lightweight filtering and data-insertion routines contribute negligibly to total cycle time. 
-Polynomial regression and correlation analysis further confirmed that \textit{Update Map} duration scales with scene complexity---specifically, with total feature perimeter and area---while \textit{Filter Points} and \textit{Add Points} remain largely invariant.
+The data shown in table~\ref{tbl:gbcache_subroutine_results} indicate that GB-CACHE's computational performance is dominated by the segmentation and classification phase. 
+Yet, this process remains well below the latency threshold required for real-time operation, and the preceding "Filter Points" and "Add Points" steps contribute negligibly to the total cycle time. 
 
-Overall, the analysis demonstrates that GB-CACHE can sustain real-time performance on the tested hardware with significant computational margin for additional perception or control tasks.
+The Filter Points and Add Points subroutines were measured to have a combined mean execution time of  0.149 ms per cycle, which corresponds to approximately 4.5\% of the 3.33 ms processing window allocated for LiDAR data processing. 
+This indicates that online point filtering and insertion impose minimal computational load relative to the cycle time.
+% \textcolor{blue}{need more discussion here of capability and comp head-room. Also discuss the plateau of filterpts and clustering of acquirePts scatter plots}
+
+In comparison, the Update Map subroutine requires an average of 8.002 ms per update, utilizing only about 4.0\% of its 200 ms allocation. 
+All three stages, therefore, maintain substantial timing margins, confirming that the mapping pipeline can operate in real time without approaching its latency constraints. 
+Histograms of the execution times for each subroutine are provided along with normalized scatter plots of execution time against the number of points processed in Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}, and \ref{fig:gbcache_update_map}.
+
+The data shown in table~\ref{tbl:gbcache_subroutine_results} indicate that GB-CACHE's computational performance is dominated by the segmentation and classification phase. 
+Yet, this process remains well below the latency threshold required for real-time operation, and the preceding "Filter Points" and "Add Points" steps contribute negligibly to the total cycle time. 
+
+
+% timing/points analysis
+The scatter plots of Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}, and \ref{fig:gbcache_update_map} reveal essential information regarding how well the method can scale. 
+The scatter plots 
+Plotting each execution time against the number of points processed reveals how the algorithm scales computationally. 
+\textcolor{red}P{"Filter Points" looks to appear to have a linear histogram, with an upper bound to the number of points returned most frequently. "Add Points" looks to have a near-linear to somewhat logarithmic scaling.}
+% The grid representation compresses sparse maritime point clouds into compact occupancy structures, reducing memory bandwidth requirements compared to maintaining full point coordinates. 
+% This compression proves particularly advantageous for maritime environments where objects occupy a small fraction of the sensor's field of view.
+subfigures \ref{fig:gbcache_update_map} (b) and \ref{fig:gbcache_update_map} (c) vary slightly to Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}.
+Rather than plotting the execution of the "Update Map" subroutine against the number of points, we examined the duration as a function of the mean length and mean area of observed objects. 
+The data shows a strong linear correlation with object perimeter length and a similarly strong quadratic relationship with object area. 
+This predictable scaling behavior enables the reliable estimation of worst-case execution time for safety-critical autonomous systems. It suggests potential algorithmic improvements to optimize how shorelines are handled when they appear within the LiDAR return data.
+% This is of particular interest for maritime operations in littoral zones, suggesting potential algorithmic improvements to optimize how shorelines are handled when they appear within the LiDAR return data.
+
+
+% The "Update Map" operation, while more computationally intensive than the filtering stages, exhibits strong linear correlation with object geometric complexity—specifically, polygon perimeter and surface area. 
+% This predictable scaling behavior enables the reliable estimation of worst-case execution time for safety-critical autonomous systems. 
+
+
+% hardware analysis
+% \textcolor{red}{Hardware resource utilization remains minimal during typical operation, with both processor and memory consumption well below capacity thresholds, providing substantial computational headroom for concurrent navigation and control processes.}
+
+
 
 \begin{figure}[htbp]
 \centering
@@ -1002,25 +958,129 @@ Overall, the analysis demonstrates that GB-CACHE can sustain real-time performan
     \begin{subfigure}[b]{0.8\linewidth}
         \centering
         \includegraphics[width=\linewidth]{Images/gbcache/Update_Map_scatter.png}
-        \caption{Two scatter plot of duration of \texttt{map\_update} against average perimeter length of polygon (left), and against average area of polygon (right). The line of best-fit is shown in red for each, with associated polynomial values of: $x^2 = -0.0727, x^1 = -0.0151, x^0 = -0.0151$ (left) and $x^2 = 0.2556, x^1 = -0.00913, x^0 = -0.00913$ (right) }
+        \caption{Two scatter plots of duration of \texttt{map\_update} against average perimeter length of polygon (left), and against average area of polygon (right). The line of best-fit is shown in red for each, with associated polynomial values of: $x^2 = -0.0727, x^1 = -0.0151, x^0 = -0.0151$ (left) and $x^2 = 0.2556, x^1 = -0.00913, x^0 = -0.00913$ (right)}.
         \label{fig:gbcache_update_map_scatter}
     \end{subfigure}
 
-    \caption{Histogram (a) and scatter (b) plots of \texttt{map\_update} process plotted against number of LiDAR points}
+    \caption{Histogram of \texttt{map\_update} execution duration (a) and scatter plots (b) of execution time plotted as a function of detected object perimeter (left) and object surface area (right) number of LiDAR points}
     \label{fig:gbcache_update_map}
 \end{figure}
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Feature Relevance} \label{features}
+\subsection{MGC Feature Analysis} \label{features_gbcache}
+% \subsubsection{GB-CACHE Features} 
 
-\subsubsection{YOLO Features} \label{features_yolo}
+% \subsection{Multivariate Gaussian Classifier} \label{gbcache_mgc}
+% A multivariate Gaussian classifier was selected to be paired with GB-CACHE for object classification. 
+% Research performed by Thompson \cite{thompson2017} previously determined this classification method as superior to classification with support vector machines, though no investigation has been performed to examine the effectiveness of the set of ten features used.
 
-\subsubsection{GB-CACHE Features} \label{features_gbcache}
+The classification of objects utilizes a Multivariate Gaussian Classifier (MGC) framework to model the joint probability distribution of extracted features for each object class. 
+Under the assumption that features follow multivariate Gaussian distributions within each class, the classifier computes class likelihoods using covariance matrices and mean vectors estimated from labeled training data. 
+This approach offers computational efficiency during inference while capturing correlations among features, thereby enhancing discriminative power.
 
-GB-CACHE employs a \acl{MGC} to specify what class of object it has identified. 
-Much like other classification methods, it utilizes a list of detected features to distinguish one class from another.
-Each of the ten features it observes is provided with a brief description in Table \ref{tab:gbcache_features}.
-The magnitude of an object's observed individual features may change based on distance to the object or viewing angle, but their relative values still provide valuable information.
+% The Gaussian assumption simplifies the classification problem to estimating a probability density function for each class from the feature distributions within the training samples and applying Bayes' rule during inference to select the most probable class. 
+% For a feature vector representing an observed object, the classifier evaluates the probability density under each class-specific Gaussian model and assigns the class yielding maximum posterior probability. 
+% This framework naturally accommodates multiple object classes and provides confidence estimates through the posterior probability values.
+The Gaussian assumption simplifies the classification problem to estimating a probability density function for each class from the feature distributions within the training samples and applying Bayes' rule during inference to select the most probable class.
+This framework naturally accommodates multiple object classes and provides confidence estimates through the posterior probability values.
+
+
+
+Ten features are extracted in total.  
+Four intensity features are identified from the raw, segmented LiDAR data, and six additional features are derived from the extracted concave hull geometry.
+These ten features are listed with a brief description in Table~\ref{tab:gbcache_features}.
+While Thompson \cite{thompson2017} demonstrated that this classification method outperforms support vector machines, the effectiveness of the features utilized has not been investigated.
+% While this feature set provides comprehensive object characterization, not all features contribute equally to classification performance, and some features exhibit redundancy through correlation. 
+The analysis conducted here examines the effectiveness of the feature set when detecting the six maritime object classes from this dataset, as identified in Section~\ref{sec:data_overview}.
+
+The dataset comprised 449,478 individual detections spanning 1,465 unique objects tracked across approximately 19.3 million milliseconds (5.35 hours) of sensor data. 
+After excluding samples with unknown class labels and downsampling by averaging features for each unique tracked object, the final analysis dataset contained 916 samples across 6 classes with 10 features per sample. 
+Table~\ref{tbl:class_distribution} summarizes the class distribution in the original detection dataset.
+
+The substantial class imbalance, with Class 1 accounting for nearly 60\% of all detections, reflects the relative prevalence of different object types in the maritime environment sampled during data collection. 
+All feature values were normalized prior to analysis to ensure that features with different scales contributed equally to mutual information calculations.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\hline
+Class Label & Samples & Unique Objects \\
+\hline
+\hline
+Tall Buoy   & 266,380     & 730           \\
+A2 Buoy     & 83,583      & 674           \\
+A3 Buoy     & 69,559      & 803           \\
+Light Tower & 13,171      & 48            \\
+Jon Boat    & 1,624       & 39            \\
+Sailboat    & 7,543       & 171           \\      
+\hline
+\end{tabular}
+\caption{Summary of detected samples used for MGC Feature analysis. Each sample provides an example of all 10 features.}
+\label{tbl:class_distribution}
+\end{table}
+
+
+\paragraph{Mutual Information}
+Mutual information (MI) quantifies the reduction in uncertainty about one variable given knowledge of another, providing a model-agnostic measure of statistical dependence applicable to both linear and nonlinear relationships. 
+To evaluate the discriminative power and redundancy within the ten-feature set, two complementary analyses were conducted.
+First, the MI of feature-class was examined to measure each feature's individual contribution to object classification, and pairwise feature-feature mutual information (PMI) to identify correlated measurements that provide overlapping information.
+The results are presented in Figure~\ref{MGC_feature_analysis}(a - e).
+
+The feature ranking by mutual information with class labels revealed substantial variation in discriminative power across the ten features, as shown in Figure~\ref{MGC_feature_analysis}. 
+The top four features ($f_3, f_4, f_5, f_6$) exhibited MI values ranging from 0.59 to 0.64 bits, providing nearly twice the amount of discriminative information for determining the correct object label as the other six.
+These features appear to capture fundamental geometric properties that distinguish maritime object classes. 
+Features ($f_8, f_{10}, f_9$) exhibited moderate MI values (between 0.18 and 0.30 bits), suggesting practical but less critical discriminative power. 
+Finally, the bottom three features ($f_7, f_1, f_2$) demonstrated weak relationships with class labels. %, with mutual information below 0.15 bits.
+
+\paragraph{Feature redundancy}
+Following the feature-class analysis, PMI was computed to identify redundant measurements between pairs of features.
+Using a threshold of 0.30 bits, the analysis identified 21 feature pairs exhibiting significant correlation, indicating that certain features provide overlapping information about object characteristics. 
+% Table~\ref{tbl:redundant_pairs} presents the redundant feature pairs ordered by mutual information magnitude.
+
+The most extreme redundancy is observed in the geometric feature cluster ($f_3, f_4, f_5$), where the pairwise mutual information exceeds 1.4 bits for all three combinations. 
+This indicates that these features capture highly overlapping geometric information about object extent or boundary characteristics. 
+Similarly, features $f_1$ and $f_2$ exhibit strong correlation (1.28 bits), suggesting redundant intensity measurements. 
+The redundancy analysis confirmed that opportunities exist for dimensionality reduction without necessarily sacrificing classification performance.
+
+\paragraph{Optimal Feature Subsets}
+Following the redundancy analysis, the minimum Redundancy Maximum Relevance (mRMR) criterion was employed to identify optimal feature subsets. 
+The mRMR framework is a feature selection methodology that prioritizes variables that are highly relevant to class labels, as measured by mutual information, while simultaneously minimizing redundancy among selected features. 
+This optimization procedure ensures that the resulting subset consists of features that each contribute novel discriminative information, providing a compact and practical basis for classification.
+
+The mRMR algorithm was initialized with feature $f_3$, which exhibited the highest feature-class mutual information (0.6430 bits). 
+Each subsequent feature was evaluated based on its mRMR score, which balances the feature's relevance to class prediction against its redundancy with already-selected features. 
+% Table~\ref{tbl:mrmr_selection} shows the sequential feature selection process and the mRMR score at each step.
+
+The mRMR scores decline after the second feature, with scores becoming negative by the fourth feature selection. This indicates that beyond the first two features, additional features contribute more redundancy than discriminative value. 
+The analysis identified an optimal feature subset of just two features: $f_3$ (MI = 0.6430) and $f_8$ (MI = 0.2990). This dramatic reduction from ten to two features suggests that the majority of class-discriminative information is captured by a small number of well-chosen measurements.
+
+\paragraph{Discussion}
+% The information-theoretic analysis reveals several important characteristics of maritime object discrimination through LiDAR sensing. 
+% First, the substantial variation in feature-class mutual information demonstrates that not all features contribute equally to classification performance. 
+% The four-fold difference between the most informative feature ($f_3$, MI = 0.643) and the least informative feature ($f_2$, MI = 0.098) indicates that careful feature selection can substantially reduce computational burden while maintaining classification capability.
+% Second, the extensive redundancy observed among features confirms that the original ten-feature set contains significant overlapping information. 
+% \textcolor{red}{The extreme redundancy within the geometric feature cluster $f_3, f_4, f_5$ (maximum intensity, std. deviation of intensity, and maximum height) with pairwise mutual information exceeding 1.4 bits, suggests that these features likely represent strongly correlated geometric measurements, such as perimeter, area, and object extent.}
+% Such correlation is geometrically expected, as larger objects naturally exhibit both greater perimeters and areas in proportion to their size. 
+% Similarly, the high correlation between $f_1$ and $f_2$ (MI = 1.28) suggests these intensity features may represent related statistics such as minimum and maximum intensity values that covary across objects.
+% Third, the mRMR optimization's identification of a two-feature optimal subset has important implications for computational efficiency and classifier robustness. Feature extraction and Gaussian density evaluation both scale with feature dimensionality, so reducing from ten to two features decreases processing time by approximately 80\% while maintaining the core discriminative information. This reduction also mitigates overfitting risk in the MvGC framework, as covariance matrix estimation from limited training data becomes more stable with fewer parameters. 
+% While the performative analysis conducted on the GB-CACHE implementation on Minion would not benefit from such a reduction to the number of features used, this analysis would have direct benefit for smaller SWaP-constrained unmanned vehicles or edge devices.
+
+The composition of the optimal feature subset—combining $f_3$ (high MI = 0.643) with $f_8$ (moderate MI = 0.299)—demonstrates the value of the mRMR criterion's balanced approach. While $f_4$ and $f_5$ exhibit higher individual mutual information with class labels than $f_8$, their high correlation with $f_3$ provides minimal additional discriminative value. Feature $f_8$, despite lower individual relevance, contributes complementary information that improves classification when combined with $f_3$. This complementarity likely reflects the distinction between geometric and intensity-based discrimination mechanisms: if $f_3$ represents a geometric measurement and $f_8$ an intensity or height-related feature, their combination captures both structural shape information and material or elevation properties.
+The feature selection results validate the architectural decision to separate detection from classification through engineered features rather than end-to-end deep learning approaches. By analyzing which features contribute to discriminative power, we gain insight into what object characteristics drive classification decisions. The finding that two features suffice for effective classification suggests that maritime object categories exhibit relatively simple decision boundaries in appropriately chosen feature spaces, at least for the six classes examined in this analysis. This simplicity enables the MvGC framework to achieve practical classification performance with substantially less training data than neural network approaches would require.
+However, several caveats must be acknowledged. The analysis was conducted on a dataset with a substantial class imbalance, where Class 1 accounts for 60\% of the detections. This imbalance may bias mutual information calculations toward features that discriminate the dominant class while underweighting features useful for rare classes. The downsampling procedure, which averages features across multiple detections of each unique object, may have reduced feature variance and affected correlation estimates. Additionally, the optimal feature subset was determined through computational analysis of the specific dataset collected during operational deployments. Generalization to new maritime environments or previously unobserved object classes may require retaining additional features that capture discriminative information not present in the training data.
+The information-theoretic framework established here provides a principled methodology for evaluating future refinements to the classification system. Additional features derived from temporal consistency across multiple frames can enhance detection robustness when single-frame observations are ambiguous. Advanced feature engineering, incorporating shape descriptors such as aspect ratios from fitted ellipses or curvature analysis of concave hull boundaries, may further improve classification accuracy for geometrically similar object classes. The mRMR criterion ensures that such additions contribute genuine discriminative power without polluting the feature space with redundant measurements, which would degrade classifier stability and generalization performance. Future work should investigate whether the two-feature optimal subset maintains classification accuracy when tested on independent validation data collected under different maritime conditions, and whether expanding the object class taxonomy to include additional categories necessitates retaining the currently redundant features.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{Images/gbcache/feature_analysis_multi.png}
+    \caption{Information theoretical analysis of the 10 features used for classification.}
+    \label{MGC_feature_analysis}
+\end{figure}
+
+% I applied information-theoretic feature selection methodology to identify the optimal feature subset that maximizes classification accuracy while minimizing computational burden and correlation-induced instability.
 
 \begin{table}[htbp]
 \centering
@@ -1031,64 +1091,29 @@ The magnitude of an object's observed individual features may change based on di
 \hline
 \textbf{No.} & \textbf{Feature Type} & \textbf{Description} \\ 
 \hline
-1 & Intensity (Max) & Peak LiDAR return intensity \\
-2 & Intensity (Min) & Lowest LiDAR return intensity \\
-3 & Intensity (Avg) & Mean LiDAR return intensity \\
-4 & Intensity (Std. Deviation) & Variation in return intensity \\
-5 & Height (Max) & Vertical extent of the object \\
-6 & Filled Cell Count & Number of occupied grid cells \\
-7 & Polygon Perimeter & Length of 2D concave hull boundary \\
-8 & Polygon Area & Area of enclosed 2D concave hull \\
-9 & Major Axis Length & Longer principal axis of object polygon \\
-10 & Minor Axis Length & Shorter principal axis of object polygon \\
+$f_1$ & Intensity (Max) & Peak LiDAR return intensity \\
+$f_2$ & Intensity (Min) & Lowest LiDAR return intensity \\
+$f_3$ & Intensity (Avg) & Mean LiDAR return intensity \\
+$f_4$ & Intensity (Std. Deviation) & Variation in return intensity \\
+$f_5$ & Height (Max) & Vertical extent of the object \\
+$f_6$ & Filled Cell Count & Number of occupied grid cells \\
+$f_7$ & Polygon Perimeter & Length of 2D concave hull boundary \\
+$f_8$ & Polygon Area & Area of enclosed 2D concave hull \\
+$f_9$ & Major Axis Length & Longer principal axis of object polygon \\
+$f_{10}$ & Minor Axis Length & Shorter principal axis of object polygon \\
 \hline
 \end{tabular}
 \caption{Features used for GB-CACHE multivariate classification.}
 \label{tab:gbcache_features}
 \end{table}
 
-In \ac{MGC}, the values of these features are assumed to follow Gaussian distributions within each class.
-By modeling the joint distribution of all ten features at once (a multivariate Gaussian), the classifier can compute a \acl{PDF} for each object class.
-This enables the classifier to assign the most probable class label to the object based on the vector of all ten features, even as the individual values may fluctuate.
-
-% \subsection{Mutual Information Analysis of Features} \label{sec:gbcache_MI_features}
-
-While the ten-feature set provides comprehensive object characterization, not all features contribute equally to classification performance, and some features exhibit redundancy through correlation.
-I applied information-theoretic feature selection methodology to identify the optimal feature subset that maximizes classification accuracy while minimizing computational burden and correlation-induced instability.
-
-The minimum Redundancy Maximum Relevance (mRMR) criterion provides a principled framework for feature selection by simultaneously considering two competing objectives: maximizing the mutual information between selected features and class labels (relevance) while minimizing the mutual information among selected features themselves (redundancy).
-Mutual information quantifies the reduction in uncertainty about one variable given knowledge of another, providing a model-agnostic measure of statistical dependence applicable to both linear and nonlinear relationships.
-
-Analysis of feature-class mutual information reveals varying discriminative power across the ten features, with intensity-based and geometric features exhibiting complementary strengths for different object classes.
-Pairwise feature redundancy analysis identifies multiple correlated feature pairs that provide overlapping information, suggesting opportunities for dimensionality reduction without classification performance degradation.
-The mRMR optimization procedure balances these considerations, progressively selecting features that contribute novel discriminative information while avoiding redundant measurements.
-
-Information-theoretic analysis identified an optimal feature subset substantially smaller than the complete ten-feature set, demonstrating that effective maritime object classification can be achieved with reduced feature dimensionality.
-This finding has practical implications for computational efficiency, as feature extraction and Gaussian density evaluation scale with feature dimensionality.
-The reduced feature set maintains robust classification performance while decreasing processing requirements and reducing the risk of overfitting when training data is limited.
-
-The classifier requires training data comprising labeled examples of each object class with corresponding feature vectors.
-Training involves computing maximum likelihood estimates of Gaussian distribution parameters for each class, specifically the mean vector and covariance matrix that characterize the feature space distribution.
-These parameters fully specify the class models, enabling rapid inference through simple multivariate Gaussian density evaluation without iterative optimization or complex neural network forward passes.
-
-Classification performance depends critically on the separability of object classes in the chosen feature space and the validity of the Gaussian distribution assumption.
-When classes exhibit significant overlap in feature space or when feature distributions deviate substantially from Gaussian, classification accuracy degrades.
-However, for maritime objects with distinct geometric profiles and size ranges, the feature-based Gaussian approach provides robust classification with minimal training requirements.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Detection Results} \label{detect_results}
-
-\subsection{Metrics} \label{detect_metrics}
-\subsection{YOLO} \label{detect_yolo}
-\subsection{GB-CACHE} \label{detect_gbcache}
-% \subsection{Image Frame Bias} \label{detect_imgFrame_bias}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Late Fusion} \label{fusion}
-\subsection{Method} \label{fusion_method}
+% \subsection{Method} \label{fusion_method}
 % \subsection{Justification} \label{fusion_justificaiton}
 
-\section{Late Fusion Results} \label{fusion_results}
+\subsection{Results} \label{fusion_results}
 
 
 
