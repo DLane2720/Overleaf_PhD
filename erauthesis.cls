@@ -34,7 +34,7 @@
 % Define class options to allow authors to declare their degree when loading the document class.  Default is Ph.D 
 %\DeclareOption is a command in LaTeX that is used to define options that can be passed to a document class or package
 
-\DeclareOption{Ph.D}		{\gdef\@degree{Doctor of Philosophy}	\gdef\@Dissertation{Dissertation}}
+\DeclareOption{Ph.D}		{\gdef\@degree{Doctor of Philosophy }	\gdef\@Dissertation{Dissertation}}
 
 
 
@@ -523,7 +523,7 @@
 		\raisebox{0pt}[0pt][0pt]{\parbox[b]{6in}{\centering
   % \\Embry Riddle Aeronautical University\\
   Embry Riddle Aeronautical University\\
-				Daytona Beach, FLorida\\
+				Daytona Beach, Florida\\
 				% \@gradmonth\ \@gradyear\\
 				\@gradmonth\ \@gradyear
 				}}}\hfill}

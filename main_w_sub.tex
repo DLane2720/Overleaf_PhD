@@ -83,7 +83,8 @@ Their commitment to excellence in teaching and research has profoundly influence
 \vspace{3mm}
 
 This work was supported in part by NEEC grant N00174-22-1-0012 through NUWC Keyport.
-Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the Department of the Navy or Office of Naval Research.
+Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views NUWC Keyport or
+the Department of the Navy.
 \end{acknowledgements}
 
 \begin{abstract}
@@ -94,8 +95,9 @@ Any opinions, findings, conclusions, or recommendations expressed in this materi
  Performance metrics include precision, recall, \ac{mAP}, training requirements, and computational efficiency. 
  % Results demonstrate [key performance finding] and establish [fusion outcome]. 
  The research provides quantitative baselines for maritime sensing modality selection and validated calibration procedures enabling improved autonomous navigation in complex maritime environments.
- 
- % Lorem ipsum dolor sit amet... This is a summative abstract, not just a list of topics.  Include relevant information including conclusions and recommendations.  Limit to 150 words; spell out abbreviations; citations not needed.
+
+%%%% Coyle Note: %%%%
+% this study evaluates LiDAR and vision-based detection and classification acrsoss six maritime object categories, using GB-CACHE and Yolov8 as representative processing techniques for each modality.
 
 \end{abstract}
 \pagetableofcontents
@@ -219,7 +221,7 @@ Any opinions, findings, conclusions, or recommendations expressed in this materi
 \subsection{PinPoint GPS/INS} \label{sensors_GPS}
 \subfile{sections/pinpoint}
 
-\section{Compute Hardware and Network} \label{sec:Atlas_LAN}
+\section{Networking and Computing Hardware} \label{sec:Atlas_LAN}
 \subfile{sections/hardware}
 
 \section{Sensor Calibration} \label{sec:calibration}
@@ -242,7 +244,7 @@ Calibration begins with determining the camera’s intrinsic parameters, followe
 The following sections describe the methods and results of this calibration process.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Extrinsic Calibration} \label{extrinsic_tform}
+\subsubsection{LiDAR Extrinsic Calibration} \label{extrinsic_tform}
 \subfile{sections/extrinsic_tform}
 
 \begin{figure}[htbp]
@@ -251,6 +253,17 @@ The following sections describe the methods and results of this calibration proc
     \caption{Example of LiDAR–LiDAR alignment.}
     \label{fig:Lidar2Lidar}
 \end{figure}
+
+\subsubsection{LiDAR Calibration Results} \label{results_lidarLidar_calib}
+\subfile{sections/results_lidarlidar}
+
+\begin{figure}[ht]
+\centering
+        \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
+\caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
+\label{fig:LidarLidar_calib}
+\end{figure}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Camera Intrinsics} \label{camera_intrinsics}
@@ -277,6 +290,29 @@ The following sections describe the methods and results of this calibration proc
 \label{fig:cam_calib}
 \end{figure}
 
+\subsubsection{Camera Calibration Results} \label{sec:camera_intriniscs_results}
+\subfile{sections/cam_intrinsics}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/checkerboard_old.jpg}
+    \caption{Older paper-based checkerboards maintained dimensional accuracy but degraded over time.}
+    \label{fig:checkerboard_old}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/Checkerboard_new.png}
+    \caption{New precision-painted checkerboard target used for intrinsic calibration.}
+    \label{fig:checkerboard_new}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/HDR_calib_error.png}
+    \caption{Initial HDR camera calibration yielded a mean re-projection error of 0.63~pixels across the dataset.\textcolor{red}{reproduce graphic with larger text and landscape orientation. no need for square aspect ratio.}}
+    \label{fig:HDR_calib_error}
+\end{figure}
 
 \subsubsection{Camera to LiDAR Extrinsic Calibration} \label{camLidar_calib}
 \subfile{sections/camlidar_calib}
@@ -302,43 +338,7 @@ The following sections describe the methods and results of this calibration proc
 \label{fig:camLidar_calib}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Results: Spatial Calibration} \label{sec:spatial_calib_results}
-\subsubsection{LiDAR–LiDAR Calibration} \label{results_lidarLidar_calib}
-\subfile{sections/results_lidarlidar}
-
-\begin{figure}[ht]
-\centering
-        \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
-\caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
-\label{fig:LidarLidar_calib}
-\end{figure}
-
-\subsubsection{Camera Calibration} \label{sec:camera_intriniscs_results}
-\subfile{sections/cam_intrinsics}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Images/checkerboard_old.jpg}
-    \caption{Older paper-based checkerboards maintained dimensional accuracy but degraded over time.}
-    \label{fig:checkerboard_old}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Images/Checkerboard_new.png}
-    \caption{New precision-painted checkerboard target used for intrinsic calibration.}
-    \label{fig:checkerboard_new}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Images/HDR_calib_error.png}
-    \caption{Initial HDR camera calibration yielded a mean re-projection error of 0.63~pixels across the dataset.\textcolor{red}{reproduce graphic with larger text and landscape orientation. no need for square aspect ratio.}}
-    \label{fig:HDR_calib_error}
-\end{figure}
-
-\subsubsection{Camera–LiDAR Calibration} \label{sec:camera-lidar_results}
+\subsubsection{Camera–LiDAR Calibration Results} \label{sec:camera-lidar_results}
 \subfile{sections/results_camera-lidar}
 
 \begin{figure}[htbp]
@@ -387,6 +387,22 @@ The following sections describe the methods and results of this calibration proc
 \label{HDR_calib_final}
 \end{figure}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Results: Spatial Calibration} \label{sec:spatial_calib_results}
+% \subsubsection{LiDAR–LiDAR Calibration} \label{results_lidarLidar_calib}
+% \subfile{sections/results_lidarlidar}
+
+% \begin{figure}[ht]
+% \centering
+%         \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
+% \caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
+% \label{fig:LidarLidar_calib}
+% \end{figure}
+
+
+
+
+
 \subsection{Temporal Calibration} \label{time_sync}
 \subfile{sections/time_sync}
 
@@ -396,7 +412,7 @@ The following sections describe the methods and results of this calibration proc
 \subsubsection{Network Synchronization} \label{time_sync_lan}
 \subfile{sections/lan_sync}
 
-\subsection{Results: Temporal Synchronization} \label{results_time_sync_cam}
+% \subsection{Results: Temporal Synchronization} \label{results_time_sync_cam}
 \subfile{sections/results_time_sync}
 
 \section{Sensor Data and Dataset} \label{sec:sensor_data_dataset}

@@ -5,7 +5,7 @@
 %\section{Compute Hardware and Network} \label{sec:Atlas_LAN}
 
 Minion distributes processing tasks across multiple computing nodes to achieve real-time performance and robust system operation.
-The computing infrastructure consists an embedded computer integrated with the camera sensors for video encoding and streaming, and twin computers serving as the primary processing platforms, with a \ac{GbE} \ac{LAN} connecting all systems and sensors. 
+The computing infrastructure consists of an embedded computer integrated with the camera sensors for video encoding and streaming, and twin computers serving as the primary processing platforms, with a \ac{GbE} \ac{LAN} connecting all systems and sensors. 
 % This architecture distributes computational workloads according to sensor proximity and processing requirements while maintaining centralized coordination through the Robot Operating System middleware. 
 The following subsections detail the hardware specifications, system architecture, and network infrastructure that enable real-time multi-modal perception for maritime object detection and sensor fusion.
 
@@ -15,16 +15,15 @@ The following subsections detail the hardware specifications, system architectur
 % # Camera Enclosure Computing Platform
 
 The camera enclosure serves as the integrated perception module for the vessel, and was designed as a self-contained sensor and computing subsystem that can operate independently on any maritime or ground vehicle. 
-Integrated into this subsystem is a NVIDIA Jetson AGX Xavier, a compact and capable PC designed for video processing, as well as other computer vision applications.
-Key hardware specifications are provided in table \ref{table:Xavier_hardware}.
-
-Its 8-core ARM processor provides ample computational capacity for handling multiple video pipelines, network protocols, and system-level services, while the integrated 512-core Volta GPU performs hardware-accelerated video encoding required for concurrent high-resolution streams.  
-A unified memory architecture shares 32 GB between the CPU and GPU and supports a memory bandwidth of 136.5 GBps, which minimizes latency and improves overall pipeline efficiency.
-
+Integrated into this subsystem is a NVIDIA Jetson AGX Xavier, a compact and capable PC designed for video processing.
+% , as well as other computer vision applications.
+Key hardware specifications for the NVIDIA Jetson are provided in Table \ref{table:Xavier_hardware}.
+Its 8-core ARM processor provides ample computational capacity for handling multiple video pipelines, network protocols, and system-level services. 
+At the same time, the integrated 512-core Volta GPU performs hardware-accelerated video encoding, which is required for concurrent high-resolution streams.  
+A unified memory architecture shares 32 GB between the CPU and GPU, supporting a memory bandwidth of 136.5 GB/s, which minimizes latency and improves overall pipeline efficiency.
 Each video feed follows a two-branch processing pipeline before being transmitted to Atlas, detailed in section \ref{time_sync_cam}.
-
 Raw video frames are received via USB 3.0, parsed by custom software, and then split into two processing branches. 
-One branch is compressed and saved locally to the Jetson's internal storage, while the other branch is down-sampled to a reduced frame rate before being streamed over the \ac{LAN}.% to one of the Minion PCs in Atlas.
+One branch is compressed and saved locally to the Jetson's internal storage, while the other branch is compressed and down-sampled to a reduced frame rate before being streamed over the \ac{LAN}.% to one of the Minion PCs in Atlas.
 
 
 
@@ -52,7 +51,7 @@ Operating System & Ubuntu 18.04 \\
 \label{table:Xavier_hardware}
 \end{table}
 
-This reduction in frame rate is essential to maintain reliable network performance given limited bandwidth, as discussed in Section \ref{comp:network}. 
+The reduction in frame rate is essential to maintain reliable network performance given limited bandwidth, as discussed in Section \ref{comp:network}. 
 The maximum bitrate $R_{\text{max}}$ of each stream is computed at runtime as a function of the target frame rate, frame resolution, and compression ratio, defined by
 
 \begin{equation}
@@ -63,12 +62,12 @@ where $N_x$ and $N_y$ are the image width and height in pixels, $f$ is the desir
 For the HDR camera, the image resolution is $2880 \times 1860$ pixels, encoded in YUV 4:2:0 format using H.264 compression.
 An empirically derived constant of $b = 0.14$ bits per pixel captures the combined effects of color subsampling and compression efficiency under typical scene conditions.
 These values yield a bitrate for the HDR camera of
-\begin{equation*}
+\begin{equation}
     \begin{split}
         R_{\text{max}} & = (2880 \times 1860\; \text{px}) (0.14 \;\text{bits/px})(5\;\text{s}^{-1})  \\
         & \approx 3.75\; \text{Mbps}
     \end{split}
-\end{equation*}
+\end{equation}
 
 and scales linearly with frame rate.
 This adaptive bitrate approach ensures that each video stream remains within the available network bandwidth while maintaining adequate visual fidelity for perception and data logging.
@@ -125,14 +124,14 @@ Network Interface & (6x) Gigabit Ethernet \\% + 802.11ac WiFi \\
 The GPU is Atlas's primary processor for the system’s vision pipeline, handling both video decoding and neural network inference for object detection.
 Each GTX~1080 features 2,560 CUDA cores built on NVIDIA’s Pascal architecture with 8~GB of GDDR5X memory, providing the computational throughput required for highly parallel image-based workloads.  
   
-Incoming video streams from the camera enclosure are first decoded using hardware-accelerated video codecs, enabling efficient processing of multiple high-resolution feeds.
-The resulting frames are again passed to the GPU for accelerated tensor calculations and neural network based algorithms described in Chapter \ref{realtime_object_detection} for object detection.
+Incoming video streams from the camera enclosure are first decoded using hardware-accelerated video codecs, allowing for the efficient processing of multiple high-resolution feeds.
+The resulting frames are again passed to the GPU for accelerated tensor calculations andnetwork-basedrk based algorithms described in Chapter \ref{realtime_object_detection} for object detection with YOLO.
 % NVIDIA's CUDA architecture has long been the industry standard for efficient execution of convolutional neural networks such as YOLOv8.
-Executing both video decoding and inference workloads on the GPU frees up valuable system resources for LiDAR processing and sensor fusion tasks.
+Executing both video decoding and inference workloads on the GPU frees up system resources for other system tasks.
 
 High-speed solid-state storage provides the throughput required to record multiple sensor streams during data collection operations.
 Each recording session captures raw \ac{LiDAR} point cloud data, streamed video imagery, GPS/INS pose information, and mapped object-detection results, producing aggregate data rates that can easily exceed 200 \ac{MBps}.
-A solid-state NVMe hard drive is used on each Minion system to provide the data throughput that these operations require, and is much more robust to the motion experienced in choppy surf and vibrations experienced while in transport on the \ac{USV}'s trailer.
+A solid-state NVMe hard drive is used on each Minion system to provide the data throughput that these operations require, and is much more robust to the motion experienced in choppy waves and in transport on the \ac{USV}'s trailer.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,7 +140,7 @@ A solid-state NVMe hard drive is used on each Minion system to provide the data 
 % Each device on the network 
 Each device is assigned a static IP address on the network, allowing deterministic communication between endpoints.
 Camera streams from the Jetson Xavier, point cloud data from each LiDAR sensor, and other telemetry are transmitted over the LAN to Atlas, where sensor data are processed locally.
-Data of mapped and detected objects and other system commands, such as motor control commands, are published along with the raw data as \ac{ROS} message topics for system monitoring and data recording.
+Data of mapped and detected objects and other on mapped and detected objects, as well astrol commands, are published along with the raw data as \ac{ROS} message topics for system monitoring and data recording.
 
 Under normal operation, the combined network traffic only utilizes about 15\% of the Gigabit Ethernet capacity, 
 leaving sufficient headroom for motor control, system services, and remote access for administrative functions.
