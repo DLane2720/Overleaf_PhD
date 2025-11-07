@@ -615,14 +615,15 @@ Because YOLO operates purely on two-dimensional image data without access to spa
 \hline
 & Train & Validation & Test & Total \\
 \hline
-Images & 543 & 158 & 77 & 778 \\
-Labels & 1,343 & 390 & 201 & 1,934 \\
-\hline
+
 Tall Buoy & 12.0\% & 14.1\% & 16.4\% &  \\
 Round Buoy & 1.4\% & 1.3\% & 1.5\% &  \\
 Light Tower & 11.2\% & 13.1\% & 9.5\% &  \\
 Jon Boat & 15.8\% & 12.8\% & 12.4\% &  \\
 Sailboat & 59.6\% & 58.7\% & 59.7\% &  \\
+\hline
+Images & 543 & 158 & 77 & 778 \\
+Labels & 1,343 & 390 & 201 & 1,934 \\
 \hline
 \end{tabular}
 \caption{YOLO dataset composition and class distribution across training, validation, and test subsets.}
@@ -659,6 +660,10 @@ YOLOv8m & 25.9 &  63 & 0.87 \\
 \label{tab:yolo_variants}
 \end{table}
 
+Each labeled image required 60 seconds to manually label (mean), and an additional 45 minutes was required for the YOLOv8-s model to converge on the dataset. 
+This results in an estimated total aggregate time of 13 hours to prepare this dataset. 
+% An additional 45 minutes was required
+
 Inference timing was recorded using per-process timers to isolate image capture, pre-processing, neural inference, and post-processing durations.
 This timing-based comparison allows fair assessment against non-GPU LiDAR pipelines in later sections.
 
@@ -668,6 +673,8 @@ This timing-based comparison allows fair assessment against non-GPU LiDAR pipeli
     \caption{YOLOv8 transfer learning convergence showing loss and mean Average Precision (mAP) trends over 80 epochs with the small model.}
     \label{fig:yolo_training_curve}
 \end{figure}
+
+
 
 \subsection{Results} \label{sec:yolo_results}
 
@@ -689,8 +696,8 @@ Performance metrics include mean Average Precision (mAP@50), precision-recall cu
 %     \label{fig:yolo_pr_curve}
 % \end{figure}
 
-Results indicate consistent detection performance across lighting conditions with minimal false positives on horizon clutter.
-Retraining improved small-object detection by approximately X\% compared to baseline COCO-trained weights, confirming the benefit of domain adaptation for maritime imagery.
+% Results indicate consistent detection performance across lighting conditions with minimal false positives on horizon clutter.
+% Retraining improved small-object detection by approximately X\% compared to baseline COCO-trained weights, confirming the benefit of domain adaptation for maritime imagery.
 
 The fine-tuned YOLOv8 network serves as the visual baseline for comparison with LiDAR-based object detection methods presented in Section~\ref{gbcache}.
 By isolating timing metrics for each processing stage, the performance comparison remains hardware-agnostic.
@@ -800,19 +807,54 @@ Memory requirements scale with grid dimensions rather than point count, providin
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Training Data} \label{training_data_gbcache}
 
-% Training data for the GB-CACHE's MGC was obtained from data within the rosbag dataset described in Section~\ref{sec:data_overview}.
+Training data for the GB-CACHE's MGC was obtained from data within the rosbag dataset described in Section~\ref{sec:data_overview}.
 
-% In general, each class of object was observed in a stationary position at a range of 40 to 60 meters as the Minion \ac{USV} approached the object to a range of 5 meters. 
-% In total, this results in approximately 20 to 30 seconds of training data for each object class.
-% The only notable exception to this method is for the Jon boat class. 
-% Due to constraints on available time for data collection, training data for this class consisted of Minion remaining stationary, and the Jon boat approaching the \ac{USV} from a similar range and rate.
-% At least one rosbag within the dataset was recorded for training each of the six object classes, and these bag IDs are listed in Table \textcolor{red}{insert table}.
+In general, each class of object was observed in a stationary position at a range of 40 to 60 meters as the Minion \ac{USV} approached the object to a range of 5 meters. 
+In total, this results in approximately 20 to 30 seconds of training data for each object class.
+The only notable exception to this method is for the Jon boat class. 
+Due to constraints on available time for data collection, training data for this class consisted of Minion remaining stationary, and the Jon boat approaching the \ac{USV} from a similar range and rate.
+At least one rosbag within the dataset was recorded for training each of the six object classes, and these bag IDs are listed in Table \textcolor{red}{insert table}.
 
-% The training bagfiles are post-processed with MATLAB to extract the target object ID and metadata from the \texttt{obj\_w\_class} topic over the identified time period.
-% This metadata is processed to extract 10 features used for classification, which are provided in Table~\ref{tab:gbcache_features}.
+The training bagfiles are post-processed with MATLAB to extract the target object ID and metadata from the \texttt{obj\_w\_class} topic over the identified time period.
+This metadata is processed to extract 10 features used for classification, which are provided in Table~\ref{tab:gbcache_features}.
 
+\begin{table}[htpb]
+\centering
+\begin{tabular}{cc}
+\hline
+Class Label & No. Samples \\
+\hline
+\hline
+Tall Buoy   & 4342        \\
+A2 Buoy     & 861         \\
+A3 Buoy     & 979         \\
+Light Tower & 1197        \\
+Jon Boat    & 1502        \\
+Sailboat    & 2103       \\
+\hline
+\end{tabular}
+\caption{Number of samples utilized to train the multivariate Gaussian classifier.}
+\end{table}
 
+The post-processing of LiDAR data requires live playback of the bag file. 
+Each sample is processed at a rate of 5 Hz, resulting in a total of 36.6 minutes for data labeling.
+Splitting the data into training and test sets only takes two to three minutes per class, and training is completed within a matter of seconds.
+The total time required to collect and train this classifier method for all six classes is less than an hour.
 
+Training is performed by examining the ten features in each of the training samples. 
+From this data, a coefficient, mean vector, and covariance matrix are determined for all ten features. 
+This information is saved into separate files for each class and loaded into ROS at runtime.
+
+The results of the MGC classification training show 97.49\% accuracy, with a breakdown of each class provided in Figure~\ref{livox_train}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images/livox_train.png}
+    \caption{Training accuracy for the multivariate Gaussian classifier across each of the six maritime object classes}
+    \label{livox_train}
+\end{figure}
+
+Rosbags from which LiDAR training data was collected are not included in the final testing set used to provide analysis on detection results.
 
 \subsection{Results} \label{sec:gbcache_results}
 
@@ -883,10 +925,15 @@ Yet, this process remains well below the latency threshold required for real-tim
 The scatter plots of Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}, and \ref{fig:gbcache_update_map} reveal essential information regarding how well the method can scale. 
 The scatter plots 
 Plotting each execution time against the number of points processed reveals how the algorithm scales computationally. 
-\textcolor{red}P{"Filter Points" looks to appear to have a linear histogram, with an upper bound to the number of points returned most frequently. "Add Points" looks to have a near-linear to somewhat logarithmic scaling.}
+% \textcolor{red}{"Filter Points" looks to appear to have a linear histogram, with an upper bound to the number of points returned most frequently. "Add Points" looks to have a near-linear to somewhat logarithmic scaling.}
 % The grid representation compresses sparse maritime point clouds into compact occupancy structures, reducing memory bandwidth requirements compared to maintaining full point coordinates. 
 % This compression proves particularly advantageous for maritime environments where objects occupy a small fraction of the sensor's field of view.
-subfigures \ref{fig:gbcache_update_map} (b) and \ref{fig:gbcache_update_map} (c) vary slightly to Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}.
+
+% subfigures \ref{fig:gbcache_update_map} (b) and \ref{fig:gbcache_update_map} (c) vary slightly to Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}.
+Figures~\ref{fig:gbcache_filter_points}, \ref{fig:gbcache_add_points}, and \ref{fig:gbcache_update_map}, provide a histogram of the execution times measured for each of the subroutines. This data is also provided in scatter plots as a function of the number of points processed in figures~\ref{fig:gbcache_filter_points} and\ref{fig:gbcache_add_points}, and as a function of object perimeter length in \ref{fig:gbcache_update_map} (b) and object surface area in \ref{fig:gbcache_update_map} (c).
+
+
+\ref{fig:gbcache_update_map} and \ref{fig:gbcache_update_map} (c) vary slightly to 
 Rather than plotting the execution of the "Update Map" subroutine against the number of points, we examined the duration as a function of the mean length and mean area of observed objects. 
 The data shows a strong linear correlation with object perimeter length and a similarly strong quadratic relationship with object area. 
 This predictable scaling behavior enables the reliable estimation of worst-case execution time for safety-critical autonomous systems. It suggests potential algorithmic improvements to optimize how shorelines are handled when they appear within the LiDAR return data.
