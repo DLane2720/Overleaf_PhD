@@ -237,32 +237,32 @@ the Department of the Navy.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Spatial Calibration} \label{spatial_calibration}
 
-Before data from the camera and \ac{LiDAR} sensors can be combined, each device must be spatially calibrated through intrinsic and extrinsic transformations.  
-This process establishes the geometric relationships required to express all sensor measurements in a unified coordinate frame, enabling accurate projection of \ac{LiDAR} points onto the camera image plane.
+% Before data from the camera and \ac{LiDAR} sensors can be combined, each device must be spatially calibrated through intrinsic and extrinsic transformations.  
+% This process establishes the geometric relationships required to express all sensor measurements in a unified coordinate frame, enabling accurate projection of \ac{LiDAR} points onto the camera image plane.
 
 Calibration begins with determining the camera’s intrinsic parameters, followed by estimation of the extrinsic transformation that defines the rigid-body relationship between the camera and each \ac{LiDAR} sensor.  
 The following sections describe the methods and results of this calibration process.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{LiDAR Extrinsic Calibration} \label{extrinsic_tform}
-\subfile{sections/extrinsic_tform}
+% \subsubsection{LiDAR Extrinsic Calibration} \label{extrinsic_tform}
+% \subfile{sections/extrinsic_tform}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\linewidth]{Images/Lidar2Lidar.png}
-    \caption{Example of LiDAR–LiDAR alignment.}
-    \label{fig:Lidar2Lidar}
-\end{figure}
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{Images/Lidar2Lidar.png}
+%     \caption{Example of LiDAR–LiDAR alignment.}
+%     \label{fig:Lidar2Lidar}
+% \end{figure}
 
-\subsubsection{LiDAR Calibration Results} \label{results_lidarLidar_calib}
-\subfile{sections/results_lidarlidar}
+% \subsubsection{LiDAR Calibration Results} \label{results_lidarLidar_calib}
+% \subfile{sections/results_lidarlidar}
 
-\begin{figure}[ht]
-\centering
-        \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
-\caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
-\label{fig:LidarLidar_calib}
-\end{figure}
+% \begin{figure}[ht]
+% \centering
+%         \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
+% \caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
+% \label{fig:LidarLidar_calib}
+% \end{figure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -310,9 +310,11 @@ The following sections describe the methods and results of this calibration proc
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\linewidth]{Images/HDR_calib_error.png}
-    \caption{Initial HDR camera calibration yielded a mean re-projection error of 0.63~pixels across the dataset.\textcolor{red}{reproduce graphic with larger text and landscape orientation. no need for square aspect ratio.}}
+    \caption{Initial HDR camera calibration yielded a mean re-projection error of 0.63~pixels across the dataset.\textcolor{red}{reproduce graphic with larger text and landscape orientation. No need for square aspect ratio.}}
     \label{fig:HDR_calib_error}
 \end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Camera to LiDAR Extrinsic Calibration} \label{camLidar_calib}
 \subfile{sections/camlidar_calib}
@@ -386,6 +388,29 @@ The following sections describe the methods and results of this calibration proc
 \caption{Final camera–LiDAR calibration. LiDAR ROIs containing identifiable geometry (a) are projected as red pixels onto the HDR image (b) to confirm alignment quality.}
 \label{HDR_calib_final}
 \end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{LiDAR Extrinsic Calibration} \label{extrinsic_tform}
+\subfile{sections/extrinsic_tform}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\linewidth]{Images/Lidar2Lidar.png}
+    \caption{Example of LiDAR–LiDAR alignment.}
+    \label{fig:Lidar2Lidar}
+\end{figure}
+
+\subsubsection{LiDAR Calibration Results} \label{results_lidarLidar_calib}
+\subfile{sections/results_lidarlidar}
+
+\begin{figure}[ht]
+\centering
+        \includegraphics[width=0.95\textwidth]{Images/livox_viewer.png} 
+\caption{Data from port (red), center (green), and starboard (yellow) Livox Units as viewed within the Livox Viewer software (left), and the integrated calibration tool with estimated extrinsic parameters shown (right). }
+\label{fig:LidarLidar_calib}
+\end{figure}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \subsection{Results: Spatial Calibration} \label{sec:spatial_calib_results}
@@ -865,7 +890,7 @@ The results of the MGC classification training show 97.49\% accuracy, with a bre
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{Images/livox_train.png}
+    \includegraphics[width=0.75\linewidth]{Images/livox_train.png}
     \caption{Training accuracy for the multivariate Gaussian classifier across each of the six maritime object classes}
     \label{livox_train}
 \end{figure}
@@ -1010,7 +1035,7 @@ This predictable scaling behavior enables the reliable estimation of worst-case 
 \begin{figure}[htbp]
     \centering
     % Subfigure (a)
-    \begin{subfigure}[b]{0.44\linewidth}
+    \begin{subfigure}[b]{0.5\linewidth}
         \centering
         \includegraphics[width=\linewidth]{Images/gbcache/Update_Map_hist.png}
         \caption{Histogram of duration of \texttt{map\_update} against number of LiDAR points}
@@ -1018,7 +1043,7 @@ This predictable scaling behavior enables the reliable estimation of worst-case 
     \end{subfigure}
     \vspace{1em} % vertical spacing between subfigures
     % Subfigure (b)
-    \begin{subfigure}[b]{0.8\linewidth}
+    \begin{subfigure}[b]{0.9\linewidth}
         \centering
         \includegraphics[width=\linewidth]{Images/gbcache/Update_Map_scatter.png}
         \caption{Two scatter plots of duration of \texttt{map\_update} against average perimeter length of polygon (left), and against average area of polygon (right). The line of best-fit is shown in red for each, with associated polynomial values of: $x^2 = -0.0727, x^1 = -0.0151, x^0 = -0.0151$ (left) and $x^2 = 0.2556, x^1 = -0.00913, x^0 = -0.00913$ (right)}.
@@ -1138,8 +1163,8 @@ The information-theoretic framework established here provides a principled metho
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.95\linewidth]{Images/gbcache/feature_analysis_multi.png}
-    \caption{Information theoretical analysis of the 10 features used for classification.}
+    \includegraphics[width=0.95\linewidth]{Images/gbcache/feature_analysis_multi_top.png}
+    \caption{Information theoretical analysis of the 10 features used for classification. Feature-class MI evaluation (left), feature-feature MI matrix (center), mRMR score (right).}
     \label{MGC_feature_analysis}
 \end{figure}
 

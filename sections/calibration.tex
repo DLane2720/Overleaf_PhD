@@ -8,15 +8,17 @@ To combine their observations into a consistent world model, the system must fir
 % Target calibration accuracy for the Minion platform was defined as less than $1^{\circ}$ rotational error, less than 1~cm translational error, and no more than 20~ms temporal offset across all sensors.
 
 For the Minion platform, all sensors are rigidly mounted and assigned reference frames within a unified transform hierarchy. 
-The GPS receiver anchors the global \texttt{map} frame; the ROS TF tree (Fig.~\ref{fig:tf_tree}) resolves transforms such as \texttt{map}\ $\rightarrow$\ \texttt{base\_link} and \texttt{base\_link}\ $\rightarrow$\ \texttt{sensor}. Spatial calibration estimates the rigid rotations and translations that populate this tree.  
-Intrinsic calibration is also required for the visible-spectrum cameras (shown in blue), determining the internal optical parameters such as focal length, principal point location, and lens distortion. 
+\textcolor{red}{The GPS receiver anchors the global \texttt{map} frame; the ROS TF tree (Fig.~\ref{fig:tf_tree}) resolves transforms such as \texttt{map}\ $\rightarrow$\ \texttt{base\_link} and \texttt{base\_link}\ $\rightarrow$\ \texttt{sensor}.}
+Spatial calibration estimates the rigid rotations and translations that populate this tree.  
+Intrinsic calibration is also required for the visible-spectrum cameras to determine the internal optical parameters such as focal length, principal point location, and lens distortion. 
 Time synchronization is similarly structured, with a master clock distributed over the network to subsystems and sensors to ensure that data acquired across sensor modalities remain temporally aligned.
 
 % Within this framework, the port and starboard Livox units are first registered to the center Livox reference frame, where their point clouds are merged into a single unified point cloud.  
 % This consolidated LiDAR frame is then related to the HDR camera world-frame through an additional extrinsic transform and finally to the camera's image-frame through the determined camera intrinsic values, allowing three-dimensional LiDAR points $(x, y, z)$ to be projected onto the two-dimensional image plane $(u, v)$ using the camera’s intrinsic parameters.  
 % Finally, all perception data are kept in sync and expressed in the global map frame defined through the time, location, and orientation provided by the \ac{GPS}.
 Within this framework, the port and starboard Livox units are first registered to the center Livox reference frame to produce a unified point cloud. 
-The consolidated LiDAR frame is then related to the HDR camera world frame through an additional extrinsic transform. 
+The consolidated LiDAR frame is then related to the HDR camera frame through an additional extrinsic transform. 
+%%%%% Coyle: Realistically you have to go to the world frame because the lidar and image time are not the same
 Using the camera’s intrinsic parameters, three-dimensional LiDAR points $(x, y, z)$ can then be projected onto the two-dimensional image plane and expressed as pixel locations $(u, v)$. 
 An additional series of extrinsic transforms relates the central Livox frame to the \ac{GPS} antenna frame, and the \ac{GPS} frame to the global map frame. 
 The \ac{GPS} provides dual functionality, maintaining synchronization across all sensor data and orienting them within the static global map frame.
@@ -25,11 +27,11 @@ The \ac{GPS} provides dual functionality, maintaining synchronization across all
 
 An initial calibration of the camera enclosure was performed during earlier work by Thompson~\cite{thompson2023}, establishing the baseline intrinsic camera parameters and the extrinsic relationship between the three Livox LiDAR units.
 In the multiple years between data collection campaigns, the camera enclosure was relocated multiple times and subjected to extended periods of vibration during transport of the \ac{USV} on its trailer.
-These mechanical stresses alone were sufficient to warrant recalibration, as small shifts in sensor mounts or camera optics can accumulate over time and degrade geometric alignment.
+Additionally, the mounting points for the Livox units were upgraded from a wooden template to metal mounting points.
 Compounding this, the center Livox unit suffered a hardware failure and was replaced, making a full recalibration of all extrinsic transforms essential before further data collection.
 
 Section \ref{spatial_calibration} provides the methods used for intrinsic camera calibration, extrinsic calibration between the camera and LiDAR sensors, and between the individual LiDAR units. 
-This is followed by a discussion of the time synchronization methods implemented across the network, with special detail provided to the timestamps applied to video frames in section \ref{time_sync}
-Finally, the resulting spatial calibration accuracy and temporal alignment obtained are discussed in section \ref{time_sync}.
+This is followed by a discussion of the time synchronization methods implemented across the network, with special detail provided to the timestamps applied to video frames in Section \ref{time_sync}.
+Finally, the resulting spatial calibration accuracy and temporal alignment obtained are discussed in Section \ref{time_sync}.
 
 \end{document}

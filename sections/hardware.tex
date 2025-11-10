@@ -145,7 +145,7 @@ Data of mapped and detected objects and other on mapped and detected objects, as
 Under normal operation, the combined network traffic only utilizes about 15\% of the Gigabit Ethernet capacity, 
 leaving sufficient headroom for motor control, system services, and remote access for administrative functions.
 However, when \ac{ROS} data-dense topics such as point clouds or imagery are broadcast across the network for visualization or debugging, bandwidth utilization can temporarily spike and saturate the network.
-For this reason, ROS data is recorded locally, and admin visualization tools such as RVIZ are typically restricted to smaller topics related to object mapping and system controls.
+For this reason, ROS data is recorded locally, and administrative visualization tools, such as RVIZ, are typically restricted to smaller topics related to object mapping and system controls.
 A high-level overview of network utilization is provided in Table \ref{table:network_bandwidth}.
 
 \begin{figure}[htbp]
@@ -157,9 +157,10 @@ A high-level overview of network utilization is provided in Table \ref{table:net
 
 Although the LAN is primarily dedicated to perception and data logging, it also supports administrative access for configuration, diagnostics, and remote operation.
 The Jetson Xavier is configured as a headless device and is accessed remotely via Secure Shell (SSH) for camera configuration, operation, and monitoring.
-Each Minion PC can be accessed through SSH for terminal access for development tasks or troubleshooting, or Virtual Network Computing (VNC), and Remote Desktop Protocol (RDP) for a full desktop environment for system administration.
+Each Minion PC can be accessed via SSH for terminal access, enabling development tasks and troubleshooting.
+Additionally, a full desktop environment can be accessed using a Virtual Network Computing (VNC) or Remote Desktop Protocol (RDP) client for system administration purposes.
 % Network security is intentionally lightweight for field deployment, relying on standard \texttt{sudo}/root authentication and a secured wireless link protected by a strong \ac{WAN} password.
-Long-range connectivity between the vessel and ground station is provided by a Ubiquiti Bullet omnidirectional antenna on the \ac{USV}, paired with a directional antenna and a Ubiquiti Dream Machine at the ground station for remote system access and monitoring.
+Two Ubiquiti Prism AC units, equipped with high-gain antennas, provide long-range connectivity between the vessel and the ground station, while a Ubiquiti Dream Machine provides remote access to the laptop system and monitoring.
 
 \begin{table}[htbp]
 \centering
