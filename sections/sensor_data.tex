@@ -86,24 +86,37 @@ For clarity, topic and sensor identifiers are presented here using descriptive n
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{llll}
+\begin{tabular}{llcc}
 \hline
-\multicolumn{4}{c}{Total Object Detections by Class}\\
+\multicolumn{4}{c}{ Object Detections by Class}\\
 \hline
 \hline
-Class & Class       & Num. Samples & Unique Objs \\
-1     & Tall Buoy   & 266381       & 730         \\
-2     & A2 Buoy     & 83583        & 674         \\
-3     & A3 Buoy     & 69559        & 803         \\
-5     & Light Tower & 13171        & 48          \\
-7     & Kayak       & 1624         & 39          \\
-8     & Jon Boat    & 7543         & 171         \\
-11    & Sailboat    & 7617         & 140  \\      
+Class ID & Class Label       & Num. Samples & Unique Objs \\
+1     & Tall Buoy   & 187317       & 1173         \\
+2     & A2 Buoy     & 53849        & 1038         \\
+3     & A3 Buoy     & 18369        & 918         \\
+5     & Light Tower & 15522        & 182          \\
+7     & Jon Boat    & 1185         & 29         \\
+8     & Sailboat    & 3420         & 86  \\      
 \hline
+& Total: & 279662 & 3426
 \end{tabular}
 \caption{Total object detections and unique object counts for each labeled maritime class within the processed dataset.}
 \label{tab:obj_class_dets}
 \end{table}
+
+% \begin{table}[]
+% \begin{tabular}{lcc}
+% Class Label & \multicolumn{1}{l}{No. Samples} & \multicolumn{1}{l}{Unique Objects} \\
+% Tall Buoy   & 187317                          & 1173                               \\
+% A2 Buoy     & 86153849                        & 1038                               \\
+% A3 Buoy     & 18369                           & 918                                \\
+% Light Tower & 15522                           & 182                                \\
+% Jon Boat    & 1185                            & 29                                 \\
+% Sailboat    & 3420                            & 86                                
+% \end{tabular}
+% \end{table}
+
 
 Unique objects correspond to persistent object IDs assigned by the mapping system, as described in Section~\ref{gbcache}.
 

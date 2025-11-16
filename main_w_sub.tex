@@ -570,7 +570,7 @@ The name YOLO refers to the single-shot convolutional neural network architectur
 While this design was key to achieving real-time detection speeds, the accuracy of an object’s bounding box within an image was limited by the available training data. 
 Prior to the release of version 8 in 2023, the model required that the center and bounds of each detected object be explicitly encoded within the model, requiring a large corpus of labeled data for training.
 Version 8 introduced dual detection heads at the end of the CNN architecture: the first head identifies if and where an object is present within the image, while the second head determines the object's bounding box.
-This “anchor-free” architectural change not only improves the reliability of object localization but also reduces the burden of transfer learning required for fine-tuning pre-trained models in earlier versions\cite{ultralytics}.
+This “anchor-free” architectural change not only improves the reliability of object localization but also reduces the burden of transfer learning required for fine-tuning pre-trained models in earlier versions \cite{terven2023, ultralytics}.
 
 The widespread adoption and speed of YOLOv8 make it the optimal choice for providing a baseline visual detection method, and the fundamental architectural changes in this version validate its selection for a late-fusion approach.
 % However, this mode of detection is not without its compromises, \textcolor{red}{as will be detailed in Section ____.}
@@ -1197,12 +1197,320 @@ $f_{10}$ & Minor Axis Length & Shorter principal axis of object polygon \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Late Fusion} \label{fusion}
-% \subsection{Method} \label{fusion_method}
+% \section{Late Fusion} \label{fusion}
+% \label{fusion_method}
+
+% Having established the independent capabilities and limitations of both camera-based and LiDAR-based detection systems in maritime environments, the present work advances to a late-fusion architecture that synthesizes the complementary strengths of each sensing modality. 
+% The camera system provides dense semantic information and robust classification across diverse object categories, while the LiDAR sensor delivers precise geometric localization and reliable detection in challenging illumination conditions. 
+% A late-fusion approach operates at the decision level, combining independently generated detections from each sensor to produce a unified percept that exceeds the performance of either modality in isolation.
+
+% The objective of this research is to achieve tighter and more stable bounding boxes without modifying the underlying detector architecture. To accomplish this, the error associated with each detection method must be quantified, allowing the weight given to each model in the final result to be adjusted according to the confidence in that model. 
+% For these weights to be meaningful, the confidence assigned to each source must be based upon its empirical agreement with ground-truth annotations.
+
+
+% For each object detected by both modalities, two regions of interest (ROIs) are generated, with each ROI defined by four pixel coordinates corresponding to the left, right, top, and bottom edges of the bounding box.
+% \begin{equation}
+% \mathbf{U}_{S} = (L_{S}, R_{S}, T_{S}, B_{S}),
+% \end{equation}
+% where $S \in \{\text{LiDAR}, \text{YOLO}\}$ denotes the source.
+% Therefore, we can compute the error between $\mathbf{U}_{S}$ and a set of ground-truth ROI labels $\mathbf{U}_{GT}$
+
+% \begin{equation}
+% \mathbf{E}_{S} = \mathbf{U}_{S} - \mathbf{U}_{\text{GT}}
+% \end{equation}
+
+% By assuming that the distributions of errors $\mathbf{E}_S$ will trend towards a normally distributed Gaussian ($N(\mu,\sigma^2)$), the error is characterized over a training set of $N$ samples of paired ROI labels ($U_S, U_{GT}$).  
+% \begin{align}
+% \mathbf{\mu}_{U} &= \frac{1}{N_{U}} \sum_{i=1}^{N_{U}} E_{U}^{(i)} \\
+% \mathbf{\sigma}^2_{U} &= \frac{1}{N_{U} - 1} \sum_{i=1}^{N_{U}}
+% \bigl(E_{U}^{(i)} - \mu_{U}\bigr)^2
+% \end{align}
+
+% Under this assumption, the variance $\sigma^{2}_{U}$ provides a direct measure of reliability for any detection source $S$.
+% Sources with less variance are more consistent with ground truth and should receive a higher weight in the fused estimate, and are generally calculated as
+% \begin{equation}
+% \mathbf{w}_{U} = \frac{1}{\sigma^{2}_{U}}
+% \end{equation}
+
+% Finally, the bounds of a fused ROI can be expressed as a weighted average between two detection modes $S1$ and $S2$ with the equation
+% \begin{equation}
+% \mathbf{U}_{\text{fused}} =
+% \frac{
+% (\mathbf{U}_{S1}-\mathbf{\mu}_{S1}) \, \mathbf{w}_{U,S1}
+% +
+% (\mathbf{U}_{S2}-\mathbf{\mu}_{S2}) \, \mathbf{w}_{U,S2}
+% }{
+% \mathbf{w}_{U,S1} + \mathbf{w}_{U,S2}
+% }
+% \label{eq:fused_edge}
+% \end{equation}
+% % \begin{equation}
+% % \mathbf{U}_{\text{fused}} =
+% % \frac{
+% % \mathbf{\Sigma}(\mathbf{U}_{S}-\mathbf{\mu}_{U,S}) \, \mathbf{w}_{U,S}
+% % }
+% % {
+% % \mathbf{\Sigma}\mathbf{w}_{U,S}
+% % }
+% % \label{eq:fused_edge}
+% % \end{equation}
+
+% % where $\mathbf{U}$ is the set of pixel values for the left, right, top, and bottom edges of the respective ROI.
+
+% This approach closely mirrors the approach taken with YOLO. 
+% It is assumed that the transfer learning performed on the maritime ground-truth labels has already minimized this error and characterized it through the confidence weighting it provides with each identified class label.
+% Therefore, only the error from GB-CACHE detections needs to be characterized, and the equation for a fused ROI between GB-CACHE and YOLO detections becomes
+% \begin{equation}
+% \mathbf{U}_{\text{fused}} =
+% \frac{
+% (\mathbf{U}_{\text{LiDAR}}-\mathbf{\mu}_{\text{LiDAR}}) \, \mathbf{w}_{U,\text{LiDAR}}
+% +
+% \mathbf{c}\,\mathbf{U}_{YOLO}
+% }{
+% \mathbf{w}_{U,\text{LiDAR}} + \mathbf{c}
+% }
+% \label{eq:fused_edge}
+% \end{equation}
+
+% where $\mathbf{c}$ is the confidence YOLO provides for each label, applied equally for the left, right, top, and bottom edges.
+
 % \subsection{Justification} \label{fusion_justificaiton}
+
+% The decision to perform weighted average region of interest fusion within the image frame, rather than in a world coordinate system, emerges from both computational pragmatism and methodological rigor. Real-time autonomous surface vessel operation imposes strict latency constraints on perception systems, where detection delays directly compromise navigational safety and collision avoidance capabilities. Maintaining fusion operations within a single reference frame eliminates the computational burden of repeated coordinate transformations between world and image spaces for each detection hypothesis. In contrast, world frame fusion would necessitate projecting camera-derived regions of interest into three-dimensional world coordinates, executing the fusion operation, and subsequently back-projecting results to the image plane for visualization and downstream processing. This cascade of transformations introduces substantial computational overhead that conflicts with the temporal demands of real-time maritime perception.
+
+% Beyond computational efficiency, the image frame approach mitigates error propagation inherent to coordinate transformations. Each transformation between reference frames accumulates uncertainties from camera calibration parameters, LiDAR-to-camera registration errors, temporal synchronization misalignment between sensor modalities, and platform motion during data acquisition, including vessel roll, pitch, and yaw dynamics. By fusing detections in the image frame, the methodology requires only a single forward transformation projecting LiDAR detections into image coordinates rather than the bidirectional transformations demanded by world frame fusion. This reduction in transformation operations directly limits cumulative error propagation through the perception pipeline.
+
+% The apparent bias toward the camera sensor coordinate system requires explicit justification, though this bias proves methodologically sound rather than arbitrary. The GB-CACHE detection method, while fundamentally a three-dimensional perception approach operating on volumetric LiDAR data, adapts naturally to a two-dimensional representation through straightforward projection of detected object boundaries into the image plane. Conversely, YOLO and analogous vision-based detection architectures produce inherently two-dimensional bounding boxes that cannot be transformed into three-dimensional world coordinates without supplementary depth information or geometric assumptions that would introduce additional uncertainty into the fusion process. This asymmetry in detection output dimensionality makes the image frame a natural common ground where both modalities can be represented without information loss or geometric ambiguity. Furthermore, consistency with established maritime object detection benchmarks, which typically evaluate performance using image space metrics such as intersection over union and precision-recall characteristics, facilitates direct comparison of the proposed fusion methodology against existing approaches in the literature.
+
+\section{Late Fusion} \label{fusion}
+\label{fusion_method}
+
+Having established the capabilities and limitations of both camera-based and LiDAR-based detection systems in maritime environments, this section describes the implementation of a late fusion method that combines their outputs at the decision level. 
+The goal is to use the demonstrated strengths of each system to improve detection accuracy while maintaining the real-time computational performance of both sensing modes. 
+The proposed approach utilizes a Kalman filter on the independent object detections generated by YOLO and GB-CACHE following classification.
+This enables the fused detection label to reflect the confidence assigned to each model, such that the influence of each system is proportional to its estimated reliability.
+However, for this approach to work, both detections must share a common reference frame. 
+For this reason, detections from GB-CACHE are projected into the image frame. 
+
+
+
+Having established the independent capabilities and limitations of both camera-based and LiDAR-based detection systems in maritime environments, this section outlines the implementation of a late-fusion method that synthesizes their outputs at the decision level.
+This late fusion approach is a decision-level integration strategy that combines object detection outputs from both YOLO and GB-CACHE after each system has independently produced a detection and classification.
+The objective is to leverage the demonstrated individual performance of each system and improve the detection through the application of a Kalman filter, while preserving the computational efficiency demonstrated by each modality.
+
+The fusion pipeline begins with temporal synchronization of asynchronous detection messages generated by the independent sensing modalities. 
+Each detection message carries timestamp metadata that enables temporal alignment between YOLOv8 and GBCACHE outputs. 
+Only detection pairs occurring within a defined temporal window proceed to spatial association evaluation, ensuring that the fused prediction integrates observations of the same scene state rather than temporally disparate measurements.
+Spatially, candidate detection pairs undergo geometric correspondence assessment through computation of the Euclidean distance between bounding box centroids. This metric provides a computationally efficient initial filter for identifying detections that potentially correspond to the same physical object. Detection pairs satisfying the spatial proximity threshold advance to intersection over union calculation, which quantifies the degree of overlap between the two bounding boxes. Pairs exceeding a predefined IoU threshold are deemed sufficiently correspondent to warrant fusion, while those failing this criterion are discarded or processed as independent single-modality detections. This rule-based association framework permits graceful degradation in scenarios where one sensing modality fails or when temporal or geometric correspondence cannot be established, ensuring continuous detection capability while leveraging multi-modal information when conditions permit.
+
+
+the error associated with each detection source is quantified on labeled data.
+When GB-CACHE and YOLO methods both detect an ROI and agree on its classification, a third ROI is generated.
+The measured performance of each model on the ground-truth data is used to weight that model's influence on the new bounding box.
+The final fused estimate then applies a weighted average in the image frame, where each weight reflects the empirical reliability of that source.
+For each frame, detections from vision and LiDAR are paired before fusion. 
+% Pairs are formed when two conditions hold: the predicted classes match and the intersection-over-union (IoU) is at least 0.70.
+Pairs are formed only if two conditions are met: the predicted classes must match, and the intersection-over-union (IoU) between bounding boxes must be at least 0.70. When several candidates meet these criteria, the pair with the highest IoU is selected. If multiple pairs have identical IoU values, the one with the smallest center-to-center distance is chosen.
+For this analysis, only paired detections are evaluated, as we want to ensure detections within a 60-meter range. As YOLO does not have the ability for this spatial condition, single-mode returns are ignored.
+
+For each object detected by both modalities, two regions of interest (ROIs) are generated, with each ROI defined by four pixel coordinates corresponding to the left, right, top, and bottom edges of the bounding box.
+\begin{equation}
+\mathbf{U}_{S} = (L_{S}, R_{S}, T_{S}, B_{S}),
+\end{equation}
+where $S \in \{\text{LiDAR}, \text{YOLO}\}$ denotes the source.
+Therefore, we can compute the error between $\mathbf{U}_{S}$ and a set of ground-truth ROI labels $\mathbf{U}_{GT}$
+
+\begin{equation}
+\mathbf{E}_{S} = \mathbf{U}_{S} - \mathbf{U}_{\text{GT}}
+\end{equation}
+
+By assuming that the distributions of errors $\mathbf{E}_S$ will trend towards a normally distributed Gaussian ($N(\mu,\sigma^2)$) for a sufficiently large set of $N$ samples, the error is characterized as  
+\begin{align}
+\mathbf{\mu}_{U} &= \frac{1}{N_{U}} \sum_{i=1}^{N_{U}} E_{U}^{(i)} \\
+\mathbf{\sigma}^2_{U} &= \frac{1}{N_{U} - 1} \sum_{i=1}^{N_{U}}
+\bigl(E_{U}^{(i)} - \mu_{U}\bigr)^2
+\end{align}
+
+Under this assumption, the variance $\sigma^{2}_{U}$ provides a direct measure of reliability for any detection source $S$.
+Sources with less variance are more consistent with ground truth and should receive a higher weight in the fused estimate, and are generally calculated as
+\begin{equation}
+\mathbf{w}_{U} = \frac{1}{\sigma^{2}_{U}}
+\end{equation}
+
+Finally, the bounds of a fused ROI can be expressed as a weighted average between two detection modes $S1$ and $S2$ with the equation
+\begin{equation}
+\mathbf{U}_{\text{fused}} =
+\frac{
+(\mathbf{U}_{S1}-\mathbf{\mu}_{S1}) \, \mathbf{w}_{U,S1}
++
+(\mathbf{U}_{S2}-\mathbf{\mu}_{S2}) \, \mathbf{w}_{U,S2}
+}{
+\mathbf{w}_{U,S1} + \mathbf{w}_{U,S2}
+}
+\label{eq:fused_edge}
+\end{equation}
+
+
+
+% \subsection{ROI parameterization and error model} \label{fusion_error_model}
+% Each region of interest (ROI) is represented by four image edges
+% \begin{equation}
+% \mathbf{U}_{S} = \bigl[L_{S},\, R_{S},\, T_{S},\, B_{S}\bigr]^{\top},
+% \label{eq:roi_vector}
+% \end{equation}
+% where $S\in\{\text{LiDAR},\text{YOLO}\}$ and $\mathbf{U}_{\text{GT}}$ denotes the ground-truth ROI. The per-source error is
+% \begin{equation}
+% \mathbf{E}_{S}=\mathbf{U}_{S}-\mathbf{U}_{\text{GT}}.
+% \label{eq:error_def}
+% \end{equation}
+% Over a calibration set of $N$ matched detections, the mean error and variance are computed element-wise across the four edges
+% \begin{equation}
+% \boldsymbol{\mu}_{S}=\frac{1}{N}\sum_{i=1}^{N}\mathbf{E}_{S}^{(i)},
+% \label{eq:mu}
+% \end{equation}
+% \begin{equation}
+% \boldsymbol{\sigma}_{S}^{2}=\frac{1}{N-1}\sum_{i=1}^{N}\left(\mathbf{E}_{S}^{(i)}-\boldsymbol{\mu}_{S}\right)^{2}.
+% \label{eq:sigma2}
+% \end{equation}
+% This yields a de-bias term $\boldsymbol{\mu}_{S}$ and an element-wise reliability measure $\boldsymbol{\sigma}_{S}^{2}$. Edges are treated independently for computational simplicity. Correlations among edges are not modeled here and are discussed in the results.
+
+% \subsection{Weights} \label{fusion_weights}
+% Element-wise weights are the inverse variances
+% \begin{equation}
+% \mathbf{w}_{\text{LiDAR}}=\boldsymbol{\sigma}_{\text{LiDAR}}^{-2}.
+% \label{eq:w_lidar}
+% \end{equation}
+% For the vision detector, the YOLO class confidence $c\in[0,1]$ scales its empirical precision
+% \begin{equation}
+% \mathbf{w}_{\text{YOLO}}=c\,\boldsymbol{\sigma}_{\text{YOLO}}^{-2}.
+% \label{eq:w_yolo}
+% \end{equation}
+% The factor $c$ is taken from the matched class. In our data, the YOLO bias $\boldsymbol{\mu}_{\text{YOLO}}$ is near zero; it is retained for completeness.
+
+% \subsection{Fusion rule in the image frame} \label{fusion_rule}
+% The fused ROI is a de-biased, element-wise weighted average of the paired sources
+% % \begin{equation}
+% % \hat{\mathbf{U}}=
+% % \frac{
+% % \left(\mathbf{U}_{\text{LiDAR}}-\boldsymbol{\mu}_{\text{LiDAR}}\right)\odot \mathbf{w}_{\text{LiDAR}}
+% % +
+% % \left(\mathbf{U}_{\text{YOLO}}-\boldsymbol{\mu}_{\text{YOLO}}\right)\odot \mathbf{w}_{\text{YOLO}}
+% % }{
+% % \mathbf{w}_{\text{LiDAR}}+\mathbf{w}_{\text{YOLO}}
+% % },
+% % \label{eq:fusion_general}
+% % \end{equation}
+% where $\odot$ denotes element-wise multiplication and division is element-wise. Under a Gaussian error model with unbiased sources and independent edges, this estimator reduces variance in expectation as $N$ grows and the empirical weights stabilize.
+
+% \paragraph{Single-modality fallback.}
+% If only one detector produces a valid ROI for an object, the method returns that ROI with de-biasing when available
+% \begin{equation}
+% \hat{\mathbf{U}}=\mathbf{U}_{S}-\boldsymbol{\mu}_{S}.
+% \label{eq:single_modality}
+% \end{equation}
+% If classes disagree or IoU falls below the association threshold, no fusion is performed.
+
+% \paragraph{Implementation outline.}
+% LiDAR object extents are projected once into the image. Association is applied in the image frame. Equation~\eqref{eq:fusion_general} is evaluated. The fused ROI is used for downstream scoring and tracking.
+
+\subsection{Justification} \label{fusion_justification}
+The weighted average region of interest fusion operates within the image coordinate frame due to fundamental characteristics of the constituent detection modalities and practical considerations regarding error propagation through coordinate transformations. 
+This choice of method naturally emerges from the dimensional properties of vision and LiDAR-based detection outputs.
+
+YOLO produces bounding boxes defined by pixel coordinates within the image plane, and lacks depth information about an object's position in three-dimensional space.
+Conversely, the GB-CACHE method processes volumetric LiDAR point cloud data to extract three-dimensional object boundaries in the sensor coordinate frame. 
+% These spatial detections project into the image plane using a single forward transformation.
+% This is useful for minimizing cumulative error from multiple transforms, and the weighted average fusion adds negligible computational overhead to the already discussed efficiency of each detection method.
+
+Performing fusion in the image frame also constrains error propagation through the detection pipeline. Alternative approaches that fuse detections in world coordinates necessitate projecting camera-derived bounding boxes into three-dimensional space.
+Each coordinate transformation compounds uncertainties from camera calibration, extrinsic transformations, and temporal synchronization error from platform motion. 
+The image frame approach requires only forward projection of LiDAR detections, thereby reducing the number of transformation steps and their cumulative effect on detection accuracy. 
+The computational cost of the weighted average fusion operation itself remains negligible relative to the individual detection methods already discussed. 
+% Image frame fusion additionally aligns with standard maritime object detection evaluation frameworks that assess performance using metrics defined in image coordinates, facilitating direct comparison with established methods in the literature.
+
+% \subsection{Results plan} \label{fusion_results}
+% This section will report per-edge error statistics, IoU, and center error for each source and for the fused output. It will also report ablations for the effect of the confidence scaling factor $c$. Heteroscedastic effects due to range, aspect, class, and lighting will be analyzed in the results with stratified summaries.
+
+% Provided the model assumptions hold and the calibration set is large enough to estimate stable variances, the fused estimator reduces expected localization error relative to either source alone. A summary of the data used for this evaluation will be reported in Table~\#\,. Initial results and representative examples will follow.
 
 \subsection{Results} \label{fusion_results}
 
+This method of statistical error analysis and application guarantees that the resulting fused ROI will be improved over the GB-CACHE method alone.
+Provided that ground truth data is abundant and at least equivalent in quality to the data provided for the transfer learning of the YOLO model, it guarantees that the fused result is better than either method, in isolation.
+
+To characterize the error of the detection edges generated by the GB-CACHE method, additional training data were selected and labeled.
+\textcolor{red}{A summary of the data used for this evaluation is provided in Table \#. Initial results from the application of this method indicate an improvement ...}
+
+% \subsubsection{Confidence from ground-truth referenced error}
+
+% For the fusion weights to be meaningful, the confidence assigned to each source must be grounded in its empirical agreement with ground-truth annotations.
+% A dedicated calibration dataset with image-plane ground truth
+% \begin{equation}
+% \mathbf{U}_{\text{GT}} = (L_{\text{GT}}, R_{\text{GT}}, T_{\text{GT}}, B_{\text{GT}})
+% \end{equation}
+% is used to quantify the edge-wise error distribution for each sensing modality.
+
+% For each edge $U \in \{L,R,T,B\}$, source $S \in \{\text{LiDAR}, \text{YOLO}\}$, and sample $i = 1,\dots,N_{U,S}$, the error is
+% \begin{equation}
+% e_{U,S}^{(i)} = U_{S}^{(i)} - U_{\text{GT}}^{(i)}.
+% \end{equation}
+% The sample mean and unbiased variance of this error are
+
+
+
+
+
+% \subsection{Results} \label{fusion_results}
+
+\subsection{Late-fusion region-of-interest refinement}
+
+Having characterized the independent performance of camera-based and LiDAR-based detection in maritime scenes, this work adopts a decision-level fusion scheme that refines image-plane regions of interest (ROIs) by combining bounding boxes from both modalities.
+The goal is to obtain tighter and more stable bounding boxes in the camera frame without retraining or modifying the underlying detectors.
+
+
+\subsubsection{Gaussian error model and reliability weights}
+
+
+
+For an associated LiDAR–YOLO pair and edge $U$, bias-corrected measurements are
+\begin{align}
+\tilde{U}_{\text{LiDAR}} &= U_{\text{LiDAR}} - \hat{\mu}_{U,\text{LiDAR}}, \\
+\tilde{U}_{\text{YOLO}}  &= U_{\text{YOLO}}  - \hat{\mu}_{U,\text{YOLO}}.
+\end{align}
+The corresponding fusion weights are defined as inverse-variance measures of confidence,
+
+where $c_{\text{YOLO}} \in (0,1]$ is the detector confidence score.
+This construction assigns more influence to sources with lower empirical error variance and scales the YOLO contribution by its per-detection confidence.
+
+The fused edge coordinate is then
+\begin{equation}
+U_{\text{fused}} =
+\frac{
+\tilde{U}_{\text{LiDAR}} \, w_{U,\text{LiDAR}}
++
+\tilde{U}_{\text{YOLO}} \, w_{U,\text{YOLO}}
+}{
+w_{U,\text{LiDAR}} + w_{U,\text{YOLO}}
+},
+\label{eq:fused_edge_gaussian}
+\end{equation}
+applied independently to $L, R, T,$ and $B$ to obtain
+\begin{equation}
+\mathbf{U}_{\text{fused}} = (L_{\text{fused}}, R_{\text{fused}}, T_{\text{fused}}, B_{\text{fused}}).
+\end{equation}
+
+\subsubsection{Relation to detector training}
+
+The YOLO detector is trained to minimize localization and classification loss with respect to labeled ground truth for each class.
+This process encourages approximately unbiased predictions in the image plane, so that
+\begin{equation}
+\hat{\mu}_{U,\text{YOLO}} \approx 0
+\end{equation}
+for well-calibrated models.
+In contrast, LiDAR-derived ROIs may exhibit nonzero bias due to residual calibration error or projection geometry.
+The proposed formulation makes these effects explicit.
+Bias terms $\hat{\mu}_{U,S}$ correct systematic offsets, while inverse-variance weights $\hat{\sigma}^{-2}_{U,S}$ encode the relative reliability of each source in a statistically consistent manner.
+The result is a principled, confidence-weighted blend of LiDAR and YOLO bounding boxes that directly targets improved image-plane ROI quality.
 
 
 
