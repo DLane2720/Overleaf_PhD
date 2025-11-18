@@ -522,7 +522,7 @@
 	\def\@oddfoot{\hfill
 		\raisebox{0pt}[0pt][0pt]{\parbox[b]{6in}{\centering
   % \\Embry Riddle Aeronautical University\\
-  Embry Riddle Aeronautical University\\
+  Embry-Riddle Aeronautical University\\
 				Daytona Beach, Florida\\
 				% \@gradmonth\ \@gradyear\\
 				\@gradmonth\ \@gradyear
