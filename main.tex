@@ -61,7 +61,7 @@ SURFACE VESSELS} % the title should be included here
 
 %\signaturepush{-2.0}									
 
-% \usepackage{subfiles} % Best loaded last in the preamble
+\usepackage{subfiles} % Best loaded last in the preamble
 
 \begin{document}
 
@@ -98,13 +98,13 @@ the Department of the Navy.
 	% \raggedright Researcher: Daniel P. Lane
  % \\Title: A study in object detection and classification performance by sensing modality for autonomous surface vessels \\Institution:	Embry-Riddle Aeronautical University\\Degree:	Doctor of Philosophy in Mechanical Engineering\\Year:	2025 \\
 This research addresses the critical gap in quantitative performance comparison between \ac{LiDAR} and vision-based sensing for real-time maritime object detection on autonomous surface vessels.
-Using \acposs{ERAU} Minion platform and 2024 Maritime RobotX Challenge data, this study evaluates two object detection methods across six maritime object categories: \ac{GB-CACHE} and \ac{YOLO}. These methods are representative of deterministic \ac{LiDAR}- and neural network-based vision approaches that have been previously demonstrated to run in real time on \acp{USV}.
-The evaluation methodology encompasses real-time performance analysis, multi-sensor calibration, and the introduction of a new late-fusion strategy to reduce bounding-box uncertainty.  Performance metrics include precision, recall, \ac{mAP}, training requirements, and computational efficiency. 
+Using \acposs{ERAU} Minion platform and 2024 Maritime RobotX Challenge data, this study evaluates representative detection models across six maritime object categories: YOLOv8 for neural network and vision-based detection and GB-CACHE for deterministic \ac{LiDAR}-based detection.
+Both methods have been previously demonstrated to run in real-time on \acp{USV}.
+The evaluation methodology encompasses real-time performance analysis, multi-sensor calibration, and the introduction of a late-fusion strategy in the image frame to reduce bounding-box uncertainty. 
+Performance metrics include precision, recall, \ac{mAP}, training requirements, and computational efficiency. 
+YOLO achieves low-latency, high-mAP visual detection, while GB-CACHE provides deterministic, CPU-level runtime guarantees with high geometric accuracy, and the Kalman filter weighted fusion guarantees an improvement in ROI bounds.
 % Results demonstrate [key performance finding] and establish [fusion outcome]. 
-The research provides quantitative baselines for maritime sensing modality selection and validated calibration procedures enabling improved autonomous navigation in complex maritime environments.
-
-%%%% Coyle Note: %%%%
-% this study evaluates LiDAR and vision-based detection and classification acrsoss six maritime object categories, using GB-CACHE and Yolov8 as representative processing techniques for each modality.
+%environments.
 
 \end{abstract}
 \pagetableofcontents
@@ -119,12 +119,12 @@ The research provides quantitative baselines for maritime sensing modality selec
 \mainmatter
 \newpage
 \chapter{Introduction} \label{introduction}
-% \subfile{sections/introduction_02}% Opening Context
+
 The rise of autonomous systems is transforming numerous industries, and the maritime sector is no exception. \Acp{USV} have the potential to improve safety and operational efficiency by performing the dull, dirty, and dangerous tasks traditionally done by humans.
 Their performance depends on environmental situational awareness, which refers to the system’s ability to perceive relevant features of the surrounding environment. 
 Real-time object detection and classification provide the perceptual basis for this capability and are essential for safe navigation and decision making in complex maritime environments.
 
-% Problem Background
+
 Although the automotive industry has achieved significant progress in autonomous perception, comparable advances for maritime platforms remain limited. 
 A review of recent literature reveals that studies on autonomous ground vehicles outnumber maritime autonomy publications by nearly one order of magnitude, with a similar disparity observed in object detection research. \textcolor{red}{(cite)}
 While some perception strategies from automotive systems can be adapted, the maritime domain introduces fundamentally different challenges. 
@@ -138,6 +138,7 @@ Visual-spectrum cameras capture rich color and texture information, which is ess
 Furthermore, camera imagery inherently lacks spatial depth unless supported by additional sensing or estimation methods.
 Conversely, \ac{LiDAR} provides precise three-dimensional measurements but lacks the spectral detail required to interpret color-coded or visually distinctive targets.
 %%%%%%%%%%%%%%%%%%%%%%%% MRG: Consider making reference to environment with manned/unmanned systems (as this drives the need to interpret colors and the organization that defines navigation aid marker shapes and colors.
+%%%%%%%%%%%%%%%%%%%%%%%% end comment
 These complementary limitations motivate sensor fusion between visual cameras and \ac{LiDAR} scanning to achieve both spatial accuracy and spectral awareness.\textcolor{red}{(cite)}
 Real-time fusion is particularly crucial for embedded maritime platforms, where operational demands are high and computational resources are limited.
 Efficient fusion frameworks enable low-latency, high-accuracy perception, making them suitable for edge systems that may be constrained by size, weight, and power (SWaP), and better support mission profiles that demand precise and reliable situational awareness, including navigation of littoral zones, search and rescue operations, and defense missions.
@@ -149,7 +150,6 @@ Efficient fusion frameworks enable low-latency, high-accuracy perception, making
 \label{fig:minion}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%% MRG: Consider subsection headings to identify key elements of the document: problem statement, goals and objectives (research questions), research impact, organization etc.
 \section{Problem Statement}
 The central problem addressed by this dissertation is the lack of quantitative, empirical evidence comparing the performance of \ac{LiDAR} and vision-based object detection systems in maritime environments, and the absence of validated real-time fusion strategies that improve detection accuracy beyond single-modality approaches while operating within the computational limits of embedded \ac{USV} platforms.
 
@@ -217,7 +217,7 @@ All data are recorded and analyzed within the \ac{ROS} Noetic framework to ensur
 
 %%%%%% Coyle: You should note that this study is not meant to point out obvious differences in performance such as the inability for imagery to perform at night
 It is important to note that this study is not intended to highlight self-evident differences in performance, such as the limitations of vision-based detection while operating at night, or to evaluate every available detection method.
-Instead, the aim is to provide a consistent comparison under controlled conditions between two real-time detection implementations on the Minion platform: vision-based detection using a fine-tuned YOLOv8~\cite{redmon2016} model and LiDAR-based detection using Grid-Based Clustering and Convex Hull Extraction (GB-CACHE)~\cite{coyleE}.
+Instead, the aim is to provide a consistent comparison under controlled conditions between two real-time detection implementations on the Minion platform: vision-based detection using a fine-tuned YOLOv8~\cite{redmon2016} model and LiDAR-based detection using Grid-Based Clustering and Convex Hull Extraction (GB-CACHE)~\cite{coyleEacceptedForPub}.
 YOLOv8 was selected due to its status as a leading and widely adopted deep learning detection algorithm. 
 %%%%%%% MRG: consider omitting the highlighted lines and instead focus on what you selected (GB-CACHE):
 A deterministic method for LiDAR detection was selected for two reasons. 
@@ -234,12 +234,14 @@ These characteristics position GB-CACHE as well-suited to the sensing requiremen
 
 
 \section{Research Impact}
-This research makes three principal contributions to the field of maritime autonomy:
+This research makes four principal contributions to the field of maritime autonomy:
 
 \begin{enumerate}
-    \item Quantitative performance benchmarks for \ac{LiDAR} and camera-based object detection in maritime environments, including detection range, classification accuracy, and computational requirements across six representative object classes.
-    \item Characterization of training data requirements and model convergence behavior for both modalities, providing practical guidance for dataset design and sensor selection on embedded platforms.
-    \item \textcolor{blue}{Demonstration and validation of a real-time late-fusion framework that achieves measurable improvements in detection accuracy over the individual sensing-mode detection methods.}
+    \item Quantitative Characterization of Real-Time Single-Modality Performance Baselines for USVs
+    \item Development and Validation of High-Fidelity Spatiotemporal Sensor Alignment Procedures for Dynamic Platforms.
+    \item Information-Theoretic Feature Optimization for Deterministic LiDAR Classification
+    % \item \textcolor{blue}{Demonstration and validation of a real-time late-fusion framework that achieves measurable improvements in detection accuracy over the individual sensing-mode detection methods.}
+    \item Validation of a Static Kalman Filter for Variance-Weighted Late Fusion to Refine Object Localization.
 \end{enumerate}
 
 % These findings directly support \ac{DoN} applications such as autonomous harbor navigation, mine countermeasures, and persistent surveillance. They also inform the development of commercial \ac{USV} systems for environmental monitoring, offshore infrastructure inspection, and autonomous logistics.
@@ -266,12 +268,21 @@ Chapter~\ref{chapter_conclusions} provides a discussion comparing the results of
 Finally, Chapter~\ref{chap:recommendations} concludes with a summary of findings and recommendations for future research.
 % \textcolor{blue}{(Add?) Finally, additional figures, tables, and calibration data appear in appendices....}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Literature Review} \label{litReview}
 % \subfile{sections/literatureReview_new} % old
-% \subfile{sections/literatureReview_v07_md} % newer
+% \subfile{sections/Final_literatureReview} % newer
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+COLREGs \cite{COLREGs1972}
+
+The International Maritime Organization (IMO) is currently developing a regulatory framework for Maritime Autonomous Surface Ships (MASS), with draft provisions under review by the Maritime Safety Committee. As of 2025, no binding MASS Code is in force \cite{IMO_MASS_RSE_2021}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Real-time perception for \acp{USV} has evolved substantially over the past decade, primarily driven by advances in deep learning architectures and sensor technologies. %initially developed for terrestrial autonomous vehicles.
 Vision-based detection methods, particularly single-stage architectures such as YOLO~\cite{redmon2016}, demonstrate strong performance on automotive benchmarks~\cite{geiger2013} but degrade under extreme illumination variations \textcolor{red}{(cite)}.
@@ -284,7 +295,7 @@ Studies of visual detection in coastal and harbor settings report substantial pe
 ~\cite{prasad2017}.
 \ac{LiDAR} systems face complementary difficulties with sparse water-surface returns and atmospheric scattering~\cite{kunz2005}.
 %%%%%% MRG: It might be helpful to explain why atmospheric scattering is more prevalent in maritime as opposed to terrestrial environments. 
-While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024a, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets such as KITTI~\cite{geiger2013} or Waymo \cite{sun2020}, and its direct applicability to maritime platforms operating under power and computational constraints has not been thoroughly validated~\cite{wang2020a}.
+While sensor fusion has been proposed to address individual modality limitations~\cite{huang2024, liang2022}, most fusion research focuses on automotive applications using terrestrial datasets such as KITTI~\cite{geiger2013} or Waymo \cite{sun2020}, and its direct applicability to maritime platforms operating under power and computational constraints has not been thoroughly validated~\cite{wang2020a}.
 %%%%%%% MRG: For a large minion-sized USV, are there really power and computational constraints though?  I did not believe that it is that payload constrained.  Also, why are you only comparing to UGV research?  UAS research also explores sensor fusion and in general, is more power/computation constrained than either USV or UGV.  
 
 This review synthesizes research across vision and \ac{LiDAR}-based detection methods independently before addressing multimodal fusion architectures and calibration requirements, and concludes by identifying specific research gaps motivating this dissertation's contributions.
@@ -383,20 +394,20 @@ Transformer-based architectures that apply self-attention to point clouds offer 
 
 Beyond computational constraints, these neural network-based approaches face limitations for safety-critical maritime applications.
 The non-deterministic nature of their architecture presents challenges when enforcing strict rules, such as ensuring object separation distances.
-This limitation is particularly problematic when using spatial data for navigational purposes and obstacle avoidance~\cite{coyleE}.
+This limitation is particularly problematic when using spatial data for navigational purposes and obstacle avoidance~\cite{coyleEacceptedForPub}.
 Given this persistent challenge, there is a continued need to investigate deterministic approaches that provide stricter guarantees for safety-critical applications. 
 
 \subsection{Deterministic Geometric Alternatives}
 
 In contrast to neural network-based approaches, deterministic geometric algorithms offer advantages for resource-constrained embedded platforms, where runtime predictability and minimal training data requirements are highly valued.
-Coyle~\cite{coyleE} developed Grid-Based Clustering and Concave Hull Extraction (GB-CACHE), a deterministic approach specifically designed for uncrewed systems perceiving objects on flat surfaces, including water.
+Coyle~\cite{coyleEacceptedForPub} developed Grid-Based Clustering and Concave Hull Extraction (GB-CACHE), a deterministic approach specifically designed for uncrewed systems perceiving objects on flat surfaces, including water.
 GB-CACHE efficiently segments point clouds through grid-based spatial partitioning, then extracts concave hull boundaries that accurately represent objects with irregular geometries.
 %%%%%%%% MRG: Due to evolving standards as to what constitutes low- to mid-grade computing, I'd recommend including some details to define this here:
-Computational efficiency analysis demonstrates real-time feasibility on low to mid-grade computing platforms~\cite{coyleE}.
+Computational efficiency analysis demonstrates real-time feasibility on low to mid-grade computing platforms~\cite{coyleEacceptedForPub}.
 
 The deterministic nature of GB-CACHE provides specific operational advantages.
 Processing latency remains bounded and predictable, eliminating variable inference times characteristic of neural networks, where batch size and scene complexity affect throughput.
-Rule enforcement for spatial constraints—critical for obstacle avoidance and navigation—can be rigorously guaranteed, whereas neural approaches provide probabilistic outputs without strict guarantees~\cite{coyleE}.
+Rule enforcement for spatial constraints—critical for obstacle avoidance and navigation—can be rigorously guaranteed, whereas neural approaches provide probabilistic outputs without strict guarantees~\cite{coyleEacceptedForPub}.
 Training data requirements are minimal; the algorithm requires only geometric parameters rather than extensive labeled datasets—a practical advantage for maritime deployment where training data scarcity persists.
 
 %%%% You need to look at other techniques too. the pre-cursor to GB-CACHE was: https://ieeexplore.ieee.org/document/8656488
@@ -426,7 +437,7 @@ The complementary limitations of camera and \ac{LiDAR} modalities—vision faili
 \section{Sensor Fusion Paradigms}
 
 Sensor fusion combines information from multiple modalities to overcome the limitations of individual sensors.
-Recent surveys~\cite{feng2021, tufekci2023, huang2024a} identify fusion level—early, mid, or late—as the primary architectural distinction determining computational requirements, calibration sensitivity, and failure mode propagation relevant to maritime deployment.
+Recent surveys~\cite{feng2021, tufekci2023, huang2024} identify fusion level—early, mid, or late—as the primary architectural distinction determining computational requirements, calibration sensitivity, and failure mode propagation relevant to maritime deployment.
 Each fusion paradigm offers distinct trade-offs between peak accuracy potential, robustness to sensor degradation, and real-time implementation feasibility~\cite{feng2021}.
 
 \subsection{Early Fusion: Data-Level Integration}
@@ -448,8 +459,8 @@ These dynamic calibration challenges affect all fusion paradigms but with varyin
 
 \subsection{Mid Fusion: Feature-Level Integration}
 
-Mid fusion extracts features independently from each modality before combining them in intermediate network layers~\cite{huang2024a}.
-Huang et al.~\cite{huang2024a} systematically compare fusion paradigms, finding that mid fusion balances accuracy and robustness. 
+Mid fusion extracts features independently from each modality before combining them in intermediate network layers~\cite{huang2024}.
+Huang et al.~\cite{huang2024} systematically compare fusion paradigms, finding that mid fusion balances accuracy and robustness. 
 Independent feature extraction prevents errors in individual sensor data from propagating between modalities, yet learned fusion layers capture cross-modal correlations unavailable to late fusion.
 
 BEVFusion~\cite{liang2022, liu2023b} transforms camera features into \ac{BEV} representations compatible with \ac{LiDAR} BEV features, combining them through efficient convolution operations.
@@ -472,27 +483,27 @@ Late fusion's modular architecture provides several practical advantages for mar
 Computational requirements scale approximately linearly with sensor count rather than exponentially as with joint processing~\cite{wang2020a}.
 Processing latency remains predictable because each modality follows fixed pipelines without runtime cross-modal dependencies during feature extraction.
 Adding or removing sensors requires minimal system redesign—new detection streams integrate through updated fusion modules without modifying existing pipelines~\cite{feng2021}.
-Most critically for maritime applications, individual sensor failures degrade performance gracefully rather than causing catastrophic fusion failure~\cite{huang2024a}.
-Temporal synchronization requirements are relaxed compared to early fusion: late fusion spatial association operates on object-level regions rather than pixel-level correspondences, tolerating larger timing offsets—typically 50 to 100 milliseconds versus 10 milliseconds for early fusion~\cite{huang2024a}.
+Most critically for maritime applications, individual sensor failures degrade performance gracefully rather than causing catastrophic fusion failure~\cite{huang2024}.
+Temporal synchronization requirements are relaxed compared to early fusion: late fusion spatial association operates on object-level regions rather than pixel-level correspondences, tolerating larger timing offsets—typically 50 to 100 milliseconds versus 10 milliseconds for early fusion~\cite{huang2024}.
 For maritime platforms where precise hardware synchronization may be impractical and wave-induced motion creates apparent object movement, relaxed timing tolerances represent operational advantages.
 
 \subsection{Comparative Analysis and Maritime Fusion Gaps}
 %%%%% MRG: Consider including a table that highlights the differences between the fusion methods
-Huang et al.~\cite{huang2024a} systematically evaluate fusion paradigms under simulated sensor degradation and synchronization error.
+Huang et al.~\cite{huang2024} systematically evaluate fusion paradigms under simulated sensor degradation and synchronization error.
 Late fusion maintains superior robustness when individual sensors fail or produce degraded outputs through graceful degradation.
-However, under ideal conditions with clean data and perfect calibration, mid fusion achieves higher peak accuracy by learning cross-modal correlations unavailable to late fusion~\cite{huang2024a}.
+However, under ideal conditions with clean data and perfect calibration, mid fusion achieves higher peak accuracy by learning cross-modal correlations unavailable to late fusion~\cite{huang2024}.
 Wang et al.~\cite{wang2020a} note that mid-fusion architectures approximately double processing requirements compared to single-modality detection.
 For battery-powered maritime platforms, doubled power consumption directly reduces mission endurance.
 
 %%%%% MRG: Why just automotive? why not Aero?
 These findings from automotive research suggest that operational requirements and constraints should inform the selection of fusion strategy.
 Early and mid fusion optimize for peak accuracy under ideal conditions but require precise calibration, tight synchronization, and substantial computational resources~\cite{feng2021, cui2022}.
-Late fusion prioritizes robustness and computational efficiency under degraded conditions, accepting reduced peak accuracy compared to deeper fusion strategies~\cite{huang2024a, wang2020a}.
+Late fusion prioritizes robustness and computational efficiency under degraded conditions, accepting reduced peak accuracy compared to deeper fusion strategies~\cite{huang2024, wang2020a}.
 
-Automotive fusion methods~\cite{feng2021, cui2022, huang2024a} evaluate performance on terrestrial datasets where environmental characteristics differ fundamentally from maritime scenarios—water reflections, extreme dynamic range, sparse \ac{LiDAR} returns, and platform motion require empirical validation.
+Automotive fusion methods~\cite{feng2021, cui2022, huang2024} evaluate performance on terrestrial datasets where environmental characteristics differ fundamentally from maritime scenarios—water reflections, extreme dynamic range, sparse \ac{LiDAR} returns, and platform motion require empirical validation.
 Computational requirements, power consumption, and latency characteristics on representative embedded hardware are rarely reported~\cite{liu2023a}.
 %%%%%%%%%% MRG: possibly because you are not looking at aerial domains
-Systematic evaluation sweeping timing offsets to establish acceptable synchronization tolerances for maritime platforms is absent~\cite{huang2024a}, and wave-induced motion creates time-varying calibration errors differing from static errors typical of ground vehicles~\cite{cui2022}.
+Systematic evaluation sweeping timing offsets to establish acceptable synchronization tolerances for maritime platforms is absent~\cite{huang2024}, and wave-induced motion creates time-varying calibration errors differing from static errors typical of ground vehicles~\cite{cui2022}.
 Most fusion studies report performance without rigorous comparison against optimized single-modality baselines~\cite{farahnakian2020, haghbayan2018, Clunie2021}.
 
 % \section{Temporal and Spatial Alignment in Fusion Systems}
@@ -576,7 +587,7 @@ Despite substantial progress in multimodal perception for autonomous systems, se
 These gaps span algorithmic approaches, computational implementation, and empirical validation resources.
 
 Most published fusion research emphasizes early or mid-level integration, with limited evaluation of late-level approaches under maritime conditions.
-Comparative studies in automotive contexts demonstrate that late fusion offers superior robustness under sensor dropout or environmental degradation—conditions frequently encountered during maritime operations~\cite{huang2024a, wang2020a}.
+Comparative studies in automotive contexts demonstrate that late fusion offers superior robustness under sensor dropout or environmental degradation—conditions frequently encountered during maritime operations~\cite{huang2024, wang2020a}.
 However, these findings primarily derive from terrestrial datasets where environmental characteristics and sensor failure modes differ substantially from those in maritime scenarios.
 Whether late fusion maintains similar robustness advantages under maritime-specific challenges, including water reflections, HDR lighting extremes, and platform motion, remains an open empirical question in the reviewed literature.
 This dissertation addresses this gap through systematic evaluation of late fusion performance under maritime conditions, as described in Chapter~\ref{realtime_object_detection}.
@@ -636,7 +647,7 @@ Figure \ref{fig:minion_callout} shows the vessel's configuration as equipped to 
 The sensor configuration used in this research and the 2024 competition is described in Section \ref{perception_geometry}. % \cite{holland2024, thompson2023}. 
 Section~\ref{sensors} presents the technical specifications of Minion's sensor hardware, with particular emphasis on the \ac{LiDAR} and high-definition camera sensors selected for this study.
 An overview of the computer and network infrastructure of the system is provided in section~\ref{sec:Atlas_LAN} as background for the computational requirements of the real-time object detection methods presented in Chapter~\ref{realtime_object_detection}, as well as the challenges relating to the synchronization of sensors in section~\ref{sec:calibration}. 
-Of particular note, the timestamp embedding mechanism described in Section~\ref{time_sync_cam} overcomes network latency issues in the video pipeline to maintain a more precise temporal alignment.
+In particular, the timestamp embedding mechanism described in Section~\ref{time_sync_cam} mitigates network latency issues in the video pipeline, thereby maintaining more precise temporal alignment.
 % , essential for rigorous multi-modal sensor fusion analysis.
 Finally, section~\ref{sec:sensor_data_dataset} discusses the \ac{ROS} software architecture responsible for recording and processing sensor data.
 
@@ -698,50 +709,16 @@ The units are installed with a downward declination of approximately 5 degrees f
 Together, these sensors deliver nearly continuous 360° coverage for navigation and obstacle avoidance.
 \textcolor{red}{MRG: an image would be helpful here}
 \textcolor{red}{MRG: Include pic with top down view}
+%%%% DL: Still unsur how to generate this
 Each VLP-16 employs 16 lasers to continuously scan a 30-degree vertical \ac{FOV} over 360 degrees of azimuth, producing approximately 300,000 \ac{pps} in single-return mode. 
+%%%%DL: I will confirm next time I am on campus.
 Ultimately, the mounting of these sensors leads to a significant portion (up to half) of the LiDAR returns being pointed toward the sky or directly into the vessel, significantly reducing the number of useful points from each unit. 
 
 In contrast, the three Livox Horizon solid-state \ac{LiDAR} units concentrate their scanning pattern within an $81.7$ horizontal by $25.1$ degree vertical \ac{FOV}, generating up to 280,000 \ac{pps}. 
-% Although the nominal point rates are comparable, the Livox pattern can return $100 \%$ of its concentrated \ac{FOV} data. 
-This higher spatial sampling density enables detection and classification of objects that may be smaller or further from the sensor.
-A direct comparison of the Velodyne and Livox scan patterns for this mounting configuration is provided in Figure \ref{fig:LiDAR_scan_compare}.
-The top-right image shows the dense point cloud of the Livox devices.
-The light tower in the foreground and the large dock structure in the background can be seen in the camera view (left) and are both well defined in the red Livox point cloud.
-Two small A2 buoys are also distinctly visible between the two structures in the Livox point cloud.
-In comparison, the white Velodyne point cloud in the bottom-right, can only make out the general form of the light tower. While there are very few points returned from the large dock structure in the background, and the round buoys are undetected.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{Images_old/LiDAR_compare.png}
-\caption{A comparison of LiDAR returns from the Livox units (top-right, red) and Velodyne units (bottom-right, white) to the respective HDR camera view (left). LiDAR points are displayed from a third-person perspective in RVIZ. Green and Blue axes (top-right, top-bottom) represent the origin of the USV frame of reference.}
-\label{fig:LiDAR_scan_compare}
-\end{figure}
-
-
-
-Consequently, the research presented in this work relies exclusively on LiDAR data from the forward-scanning Livox Horizon sensors, whose concentrated and non-repetitive coverage provides the spatial resolution required for the real-time object-detection framework described in Section \ref{gbcache}. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Livox Horizon} \label{sensors_livox}
-
-
+%%% DL: I believe it is 6 or 8 degrees. I will measure next time I am on campus.
 Each Livox Horizon uses dual orthogonal mirrors oscillating at slightly different frequencies to generate a non-repetitive Lissajous-like scan pattern over its $81.7 \times 25.1$ degree \ac{FOV} as shown in Figure \ref{fig:livox_scan_pattern}. 
 Overlapping these sensors by roughly $50 \%$ effectively doubles the point density along the center-line path under nominal operation, and maintains coverage under single-unit failure.
 Table~\ref{table:livox_horizon_specs} presents detailed hardware specifications for the Livox Horizon.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.5\textwidth]{Images/livox_scan_pattern.png}
-\caption{Non-repeating scan pattern of Livox Horizon and accumulation of points from 0.1 to 0.5 seconds \cite{livox_manual}.}
-\label{fig:livox_scan_pattern}
-\end{figure}
-
-Each device is capable of returning up to $4.8 \times 10^5$ \ac{pps} in dual return mode, with each return consisting of position coordinates (x, y, z), target reflectivity, and timestamp.
-This operational mode returns two data points for each laser emission and is useful for situations where the sensor scans semi-permeable objects such as windows, thick tree canopies, or water.
-Each sensor operates in single-return mode, primarily to reduce network load.
-A conservative estimate of 16 bytes per point results in $\approx 23 \text{ Mbps}$ which would quickly overwhelm the \ac{USV}'s network.
-However, The $905 nm$ near-infrared emission is strongly absorbed by water, effectively suppressing subsurface returns.
-This means that only points which are reflected by the water surface are returned with an intensity greater than zero, making it straight forward to filter out points in the ground plane.
 
 \begin{table}[htpb]
 \centering
@@ -768,21 +745,110 @@ Operating Frequency & 100 Hz \\
 \label{table:livox_horizon_specs}
 \end{table}
 
-\subsection{Visible Spectrum Cameras} \label{visual_cameras}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.5\textwidth]{Images/livox_scan_pattern.png}
+\caption{Non-repeating scan pattern of Livox Horizon and accumulation of points from 0.1 to 0.5 seconds \cite{livox_manual}.}
+\label{fig:livox_scan_pattern}
+\end{figure}
+ 
+This higher spatial sampling density enables detection and classification of objects that may be smaller or further from the sensor, as discussed below.
+A direct comparison of the Velodyne and Livox scan patterns is provided in Figure \ref{fig:LiDAR_scan_compare}.
+The top-right image shows the dense point cloud of the Livox devices. 
+The light tower in the foreground and the large dock structure in the background are visible in the camera view (left) and are both well-defined in the red Livox point cloud.
+Two small A2 buoys are also distinctly visible between the two structures in the Livox point cloud.
+In comparison, the white Velodyne point cloud in the bottom-right can only make out the general form of the light tower. While there are very few points returned from the large dock structure in the background, the round buoys are undetected.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{Images/LiDAR_compare.png}
+\caption{A comparison of LiDAR returns from the Livox units (top-right, red) and Velodyne units (bottom-right, white) to the respective HDR camera view (left). LiDAR points are displayed from a third-person perspective in RVIZ. Green and Blue axes (top-right, top-bottom) represent the origin of the USV frame of reference.}
+\label{fig:LiDAR_scan_compare}
+\end{figure}
+
+As data from the three Livox units are combined into a single point cloud, it may seem natural to include the Velodyne returns as well. 
+However, the Velodyne VLP-16 reports its intensity values on a fundamentally different scale and with different sensor-specific response characteristics than the Livox Horizon units. 
+Because LiDAR intensity is a key discriminative feature within the \ac{GB-CACHE} classification process (Section~\ref{gbcache}), mixing intensity measurements from heterogeneous devices would distort the distribution of feature probability and have negative consequences on classifier performance. 
+Consequently, the research presented in this work relies exclusively on LiDAR data from the forward-scanning Livox Horizon sensors, whose concentrated and non-repetitive coverage provides the spatial resolution required for the real-time object-detection framework described in Section \ref{gbcache}. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsubsection{Livox Horizon} \label{sensors_livox}
+
+
+% Each Livox Horizon uses dual orthogonal mirrors oscillating at slightly different frequencies to generate a non-repetitive Lissajous-like scan pattern over its $81.7 \times 25.1$ degree \ac{FOV} as shown in Figure \ref{fig:livox_scan_pattern}. 
+% Overlapping these sensors by roughly $50 \%$ effectively doubles the point density along the center-line path under nominal operation, and maintains coverage under single-unit failure.
+% Table~\ref{table:livox_horizon_specs} presents detailed hardware specifications for the Livox Horizon.
+
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.5\textwidth]{Images/livox_scan_pattern.png}
+% \caption{Non-repeating scan pattern of Livox Horizon and accumulation of points from 0.1 to 0.5 seconds \cite{livox_manual}.}
+% \label{fig:livox_scan_pattern}
+% \end{figure}
+
+% Each device is capable of returning up to $4.8 \times 10^5$ \ac{pps} in dual return mode, with each return consisting of position coordinates (x, y, z), target reflectivity, and timestamp.
+% This operational mode returns two data points for each laser emission and is useful for situations where the sensor scans semi-permeable objects such as windows, thick tree canopies, or water.
+% Each sensor operates in single-return mode, primarily to reduce network load.
+% A conservative estimate of 16 bytes per point results in $\approx 23 \text{ Mbps}$, which would quickly overwhelm the \ac{USV}'s network.
+% However, the $905 nm$ near-infrared emission is strongly absorbed by water, effectively suppressing subsurface returns.
+% This means that only points that are reflected by the water surface are returned with an intensity greater than zero, making it straightforward to filter out points in the ground plane.
+
+% \begin{table}[htpb]
+% \centering
+% \begin{tabular}{ll}
+% \hline
+% \multicolumn{2}{c}{Livox Horizon}\\
+% \hline
+% % \textbf{Parameter} & \textbf{Value} \\
+% \hline
+% Model & Livox Horizon \\
+% Horizontal Field of View & 81.7 degree \\
+% Vertical Field of View & 25.1 degree \\
+% Range & 260 m @ 80\% reflectivity \\
+% Point Rate (Single Return) & 240,000 pts/sec \\
+% Point Rate (Dual Return) & 480,000 pts/sec \\
+% Range Precision & ±2 cm \\
+% Wavelength & 905 nm \\
+% Scan Pattern & Non-repetitive rosette \\
+% Interface & Ethernet \\
+% Operating Frequency & 100 Hz \\
+% \hline
+% \end{tabular}
+% \caption{LiDAR Specifications}
+% \label{table:livox_horizon_specs}
+% \end{table}
+
+\subsection{Camera Selection} \label{visual_cameras}
 
 For perception tasks requiring computer vision, system performance is directly influenced by the quality of the visual input.
 Sensor size and lens characteristics determine the spatial detail captured, while shutter speed, exposure, and onboard processing influence brightness, contrast, and color balance. 
-But in this study, the visible-spectrum cameras housed within the camera enclosure were selected to separately achieve high image resolution and high dynamic range.
-Minion is equipped with three FLIR Blackfly S 120S4C 4K cameras with a resolution of $4000 \times 3000$ px and a dynamic range of 69.4 dB, and a single Leopard Imaging IMX490-GW5400-GMSL2-065H camera with a resolution of $2880 \times 1860$ px and a dynamic range of 120 dB.
-Additional details of each of these cameras are discussed below, followed by a discussion of how the resolution and dynamic range of these sensors impacts the research of this study.
-It should be noted that Minion's LWIR cameras are primarily used for nighttime operations, which are not conducted in this study. 
+Minion’s sensor enclosure housed two distinct visible-spectrum camera systems prior to the start of this research, requiring an evaluation of two competing technical criteria: pixel density and dynamic range.
+
+As shown in Figure~\ref{fig:camera_enclosure} and discussed in Section~\ref{perception_geometry}, the enclosure contains three 4K cameras and a single forward-facing HDR camera.
+The HDR camera was initially added for research comparing its performance with that of standard dynamic range (SDR) 4K cameras. 
+In general, HDR cameras demonstrate significantly better color accuracy and repeatability, especially in environments characterized by low and high lighting.
+
+This color performance directly influenced Minion’s sensing strategy during the 2024 Maritime RobotX Challenge. 
+Several competition tasks required the autonomous vessel to reliably interpret object colors as part of its decision-making process, making high dynamic range more critical than raw image resolution. 
+For this reason, the Leopard Imaging HDR camera was used as the primary visual sensor throughout the event and was always operational at the same time as the Livox Horizons.
+Because the majority of the dataset used in this dissertation was collected during this competition, the HDR camera is the sole camera used in the analyses that follow.
+
+The subsequent sections detail the specifications of both camera models, provide a quantitative comparison of their pixel density, and justify why the HDR camera was retained as the only visual sensor used in the research analysis of this dissertation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{FLIR Blackfly S 4K Cameras} \label{sensors_FLIR}
+\subsubsection{Camera Hardware} 
+% \label{sensors_FLIR}
  
-The three FLIR Blackfly S (BFS-U3-120S4C-CS) 4K cameras are aligned to the port, center, and starboard sight-lines described in section \ref{perception_geometry} to provide a combined 165-degree horizontal \ac{FOV}.
-In addition to redundancy, this configuration avoids additional spherical distortion within the image that would be required to cover the same \ac{FOV} with fewer cameras.
-Each FLIR Blackfly has a resolution of 4096 $\times$ 4096 pixel resolution and is paired with a Theia TL410P zoom lens at a fixed \ac{EFL} $\approx$ 8 mm.
+% The three FLIR Blackfly S (BFS-U3-120S4C-CS) 4K cameras are aligned to the port, center, and starboard sight-lines described in section \ref{perception_geometry} to provide a combined 165-degree horizontal \ac{FOV}.
+% In addition to redundancy, this configuration avoids additional spherical distortion within the image that would be required to cover the same \ac{FOV} with fewer cameras.
+
+% Each FLIR Blackfly records at 31 \ac{fps}, a resolution of 4000 $\times$ 3000 pixels, and is paired with a Theia TL410P zoom lens at a fixed \ac{EFL} $\approx$ 8 mm.
+% The technical specifications of the FLIR Blackfly 4k camera is provided in Table~\ref{table:SDR_camera_specs}
+% The Sony IMX226 imaging sensor provides a dynamic range of 69.4 dB.
+% Standard Dynamic Range is prone to over-exposure and reduced contrast when subjected to intense solar glare and water reflections common in maritime environments.
+The three FLIR Blackfly S (BFS-U3-120S4C-CS) 4K cameras provide the perception system with high-resolution visual imagery and operate at 31 fps with a native resolution of $4000 \times 3000$ pixels. 
+Each camera is fitted with a Theia TL410P zoom lens, fixed at an \ac{EFL} of approximately 8 mm. 
+The imaging system is based on the Sony IMX226 \ac{CMOS} image sensor, which delivers low-noise color imagery and a dynamic range of 69.4 dB. Key technical specifications are summarized in Table~\ref{table:SDR_camera_specs}.
 
 \begin{table}[htbp]
 \centering
@@ -817,23 +883,16 @@ Lens \Ac{EFL} & approx. 8 mm\\
 \label{table:SDR_camera_specs}
 \end{table}
 
-% The Blackfly S sensor captures video at 31 \ac{fps} and achieves a dynamic range of 69.4 dB, which is within the \ac{SDR}.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Leopard Imaging HDR Camera} \label{sensors_HDR}
+% \subsubsection{Leopard Imaging HDR Camera} \label{sensors_HDR}
  
-The Leopard Imaging camera (IMX490-GW5400-GMSL2-065H) provides a 65-degree forward \ac{FOV} using Sony’s automotive-grade IMX490 sensor with 120 dB of dynamic range.
-\ac{HDR} is achieved via Sony’s \ac{DOL-HDR} architecture, which combines large and small photodiodes within each pixel on the sensor.
-Each sub-pixel experiences a different photon flux per frame, and each output is read at both high and low conversion gains.
-This method yields 4 measurements of light intensity within each captured frame, eliminating motion artifacts from multi-exposure \ac{HDR} and enabling precise temporal alignment for sensor fusion.
-Table \ref{table:hdr_camera_specs} provides detailed specifications for the \ac{HDR} camera, which delivers a resolution of $2880 \times 1860$ pixels at 25 frames per second with a dynamic range of 120~dB.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.75\linewidth]{Images/HDR_CMOS.png}
-    \caption{Sony IMX490 (Leopard Imaging HDR camera), and simulated representation of micro-lens structure used to focus light on large and small photodiodes \cite{lucid_HDR}.}
-    \label{fig:HDR_CMOS}
-\end{figure}
+% The Leopard Imaging camera (IMX490-GW5400-GMSL2-065H) provides a 65-degree forward \ac{FOV}. 
+% Sony’s automotive-grade IMX490 sensor delivers 120 dB of dynamic range, providing images with a much higher color accuracy and higher contrast in scenarios with too much or too little light.
+% Table \ref{table:hdr_camera_specs} provides detailed specifications for the \ac{HDR} camera, which delivers a resolution of $2880 \times 1860$ pixels at 25 frames per second with a dynamic range of 120~dB.
+The forward-facing HDR camera (Leopard Imaging IMX490-GW5400-GMSL2-065H) serves as the primary visual sensor for this research. 
+The system uses Sony’s automotive-grade IMX490 sensor, designed for applications that require stable performance across extreme lighting conditions. 
+The camera provides a resolution of $2880 \times 1860$ pixels and supports an extended dynamic range of 120 dB. 
+Key technical specifications of the HDR camera are summarized in Table~\ref{table:hdr_camera_specs}.
 
 \begin{table}[htpb]
 \centering
@@ -868,7 +927,7 @@ Lens \Ac{EFL} & 7.9 mm\\
 \subsubsection{Image Resolution}
 \label{image_resolution}
 For a fixed FOV, camera resolution determines which targets can be resolved at a given sensing distance. 
-Ultimately, adequate perception across the operational envelop requires resolving the smallest object at the maximum required detection range. 
+Ultimately, adequate perception across the operational envelope requires resolving the smallest object at the maximum required detection range. 
 The relationship between an object's physical width $\mathit{w}_{obj}$ and pixel width within an image $\mathit{w}_{\text{px}}$ is given by
 \begin{equation}\label{eq:pixel_width}
 \mathit{w}_{\text{px}} = f \; \frac{N_x}{S_w}\frac{\mathit{w}_{obj}}{d}
@@ -891,13 +950,13 @@ This should be considered when defining the minimum pixel density of a camera's 
 
 The Leopard Imaging \ac{HDR} camera, which has a horizontal resolution of 1880 px and a sensor width of $S_{w} = 8.64$ mm. The smallest object to detect at the Maritime RobotX competition is the Polyform A2 buoy at $36.8$ centimeters wide, and it is desired to detect this object at a distance of 60 meters. According to (\ref{eq:pixel_width}), we obtain the width of our object in the image frame as $w_{px} \approx 16$ pixels, and according to (\ref{eq:pixel_width2}), the width in the scaled-down image as only  $w'_{px} \approx 3$ pixels.
 A similar calculation using the sensor information from the FLIR Blackfly camera yields a pixel width of $w_{px}\approx 25$ pixels in the image frame, with a further reduction to $w'_{px} = 4$  pixels in the reduced frame.
-This operation is repeated to predict the object's width in the image frame at distances up to 60 meters, and the results are provided in Table \ref{table:buoy_res}.
+This operation is repeated to predict the object's width in the image frame at distances up to 60 meters, and the results with the FLIR 4K camera are provided in Table \ref{table:buoy_res_4k}, and the results with the HDR camera are provided in Table \ref{table:buoy_res_HDR}.
 
 \begin{table}[htpb]
 \centering
 \begin{tabular}{c|c|c}
 \hline
-\multicolumn{3}{c}{Polyform A2 Buoy Resolution at Range}\\
+\multicolumn{3}{c}{Polyform A2 Buoy Resolution at Range (HDR)}\\
 \hline
 % \textbf{Parameter} & \textbf{Value} \\
 \hline
@@ -912,8 +971,38 @@ Object Distance & Image Frame Width & With Detection \\
 \hline
 \end{tabular}
 \caption{The predicted resolution of a $\mathit{l} = 0.3683$ meter wide object within the Loepard Imaging HDR camera's image frame at multiple distances.}
-\label{table:buoy_res}
+\label{table:buoy_res_HDR}
 \end{table}
+
+\begin{table}[htpb]
+\centering
+\begin{tabular}{c|c|c}
+\hline
+\multicolumn{3}{c}{Polyform A2 Buoy Resolution at Range (FLIR 4K)}\\
+\hline
+% \textbf{Parameter} & \textbf{Value} \\
+\hline
+Object Distance & Image Frame Width & With Detection \\
+\hline
+10 m & 159 px & 25 px \\
+20 m & 79 px & 12 px \\
+30 m & 53 px & 8 px \\
+40 m & 39 px & 6 px \\
+50 m & 31 px & 4 px \\
+60 m & 26 px & 4 px \\
+\hline
+\end{tabular}
+\caption{The predicted resolution of a $\mathit{l} = 0.3683$ meter wide object within the FLIR Blackfly S, 4K camera's image frame at multiple distances.}
+\label{table:buoy_res_4k}
+\end{table}
+
+% Values for 4k Cams:
+% 159	25
+% 79	12
+% 53	8
+% 39	6
+% 31	4
+% 26	4
 
 % \begin{equation*}
 % \begin{split}
@@ -934,60 +1023,121 @@ While this shows that because the image is reduced to $640 \times 640$ pixels, t
 Figure \ref{fig:A2_multi_res} shows a Polyform A2 round buoy at a selection of resolutions. 
 The buoy is still recognizable at a resolution of 16 pixels wide, but lower resolutions are less defined and may create detection issues. %, and becomes less defined at lower resolutions. 
 From this information, the buoy will be easily recognizable at any range by visual inspection, but will become much less defined when the image is scaled down for the visual object detection method.
+%%% DL: When does it look unrecognizable to you?
 As we will discuss in section \ref{yolo}, this method may struggle to detect this size buoy at distances greater than 20 meters.
 
-% Values for 4k Cams:
-% 159	25
-% 79	12
-% 53	8
-% 39	6
-% 31	4
-% 26	4
 
 
 \begin{figure}[htbp]
-\centering
-\begin{subfigure}[t]{0.245\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Images_old/A2.png}
-    \caption{\raggedright{Polyform A2 Buoy}}
-    \label{fig:A2}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.245\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{Images_old/A2_16px.png}
-    \caption{
-    16 pixel width,\\  
-    % $\approx$ 60 m with HDR
-    }
-    \label{fig:A2_16px}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.245\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{Images_old/A2_6px.png}
-    \caption{
-    6 pixel width,\\  
-    % $\approx$ 40 m with HDR \\ 
-    % \& object detection.
-    }
-    \label{fig:A2_6px}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.245\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{Images_old/A2_3px.png}
-    \caption{
-    3 pixel width,\\  
-    % $\approx$ 60 m with HDR \\ 
-    % \& object detection.
-    }
-    \label{fig:A2_3px}
-\end{subfigure}
-\caption{Polyform A2 Buoy (a), visualized at 16 pixels (b), 6 pixels (c), and 3 pixels wide (d).}
-\label{fig:A2_multi_res}
+
+    %-------------------- Row 1 --------------------%
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_xx.png}
+        \caption{90 px}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_36.png}
+        \caption{36 px}
+        \label{36 px}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_26_copy.png}
+        \caption{26 px}
+        \label{fig:img3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_16.png}
+        \caption{16 px}
+        \label{fig:img4}
+    \end{subfigure}
+
+    \vspace{1em}
+
+    %-------------------- Row 2 --------------------%
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_12.png}
+        \caption{12 px}
+        \label{fig:img5}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_08.png}
+        \caption{08 px}
+        \label{fig:img6}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_06.png}
+        \caption{06 px}
+        \label{fig:img7}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.22\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/A2/red_03.png}
+        \caption{03 px}
+        \label{fig:img8}
+    \end{subfigure}
+
+    \caption{Overall caption for the 2×4 subfigure grid.}
+    \label{fig:A2_multi_res}
 \end{figure}
+
+% \begin{figure}[htbp]
+% \centering
+% \begin{subfigure}[t]{0.245\textwidth}
+%     \centering
+%     \includegraphics[width=\textwidth]{Images/A2.png}
+%     \caption{\raggedright{Polyform A2 Buoy}}
+%     \label{fig:A2}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.245\textwidth}
+%     \centering
+%     \includegraphics[width=\textwidth]{Images/A2_16px.png}
+%     \caption{
+%     16 pixel width,\\  
+%     % $\approx$ 60 m with HDR
+%     }
+%     \label{fig:A2_16px}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.245\textwidth}
+%     \centering
+%     \includegraphics[width=\textwidth]{Images/A2_6px.png}
+%     \caption{
+%     6 pixel width,\\  
+%     % $\approx$ 40 m with HDR \\ 
+%     % \& object detection.
+%     }
+%     \label{fig:A2_6px}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.245\textwidth}
+%     \centering
+%     \includegraphics[width=\textwidth]{Images/A2_3px.png}
+%     \caption{
+%     3 pixel width,\\  
+%     % $\approx$ 60 m with HDR \\ 
+%     % \& object detection.
+%     }
+%     \label{fig:A2_3px}
+% \end{subfigure}
+% \caption{Polyform A2 Buoy (a), visualized at 16 pixels (b), 6 pixels (c), and 3 pixels wide (d).}
+% \label{fig:A2_multi_res}
+% \end{figure}
 
 \subsubsection{Dynamic Range}
 \label{dynamic_range}
@@ -1002,23 +1152,46 @@ Dynamic range, expressed in dB, is given by
  \text{Dynamic Range (dB)} = 20 \log{\left( \frac{N_{sat}}{N_{noise}}\right) }
 \end{equation}
 where $N_{sat}/N_{noise}$ is the ratio of the saturation to the minimum signal a camera sensor can detect above background noise.
-\ac{HDR} imaging can be achieved in two primary ways. 
+\ac{HDR} imaging is commonly achieved with one of two methods. 
 The first is sequential multi-exposure \ac{HDR}, in which multiple frames captured at different exposure settings are combined to extend the tonal range \cite{Reinhard2010}. An example is provided in Figure \ref{fig:hdr_example}.
 While effective for static scenes, as the relative velocity between the sensor and objects within the frame increases, ghosting and motion blur can occur.
-The second method uses an in-sensor technique called dual-conversion gain (DCG) that combines multiple light exposure levels within a single frame of exposure. 
+The second method uses an in-sensor technique called \ac{DCG}, illustrated in Figure~\ref{fig:DCG_example}.
+This method assigns multiple exposure durations to different regions of the imaging sensor to achieve results similar to multi-exposure HDR within a single captured frame.
+This method avoids ghosting, but collects fewer total photons than the multi-exposure method.
+
+The IMX490 CMOS sensor in the Leopard Imaging camera achieves 120 dB of dynamic range via Sony’s \ac{DOL-HDR} architecture. 
+This approach blends software and hardware approaches to effectively bridge the gap between multi-exposure and DCG methods.
+The CMOS sensor is covered with large and small photodiode micro-lenses (see Figure~\ref{fig:HDR_CMOS}) so that each sub-pixel size experiences a different photon flux during a given exposure time. Additionally, each sub-pixel output is read at both high and low ``conversion gains'' to effectively read multiple exposure levels within a single image capture.
+This method offers a robust solution for high-contrast, high-motion imaging scenes, simultaneously eliminating motion artifacts from multi-exposure \ac{HDR} and enabling precise temporal alignment for sensor fusion.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Images/HDR_CMOS.png}
+    \caption{Sony IMX490 (Leopard Imaging HDR camera), and simulated representation of micro-lens structure used to focus light on large and small photodiodes \cite{lucid_HDR}.}
+    \label{fig:HDR_CMOS}
+\end{figure}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\linewidth]{Images_old/hdr_example.png}
-    \caption{Three sequential image frames captured with separate exposure settings. These frames are digitally combined to achieve a higher dynamic range. \cite{Reinhard2010}.}
+    \includegraphics[width=0.9\linewidth]{Images/ghosting.png}
+    \caption{Five sequential image frames captured with separate exposure settings (left). These frames are digitally combined to achieve a higher dynamic range (right), but may result in ghosting in the final composite image (blue box). \cite{Reinhard2010}.}
     \label{fig:hdr_example}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\linewidth]{Images/dcg.png}
+    \caption{Visualization of dual-conversion gain: how an imaging sensor captures multiple levels of light exposure during a single capture \cite{koifman2013}.}
+    \label{fig:DCG_example}
 \end{figure}
 
 \subsubsection{Camera Selection} \label{camera_selection}
 
-Since both the FLIR Blackfly and Leopard Imaging cameras possess a similar pixel density when image scaling before processing is considered.  
+Both the FLIR Blackfly and Leopard Imaging cameras have similar pixel densities.
+% , when image scaling is considered before processing.  
 However, the standard dynamic range of the FLIR Blackfly makes them prone to over-exposure and reduced contrast under extreme lighting conditions. 
 In contrast, the Leopard Imaging \ac{HDR} camera provides substantially greater dynamic range, which enables more consistent color fidelity and image contrast under suboptimal lighting conditions, as illustrated in Figure~\ref{fig:HDR_compare}.
+
+
 
 \begin{figure}[htbp]
 \centering
@@ -1043,27 +1216,30 @@ This device integrates a differential-corrected \ac{GPS} receiver with a multi-a
 The \ac{GPS} receiver is configured to operate at an update rate of 5 Hz, while the integrated \ac{IMU} provides high-frequency inertial measurements at 105.4 Hz.
 The Pinpoint unit delivers timing accuracy on the order of 10-100 nanoseconds for \ac{GPS}-disciplined time signals, which is a critical function for multi-sensor synchronization discussed in Section~\ref{time_sync}.
 
+
+
 \section{Networking and Computing Hardware} \label{sec:Atlas_LAN}
 
 Minion distributes processing tasks across multiple computing nodes to achieve real-time performance and robust system operation.
-The computing infrastructure consists of an embedded computer integrated with the camera sensors for video encoding and streaming, and twin computers serving as the primary processing platforms, with a \ac{GbE} \ac{LAN} connecting all systems and sensors. 
-% This architecture distributes computational workloads according to sensor proximity and processing requirements while maintaining centralized coordination through the Robot Operating System middleware. 
-The following subsections detail the hardware specifications, system architecture, and network infrastructure that enable real-time multi-modal perception for maritime object detection and sensor fusion.
+The computing infrastructure consists of an embedded computer (Jetson Xavier) integrated with the camera enclosure for video encoding and streaming, and twin computers (Minion PCs) serving as the primary processing platforms, with a \ac{GbE} \ac{LAN} connecting all systems. The connectivity of these subsystems and the sensors selected for use with this research is provided in Figure~\ref{fig:network_diagram}
+The following subsections detail the hardware specifications, subsystem architecture, and network infrastructure that enable real-time multi-modal perception for maritime object detection and sensor fusion.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\textwidth]{Images/minion_lan.png}
+\caption{Block diagram of the distributed computing structure and network structure for Minion.}
+\label{fig:network_diagram}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Camera Enclosure} \label{comp:camera_enclosure}
 
-The camera enclosure serves as the integrated perception module for the vessel, and was designed as a self-contained sensor and computing subsystem that can operate independently on a different maritime or ground vehicle. 
-Integrated into this subsystem is a NVIDIA Jetson AGX Xavier, which is a compact, capable PC designed for edge video processing.
-As an edge computing device, this solution is well-suited for real-time video processing.
-While this solution is efficient for video tasks, it is also costly and can be challenged by thermal issues if not adequately managed.
-Key hardware specifications for the NVIDIA Jetson are provided in Table \ref{table:Xavier_hardware}.
-Its 8-core ARM processor and unified memory architecture share 32 GB between the \ac{CPU} and \ac{GPU}, providing ample computational capacity for handling multiple video pipelines, network protocols, and system-level services. 
-At the same time, the integrated 512-core Volta \ac{GPU} performs hardware-accelerated video encoding, which is required for concurrent high-resolution streams.  
-A memory bandwidth of 136.5 GB/s, thereby minimizing latency and improving overall pipeline efficiency.
-Each video feed follows a two-branch processing pipeline before being transmitted to Atlas, detailed in section \ref{time_sync_cam}.
-Raw video frames from the HDR imager are received via USB 3.0, parsed by custom software, and then split into two processing branches. 
-One branch is compressed and saved locally to the Jetson's internal storage, while the other branch is compressed and down-sampled to a reduced frame rate before being streamed over the \ac{LAN}.% to one of the Minion PCs in Atlas.
+The camera enclosure serves as the integrated perception module for the vessel, and was designed as a self-contained sensor and computing subsystem that can operate independently on multiple autonomous vehicles.
+To realize this modularity while meeting the demanding requirements of the Minion’s sensor suite, the subsystem needed to integrate a high-end edge computing device capable of concurrently processing six camera feeds.
+
+The NVIDIA Jetson AGX Xavier was selected to meet these demands.
+Key specifications (listed in Table \ref{table:Xavier_hardware}) include a compact $105 \,\text{mm} \times 105 \,\text{mm} \times 65 \,\text{mm}$ form factor, an 8-core ARM processor, and a unified memory architecture that allocates 32 GB of shared memory between the CPU and GPU with a maximum power draw of 30 Watts.
+With a memory bandwidth of up to 136.5 GB/s, this platform provides ample resources for handling six simultaneous video pipelines.
 
 \begin{table}[htpb]
 \centering
@@ -1081,12 +1257,19 @@ Storage (Primary) & 32 GB eMMC 5.1 \\
 Storage (Secondary) & 500 GB NVMe \\
 Network Interface & Gigabit Ethernet \\
 Operating System & Ubuntu 18.04 \\
+Physical Dimensions & $105 \,\text{mm} \times 105 \,\text{mm} \times 65 \,\text{mm}$ \\
+Idle Power Consumption & 10 watts\\
+Maximum Power Consumption & 30 watts \\
 \hline
 \end{tabular}
 \caption{NVIDIA Jetson Xavier - Hardware and Operating System Specifications}
 \label{table:Xavier_hardware}
 \end{table}
 
+Despite this capability, the Xavier cannot support the complete Minion autonomy stack. 
+Instead, it functions as a dedicated edge-processing node for processing camera compression and network streaming. 
+Raw video from each camera is received over USB3.0 and routed through a multi-branch GStreamer pipeline.
+This process is described in greater detail in Section~\ref{time_sync_cam}. Importantly for the discussion of distributed computation on Minion, the Jetson down-samples the video feeds from their native frame rate to 5 \ac{fps} before transmitting them over the network.
 The reduction in frame rate is essential to maintain reliable network performance given limited bandwidth, as discussed in Section \ref{comp:network}. 
 The maximum bitrate $R_{\text{max}}$ of each stream is computed at runtime as a function of the target frame rate, frame resolution, and compression ratio, defined by
 
@@ -1095,20 +1278,22 @@ The maximum bitrate $R_{\text{max}}$ of each stream is computed at runtime as a 
 \end{equation}
 where $N_x$ and $N_y$ are the image width and height in pixels, $f$ is the desired frame rate, and $b$ is the effective bits per pixel after compression.
 For the HDR camera, the image resolution is $2880 \times 1860$ pixels, encoded in YUV 4:2:0 format using H.264 compression.
-An empirically derived constant of $b = 0.14$ bits per pixel captures the combined effects of color subsampling and compression efficiency under typical scene conditions.
-These values yield a bitrate for the HDR camera of
+The parameter $b$ represents the effective number of bits per pixel after H.264 compression. 
+This ratio is generally between 0.1 and 0.2 and is primarily dependent on the scene's visual complexity. 
+Static or low-detail scenes compress more efficiently, while scenes with high motion or fine texture require more bits to maintain comparable visual quality. 
+In operation, there is generally quite a bit of movement within the scene, but it is not very complex, with a large portion of the \ac{FOV} occupied by the sky and the water surface.
+Empirical testing of the camera's stream during operation found a balance between quality and compression at $b=0.14$.
+% An empirically derived constant of $b = 0.14$ bits per pixel captures the combined effects of color subsampling and compression efficiency under typical scene conditions.
+These values yield a bitrate for the HDR camera of $\approx 3.75\; \text{Mbps}$ with the populated equation
 \begin{equation}
-    \begin{split}
-        R_{\text{max}} & = (2880 \times 1860\; \text{px}) (0.14 \;\text{bits/px})(5\;\text{s}^{-1})  \\
-        & \approx 3.75\; \text{Mbps}
-    \end{split}
+        R_{\text{max}} = (2880 \times 1860\; \text{px}) (0.14 \;\text{bits/px})(5\;\text{s}^{-1})\;.
 \end{equation}
-and scales linearly with frame rate.
-This adaptive bitrate approach ensures that each video stream remains within the available network bandwidth while maintaining adequate visual fidelity for perception and data logging.
+
+This adaptive bitrate approach scales linearly with frame rate and ensures that each video stream remains within the available network bandwidth while maintaining adequate visual fidelity for perception and data logging.
 By default, each camera operates at 5 \ac{fps}, aligning with the data rate of other perception sensors, but this rate can be adjusted in the future using this approach. % to accommodate specific mission or testing requirements.
 
-While compressed video is streamed to Atlas, the Jetson simultaneously records each feed at its native frame rate to the onboard 500 GB solid-state NVMe drive as redundant backups. 
-Each recording is saved in 120-second segments along with a corresponding \ac{CSV} file pairing every image frame with a timestamp from the system clock. 
+While compressed video is streamed to Atlas, the Jetson simultaneously records each feed at its native frame rate to the onboard 500 GB solid-state \ac{NVMe} drive as redundant backups. 
+Each recording is saved in 120-second segments, along with a corresponding \ac{CSV} file that pairs each image frame with a timestamp from the system clock. 
 The same system clock provides the \ac{PTP} signal used by the Livox LiDAR units for time synchronization.
 This ensures consistent temporal alignment across all sensors within the perception suite. 
 Consequently, the timestamps in the recorded \ac{CSV} files are also essential for validating the synchronization of the camera and LiDAR, as discussed in Section \ref{time_sync_cam}.
@@ -1116,26 +1301,23 @@ Consequently, the timestamps in the recorded \ac{CSV} files are also essential f
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Atlas} \label{atlas}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%% From Chapter 2 - integrate? %%%%%%%%%%%
-% The Atlas computing system, developed in 2018, serves as the \ac{USV}'s central processing unit and network backbone.
-% Comprised of a 16-port network switch and a redundant twin-PC architecture, Atlas manages synchronization across all network endpoints and sensors while performing high-level data processing.
-% The integrated software stack was developed by \ac{ERAU} Faculty and students and is built upon the \ac{ROS} framework and processes the multi-sensor data stream in near real-time to enable autonomous maritime operations.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The Atlas computing system, developed in 
 
-The primary computing infrastructure  on Minion, termed Atlas, consists of two identical high-performance workstation computers, designated Minion A and Minion B.  
-Built with enterprise-grade components, these systems provide the computational resources required for real-time sensor processing, object detection, and autonomous navigation.
-Table~\ref{table:Minion_hardware} summarizes the key system specifications.
-The dual-computer configuration enables parallel software development and operational redundancy, with one system dedicated to production tasks while the other supports software testing or serves as a backup.
+% The primary computing infrastructure  on Minion, termed Atlas, consists of two identical computers, designated Minion A and Minion B.  
+% Built with enterprise-grade components, these systems provide the computational resources required for real-time sensor processing, object detection, and autonomous navigation.
+% Table~\ref{table:Minion_hardware} summarizes the key system specifications.
+% The dual-computer configuration enables parallel software development and operational redundancy: one system serves as the primary PC, and the other supports software testing or serves as a backup.
+Atlas serves as Minion’s central computing and networking backbone. 
+The system consists of a 16-port gigabit switch and two identical PCs, forming a redundant twin-computer architecture that manages time synchronization, ingests high-frequency sensor data, and performs high-level perception and autonomy processes. 
+With software built on the \ac{ROS} Noetic framework, Atlas coordinates multi-sensor data streams in real-time to support reliable autonomous maritime operation. Table~\ref{table:Minion_hardware} summarizes the hardware configuration of each Atlas PC.
  
-Each Atlas PC is equipped with computing hardware selected to meet the real-time requirements of multimodal perception and autonomous operation.  
-The Intel Xeon processor features six cores and twelve parallel threads that support concurrent execution of perception and navigation processes.  
-Tasks requiring low-latency response, such as LiDAR point-cloud filtering and sensor updates, benefit from the processor’s strong single-thread performance, while the multi-core architecture efficiently handles computationally intensive workloads.  
-Hardware vector acceleration further enhances numerical operations common to point-cloud transformations and coordinate-frame calculations.
-
-The system’s 16 GB of high-bandwidth DDR4 memory provides sufficient capacity to buffer LiDAR point clouds, video imagery, and navigation data, while offering the throughput necessary for their continuous exchange between processing threads.  
-This configuration ensures that shared data structures remain accessible without introducing latency, maintaining consistent performance during extended autonomous operation. 
+% Each Atlas PC is built with hardware selected to meet the requirements of real-time perception and autonomous operation, as shown in Table~\ref{table:Minion_hardware}. 
+% The Intel Xeon processor features six cores and 12 threads, enabling parallel execution of perception and navigation processes.  
+% Tasks requiring low-latency response, such as LiDAR point-cloud filtering and sensor updates, benefit from the processor’s strong single-thread performance. 
+% At the same time, the multi-core architecture supports Minion’s software structure of multiple concurrent ROS nodes.
+% The system’s 16 GB of DDR4 memory provides sufficient capacity to buffer LiDAR point clouds, video imagery, and navigation data, while offering the throughput necessary for their continuous exchange between processing threads.  
+% This configuration ensures that shared data structures remain accessible without introducing latency, maintaining consistent performance during extended autonomous operation.
+Each Atlas PC is equipped with a six-core, twelve-thread Intel Xeon processor selected to support the concurrent workloads characteristic of a multi-modal autonomous system. Low-latency tasks—such as LiDAR point-cloud filtering, sensor state updates, and navigation loops—benefit from the processor’s strong single-thread performance. At the same time, the multi-core architecture accommodates Minion’s distributed ROS software structure, in which perception, logging, diagnostics, and autonomy functions run in separate nodes with independent callback queues. The system’s 16~GB of DDR4 memory provides sufficient capacity for buffering LiDAR clouds, high-resolution video frames, and navigation data while maintaining consistent throughput during extended autonomous operation.
 
 \begin{table}[htpb]
 \centering
@@ -1159,15 +1341,16 @@ Network Interface & (6x) Gigabit Ethernet \\% + 802.11ac WiFi \\
 
 The \ac{GPU} is Atlas's primary processor for the system’s vision pipeline, handling both video decoding and neural network inference for object detection.
 Each GTX~1080 features 2,560 CUDA cores built on NVIDIA’s Pascal architecture with 8~GB of GDDR5X memory, providing the computational throughput required for highly parallel image-based workloads.  
-  
-Incoming video streams from the camera enclosure are first decoded using hardware-accelerated video codecs, allowing for the efficient processing of multiple high-resolution feeds.
-The resulting frames are passed to the Atlas' \ac{GPU} for accelerated tensor calculations and algorithms described in Chapter \ref{realtime_object_detection}.
-% NVIDIA's CUDA architecture has long been the industry standard for efficient execution of convolutional neural networks such as YOLOv8.
-Executing both video decoding and inference workloads on the \ac{GPU} frees up system resources for other system tasks.
+Incoming video streams from the camera enclosure are first decoded using hardware-accelerated video codecs, enabling efficient processing of multiple high-resolution feeds.
+The resulting image frames are passed to the \ac{GPU}, where a neural network performs object detection (see Section~\ref{yolo}).
+This computational capacity exceeds that of the Jetson AGX Xavier, whose embedded GPU has roughly one-quarter as many CUDA cores and is already tasked with processing and compressing camera feeds and embedding precision timing information into each stream. 
+Offloading vision-based tasks to Atlas reduces the computational load on the Jetson, preventing latency, maintaining frame throughput, and preserving the accuracy of timestamp embedding. 
+For this reason, Atlas executes all vision-based detection while the Jetson remains dedicated to reliable camera processing and timing integrity.
 
-High-speed solid-state storage provides the throughput required to record multiple sensor streams during data collection operations.
-Each recording session captures raw \ac{LiDAR} point cloud data, streamed video imagery, GPS/INS pose information, and mapped object-detection results, producing aggregate data rates that can easily exceed 200 \ac{MBps}.
-A solid-state NVMe hard drive is used on each Minion PC to store this data, and is much more robust to the motion experienced in choppy waves and in transport on the \ac{USV}'s trailer.
+Each recording session captures raw \ac{LiDAR} point clouds, high-resolution video imagery, GPS/INS pose data, and mapped object-detection results, producing aggregate data rates that routinely exceed 200~\ac{MBps}. On Atlas, the incoming video stream is decoded into individual full-resolution frames prior to logging, thereby eliminating the compression efficiency of the encoded stream and substantially increasing the volume of data written per second.
+Each recording session captures raw \ac{LiDAR} point cloud data, video frames, GPS/INS pose information, and mapped object-detection results, producing aggregate data rates that can easily exceed 200 \ac{MBps}.
+To sustain these write rates, each Minion PC is equipped with a solid-state \ac{NVMe} drive to provide the high throughput required for real-time logging. 
+Unlike traditional spinning hard disk drives (HDDs), solid-state \ac{NVMe} drives have significantly faster I/O and are more mechanically resilient to the vibration encountered during operation and transport.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1184,18 +1367,16 @@ For this reason, ROS data is recorded locally on Atlas, and administrative visua
 A high-level overview of network utilization used in this dissertation is provided in Table \ref{table:network_bandwidth}.
 \textcolor{red}{MRG: "I thought you said that the cameras were operating at 5 Hz.  Also, aren't there two Minion PCs?  There also isn't any "software connections" in this diagram and the velodynes are missing."}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=.9\textwidth]{Images/minion_lan.png}
-\caption{LAN diagram for Minion USV}
-\label{fig:network_diagram}
-\end{figure}
+
 
 Although the LAN is primarily dedicated to perception and data logging, it also supports administrative access for configuration, diagnostics, and remote operation.
 The Jetson Xavier is configured as a headless device and is accessed remotely via Secure Shell (SSH) for camera configuration, operation, and monitoring.
 Each Minion PC can be accessed via SSH for terminal access, enabling development tasks and troubleshooting.
 Additionally, a full desktop environment  of Minion A or Minion B can be accessed using a Virtual Network Computing (VNC) or Remote Desktop Protocol (RDP) client for system administration purposes.
 Two Ubiquiti Prism AC units, equipped with high-gain antennas, provide long-range connectivity between the vessel and the ground station, while a Ubiquiti Dream Machine provides remote access to onshore monitoring computers, henceforth referred to as the ground station. 
+
+% Each LiDAR sensor operates in single-return mode, primarily to reduce network load.
+% % A conservative estimate of 16 bytes per point results in $\approx 23 \text{ Mbps}$, which would quickly overwhelm the \ac{USV}'s network.
 
 \begin{table}[htbp]
 \centering
@@ -1258,7 +1439,7 @@ Finally, the resulting spatial calibration accuracy and temporal alignment obtai
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.7\linewidth]{Images_old/tf_tree_1.png}
+    \includegraphics[width=0.7\linewidth]{Images/tf_tree_1.png}
     \caption{Transform hierarchy for Minion: the GPS-defined \texttt{map} frame anchors the ROS TF tree used for LiDAR–camera projection and sensor fusion.}
     \label{fig:tf_tree}
 \end{figure}
@@ -1338,14 +1519,14 @@ Following these practices produces robust intrinsic estimates across the full im
 \makebox[\textwidth][c]{%
     \begin{subfigure}[t]{0.3\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Images_old/cam_calib_1.png}
+        \includegraphics[width=\textwidth]{Images/cam_calib_1.png}
         \caption{A single example of detected and reprojected checkerboard corners.}
         \label{fig:cam_calib_1}
     \end{subfigure}
     \hspace{2em}
     \begin{subfigure}[t]{0.625\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Images_old/cam_calib_2.png}
+        \includegraphics[width=\textwidth]{Images/cam_calib_2.png}
         \caption{Reprojection of sample target poses into the 3D world frame after calibration.}
         \label{fig:cam_calib_2}
     \end{subfigure}%
@@ -1461,7 +1642,7 @@ Distant features such as long walls and window lines reveal minor angular errors
 
 \begin{subfigure}[t]{0.75\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Images_old/checkerboard.png}
+    \includegraphics[width=\textwidth]{Images/checkerboard.png}
     \caption{Composite image of multiple checkerboard target locations.}
     \label{fig:checkerboard}
 \end{subfigure}
@@ -1470,7 +1651,7 @@ Distant features such as long walls and window lines reveal minor angular errors
 
 \begin{subfigure}[t]{0.75\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Images_old/LiDAR_calib.png}
+    \includegraphics[width=\textwidth]{Images/LiDAR_calib.png}
     \caption{Composite of checkerboard locations in the LiDAR reference frame.}
     \label{fig:LiDAR_calib}
 \end{subfigure}
@@ -1554,13 +1735,13 @@ Comparison between early and final calibration results can be seen by comparing 
 \begin{figure}[htpb]
 \begin{subfigure}{\textwidth}
 \centering
-\includegraphics[width=0.94\linewidth]{Images_old/LiDAR_features.png}
+\includegraphics[width=0.94\linewidth]{Images/LiDAR_features.png}
     \caption{}
 \end{subfigure}
 \bigskip
 \begin{subfigure}{\textwidth}
 \centering
-\includegraphics[width=0.94\linewidth]{Images_old/LiDAR_calib_fence.png}
+\includegraphics[width=0.94\linewidth]{Images/LiDAR_calib_fence.png}
     \caption{}
 \end{subfigure}
 \caption{Vertical (red) and horizontal (green) macro-level features within the point cloud (a) are isolated (b) to support visual refinement of the camera–LiDAR alignment.}
@@ -1568,7 +1749,7 @@ Comparison between early and final calibration results can be seen by comparing 
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{Images_old/LiDAR_overlay4.png}
+    \includegraphics[width=0.8\linewidth]{Images/LiDAR_overlay4.png}
     \caption{Initial calibration result showing early ROI-based alignment with overlaid geometric guides for evaluation.}
     \label{fig:LiDAR_overlay4}
 \end{figure}
@@ -1578,7 +1759,7 @@ Comparison between early and final calibration results can be seen by comparing 
 \bigskip
 % \begin{subfigure}{\textwidth}
 \centering
-\includegraphics[width=0.94\linewidth]{Images_old/LiDAR_overlay3B.png}
+\includegraphics[width=0.94\linewidth]{Images/LiDAR_overlay3B.png}
     \caption{}
     \label{fig:LiDAR_overlay3B.png}
 % \end{subfigure}
@@ -1655,7 +1836,7 @@ Due to the divergent nature of the scanning pattern, a simple visual inspection 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\linewidth]{Images_old/Lidar2Lidar.png}
+    \includegraphics[width=0.9\linewidth]{Images/Lidar2Lidar.png}
     \caption{Example of LiDAR–LiDAR alignment.}
     \label{fig:Lidar2Lidar}
 \end{figure}
@@ -1810,7 +1991,9 @@ This limitation motivated the development of the \ac{SEI}-based synchronization 
 This implementation replaces the caption-based approach with direct timestamp embedding using \ac{SEI} Network Abstraction Layer (NAL) units defined in the H.264/H.265 standard.
 Each video frame receives a GPS-disciplined system timestamp from the NVIDIA Jetson at the instant of capture. These timestamps are stored as 64-bit values (milliseconds since Unix epoch) and attached to each frame via a custom GStreamer extension. % (CustomTimestampMeta).
 This method keeps the timestamp data inextricably linked to the same video layer transmitted over \ac{RTSP}, ensuring that each received video frame has an accurate timestamp, even when dropped frames are encountered.
-The complete video processing pipeline is visualized as a block diagram in Appendix \ref{append_video_pipeline}.
+The complete video processing pipeline is visualized as a block diagram in Figure~\ref{fig_video_pipeline}.
+
+The HDR camera's video feed is processed through three distinct branches to optimize storage, synchronization, and streaming. First, the original video is saved locally to internal storage in H.265 format, maintaining the camera’s native resolution and frame rate. Simultaneously, for each recorded frame, a corresponding computer clock timestamp is logged in CSV format, enabling precise alignment of video frames with system time. Finally, the video is downsampled to 5 Hz, encoded with H.264, and embedded with the relevant timestamps; this lower bandwidth stream is then transmitted via RTSP for remote access, ensuring that both high-fidelity local backup and real-time synchronized video streaming are available for subsequent analysis or monitoring.
 
 \begin{figure}[htbp]
 \centering
@@ -1873,7 +2056,7 @@ An example of this setup is shown in Figure~\ref{fig:time_sync1}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{Images_old/time_sync1.png}
+\includegraphics[width=\linewidth]{Images/time_sync1.png}
 \caption{Verification of the custom GStreamer pipeline that embeds timestamp data within the RTSP stream. The figure shows the video feed of a real-time clock, transmitted from the camera enclosure to Atlas, used to monitor temporal drift. Terminal windows in the background display the encoded and decoded timestamps, validating pipeline integrity.}
 \label{fig:time_sync1}
 \end{figure}
@@ -1890,7 +2073,7 @@ The lower plot examines the rate of this drift and reveals a strikingly consiste
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{Images_old/temporal_drift.png}
+    \includegraphics[width=0.95\linewidth]{Images/temporal_drift.png}
     \caption{Temporal drift between received image frame timestamp, and timestamp data saved with local video file on the NVIDIA Jetson. The top plot shows the difference in timestamps for each indexed image saved within ROS bags. The bottom plot shows that the drift rate is consistent and linear.}
     \label{fig:temporal drift}
 \end{figure}
@@ -1997,7 +2180,7 @@ The resulting bag files constitute the dataset itself, recorded in real-time dur
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.95\linewidth]{Images_old/ros.png}
+    \includegraphics[width=0.95\linewidth]{Images/ros.png}
     \caption{Software architecture used to acquire synchronized LiDAR, HDR video, GPS, and IMU data within the ROS 1 Noetic framework. Each node publishes time-stamped sensor messages to modality-specific topics, allowing for the raw data to be played back with accurate timing.}
     \label{fig:ros}
 \end{figure}
@@ -2213,7 +2396,7 @@ Additionally, transfer learning is simple to apply, allowing these models to be 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.75\linewidth]{Images_old/YOLO_ex1.png}
+    \includegraphics[width=0.75\linewidth]{Images/YOLO_ex1.png}
     \caption{Rectangular bounding boxes placed around maritime objects detected by a re-trained YOLO detection model.}
     \label{fig:YOLO_tower}
 \end{figure}
@@ -2387,15 +2570,27 @@ Since the YOLO detection stream runs independently at the camera frame rate (5 H
 \section{GB-CACHE} \label{gbcache}
 %\subfile{sections/gbcache}
 
-Grid-Based Clustered Adaptive Concave Hull Extraction (GB-CACHE) is a spatial indexing and clustering methodology specifically designed for efficient processing of three-dimensional point cloud data in maritime environments \cite{coyleE}. 
+Grid-Based Clustered Adaptive Concave Hull Extraction (GB-CACHE) is a spatial indexing and clustering methodology specifically designed for efficient processing of three-dimensional point cloud data in maritime environments \cite{coyleEacceptedForPub}. 
 The algorithm provides rapid object segmentation through grid-based spatial partitioning followed by concave-hull boundary extraction, enabling real-time detection performance essential for autonomous navigation safety.
 
 \subsection{Grid-Based Spatial Indexing and Clustering} \label{gbcache_clustering}
 % ### Grid-Based Spatial Indexing and Clustering
 
-The fundamental principle underlying GB-CACHE is to partition the three-dimensional LiDAR point cloud into a regular grid, facilitating efficient spatial queries and proximity-based clustering. Rather than evaluating pairwise distances among all points, the grid-based approach achieves linear complexity by organizing points into fixed spatial bins. Each grid cell represents a discrete volumetric region, and points falling within the same cell or adjacent cells are considered spatially proximate.
-This spatial indexing approach proves particularly advantageous for maritime LiDAR data. 
-The sparse nature of maritime point clouds enables the grid structure to efficiently isolate regions containing potential objects while discarding empty space, thereby reducing both memory consumption and computational overhead.
+
+GB-CACHE operates on the principle of partitioning the three-dimensional LiDAR point cloud into a regular grid, which enables efficient spatial queries and proximity-based clustering. Using this grid-based approach, points are organized into fixed spatial bins.
+Points that fall within the same grid cell, or adjacent cells, are considered spatially proximate, simplifying subsequent clustering.
+This reduces computational complexity and, as will be shown in section~\ref{sec:gbcache_results}, scales linearly with the number of observed points.
+
+This spatial indexing strategy is particularly advantageous for maritime LiDAR data due to characteristics of both the environment and sensor modality. LiDAR operating at 905 nm in the near-infrared is strongly absorbed by water, preventing most subsurface returns.
+As a result, only reflections from the water surface are recorded with nonzero intensity, making it easy to filter out irrelevant ground points, leaving point clouds that are sparse in open-water conditions. 
+Under such sparsity, the grid-based structure used by GB-CACHE efficiently ignores large empty regions and concentrates computation only where points are present. 
+This reduces memory usage and computational overhead while naturally segmenting candidate regions that may contain objects of interest, thereby streamlining the subsequent object detection operations.
+
+% The fundamental principle underlying GB-CACHE is to partition the three-dimensional LiDAR point cloud into a regular grid, facilitating efficient spatial queries and proximity-based clustering. Rather than evaluating pairwise distances among all points, the grid-based approach achieves linear complexity by organizing points into fixed spatial bins. Each grid cell represents a discrete volumetric region, and points falling within the same cell or adjacent cells are considered spatially proximate.
+% This spatial indexing approach proves particularly advantageous for maritime LiDAR data. 
+% The $905 nm$ wavelength of LIDAR is in the near-infrared part of the electromagnetic spectrum and is strongly absorbed by water, effectively suppressing subsurface returns.
+% This means that only points reflected by the water surface are returned with an intensity greater than zero, making it straightforward to filter out points from the ground plane.
+% The sparse nature of maritime point clouds enables the grid structure to efficiently isolate regions containing potential objects while discarding empty space, thereby reducing both memory consumption and computational overhead.
 
 % ### Concave Hull Extraction and Feature Calculation
 \subsection{Concave Hull and Feature Extraction} \label{gbcache_features}
@@ -2785,13 +2980,21 @@ Ten features are extracted in total.
 Four intensity features are identified from the raw, segmented LiDAR data, and six additional features are derived from the extracted concave hull geometry.
 These ten features are listed with a brief description in Table~\ref{tab:gbcache_features}.
 While Thompson \cite{thompson2017} demonstrated that this classification method outperforms support vector machines, the effectiveness of the features utilized has not been investigated.
-% While this feature set provides comprehensive object characterization, not all features contribute equally to classification performance, and some features exhibit redundancy through correlation. 
-The analysis conducted here examines the effectiveness of the feature set when detecting the six maritime object classes from this dataset, as identified in Section~\ref{sec:data_overview}.
+The analysis here examines the effectiveness of the feature set for detecting the six maritime object classes in this dataset, as identified in Section~\ref{sec:data_overview}.
 
-The dataset comprised 1,232,626 total detection messages, of which 449,478 corresponded to 2,465 unique classified objects tracked across approximately 5.35 hours of LiDAR data. Table~\ref{tbl:class_distribution} summarizes the class distribution in the original detection dataset. The dataset exhibits a substantial class imbalance, with tall buoys accounting for nearly 60 percent of all detection messages. This imbalance reflects the operational environment in which data were collected, where navigational buoys were far more common than larger vessels or fixed structures. The number of unique objects also varies considerably across classes, with some categories represented by only a few dozen tracked instances. These variations influence the statistical reliability of feature estimates and reinforce the need for careful preprocessing. To prevent differences in feature scale from biasing subsequent analysis, all feature values were normalized prior to computing mutual information and other class separability metrics.
+% The dataset comprised 1,232,626 total detection messages, of which 449,478 corresponded to 2,465 unique classified objects tracked across approximately 5.35 hours of LiDAR data. Table~\ref{tbl:class_distribution} summarizes the class distribution in the original detection dataset. The dataset exhibits a substantial class imbalance, with tall buoys accounting for nearly 60 percent of all detection messages. This imbalance reflects the operational environment in which data were collected, where navigational buoys were far more common than larger vessels or fixed structures. The number of unique objects also varies considerably across classes, with some categories represented by only a few dozen tracked instances. These variations influence the statistical reliability of feature estimates and reinforce the need for careful preprocessing. To prevent differences in feature scale from biasing subsequent analysis, all feature values were normalized prior to computing mutual information and other class separability metrics.
+The dataset comprised 1,232,626 total detection messages, of which 449,478 corresponded to 2,465 unique classified objects tracked across approximately 5.35 hours of LiDAR data. Table~\ref{tbl:class_distribution} summarizes the class distribution in the original detection dataset. 
+This data exhibits a substantial class imbalance, with tall buoys accounting for nearly 60 \% of all detection messages. 
+This imbalance reflects the operational environment in which data were collected, where navigational buoys were far more common than larger vessels or fixed structures. 
+The number of unique objects also varies considerably across classes, with some categories represented by only a few dozen tracked instances. 
+These variations influence the statistical reliability of feature estimates and reinforce the need for careful preprocessing. 
+To prevent differences in feature scale from biasing subsequent analysis, all feature values were normalized prior to computing mutual information and other class separability metrics.
+
+
 
 % The substantial class imbalance, with Class 1 accounting for nearly 60\% of all detection messages, reflects the relative prevalence of different object types in the maritime environment sampled during data collection. 
 % All feature values were normalized prior to analysis to ensure that features with different scales contributed equally to mutual information calculations.
+The substantial class imbalance, with Class 1 accounting for nearly 60\% of all detection messages, reflects the relative prevalence of different object types in the maritime environment sampled during data collection. This imbalance may bias mutual information calculations toward features that best discriminate the dominant Tall Buoy class, potentially underweighting features essential to rare classes [Conversation History].
 
 
 
@@ -2825,8 +3028,13 @@ Finally, the \ac{PMI} was used to determine an optimal set of the ten features.
 
 First, the \ac{MI} between each continuous feature $X$ and the discrete class label $Y$ was computed to determine how informative that feature is for distinguishing between object classes. 
 This calculation measures how strongly variations in each feature reduce uncertainty in the associated class label and therefore reflects each feature's individual contribution to object identification. 
-For a continuous variable $X$ and a discrete variable $Y$, mutual information is computed by first discretizing $X$ using histogram binning ($N=20$ bins) to approximate its continuous distribution as a discrete probability mass function. 
-The \ac{MI} between the discretized feature and class label is then computed as:
+For a continuous variable $X$ and a discrete variable $Y$, mutual information is computed by first discretizing $X$ into a discrete probability mass function using histogram binning ($N=20$ bins) to approximate its continuous distribution. 
+The choice of $N=20$ bins for discretization is statistically robust given the massive scale of the dataset (over 1.2 million samples). 
+The Sturges' Rule estimates the bin size as $N = log_2(M)$, yielding 20.24 bins.
+This ensures that the non-parametric estimation of joint and marginal probability distributions remains highly stable, as each bin, on average, contains tens of thousands of data points.
+This conservative binning choice prioritizes statistical stability required for reliable MI estimation, which is critical for guiding the subsequent \ac{mRMR} feature selection criterion.
+
+The \ac{MI} between the discretized feature and class label is computed as:
 \begin{equation}
 I(X;Y)
 = \sum_{x \in X} \sum_{y \in Y} 
@@ -2836,10 +3044,10 @@ p(x,y) \,
 where $p(x,y)$ is the joint probability mass function and $p(x)$, $p(y)$ are the marginal distributions.
 These results are presented in Figure~\ref{MGC_feature_analysis1}.
 The feature ranking by mutual information with class labels revealed substantial variation in discriminative power across the ten features, as shown in Figure~\ref{MGC_feature_analysis2}. 
-The top four features ($f_3, f_4, f_5, f_6$) exhibited \ac{MI} values ranging from 0.59 to 0.64 bits, providing nearly twice the amount of discriminative information for determining the correct object label as the other six.
+The top four features (avg. intensity, std. deviation intensity, max height, and filled cells) exhibited \ac{MI} values ranging from 0.59 to 0.64 bits, providing nearly twice the amount of discriminative information for determining the correct object label as the other six.
 These features appear to capture fundamental geometric properties that distinguish maritime object classes. 
-Features ($f_8, f_{10}, f_9$) exhibited moderate \ac{MI} values (between 0.18 and 0.30 bits), suggesting practical but less critical discriminative power. 
-Finally, the bottom three features ($f_7, f_1, f_2$) demonstrated weak relationships with class labels.
+Features (polygon area, major and minor axis length) exhibited moderate \ac{MI} values (between 0.18 and 0.30 bits), suggesting practical but less critical discriminative power. 
+Finally, the bottom three features (min intensity, max intensity, and polygon perimeter) demonstrated weak relationships with class labels.
 
 \paragraph{Feature redundancy}
 Following the feature-class analysis, PMI was computed to identify redundant measurements between pairs of features.
@@ -2852,13 +3060,27 @@ I(X_i; X_j)
 p(x_i, x_j) \,
 \log \left( \frac{p(x_i, x_j)}{p(x_i)\,p(x_j)} \right).
 \end{equation}
-These results are presented as a $10 \times 10$ matrix, where each element $I(X_i; X_j)$ represents the mutual information between features $i$ and $j$ in Figure~\ref{MGC_feature_analysis_3}.
+These results are presented as a $10 \times 10$ matrix, where each element $I(X_i; X_j)$ represents the mutual information between features $i$ and $j$ in Figure~\ref{MGC_feature_analysis2}.
 The most extreme redundancy is observed in the geometric feature cluster ($f_3, f_4, f_5$), where the pairwise mutual information exceeds 1.4 bits for all three combinations. 
 This indicates that these features capture highly overlapping geometric information about object extent or boundary characteristics. 
-Similarly, features $f_1$ and $f_2$ exhibit a strong correlation (1.28 bits), suggesting redundant intensity measurements. 
+Similarly, features $f_1$ (max. intensity) and $f_2$ (min. intensity)exhibit a strong correlation (1.28 bits), suggesting redundant intensity measurements. 
 The redundancy analysis confirmed that opportunities exist for dimensionality reduction without necessarily sacrificing classification performance.
 
+This process was repeated to examine feature redundancy in predicting each of the six object classes. These results are shown in Figure~\ref{MGC_feature_analysis_class}.
 
+The class-conditional redundancy analysis reveals that the ten GB-CACHE features behave very differently across object categories, with clear implications for classification performance and feature selection.
+
+For the three buoy classes (Tall, A2, A3), the redundancy matrices show consistently low pairwise mutual information, indicating that the features capture largely independent aspects of buoy geometry and reflectivity. 
+Only a small cluster, involving features 5–9, exhibits moderate redundancy. Indeed, these features are all related to geometric properties (excluding minor axis length), suggesting that these measurements capture related structural properties. Overall, buoy detection benefits from the complete feature set, since each feature contributes distinct discriminative information.
+
+The light tower exhibits a more intermixed pattern: pairwise mutual information values are higher and more broadly distributed than in the buoy classes, but do not approach the uniformly high redundancy seen in boats. This intermediate structure suggests that while some features co-vary due to the tower’s consistent vertical geometry, others retain independent value.
+
+In contrast, both boat classes show strong redundancy across nearly all feature pairs. For Jon boats and sailboats, many features behave similarly, producing tightly coupled feature vectors. This likely reflects the geometric regularity of hull surfaces and their consistent reflectivity patterns, which cause multiple measurements to respond in a correlated manner. This is likely due to the distinct physical properties of these classes. Only a single Jon boat was used to train the network, and a small number of sailboats. This likely skewed the PDF of the features observed for these classes. Extending the number and variety of these classes would likely create more variation in the redundancy of these features.
+
+These patterns directly inform classifier design.
+For buoys, the independence of the feature set supports retaining all ten features.
+For boats, the pervasive redundancy indicates that dimensionality reduction is both feasible and beneficial, consistent with the mRMR analysis, which identified a compact two-feature subset with minimal loss of discriminative power.
+Taken together, the class-specific redundancy structure suggests that fixed, global feature subsets may be suboptimal, and that adaptive or class-dependent feature selection strategies could further improve GB-CACHE classification performance.
 
 \paragraph{Optimal Feature Subsets}
 Following the redundancy analysis, the minimum Redundancy Maximum Relevance (mRMR) criterion was employed to identify optimal feature subsets. 
@@ -2897,29 +3119,29 @@ This dramatic reduction from ten to two features suggests that the majority of c
 % The information-theoretic framework established here provides a principled methodology for evaluating future refinements to the classification system. Additional features derived from temporal consistency across multiple frames can enhance detection robustness when single-frame observations are ambiguous. Advanced feature engineering, incorporating shape descriptors such as aspect ratios from fitted ellipses or curvature analysis of concave hull boundaries, may further improve classification accuracy for geometrically similar object classes. The mRMR criterion ensures that such additions contribute genuine discriminative power without polluting the feature space with redundant measurements, which would degrade classifier stability and generalization performance. Future work should investigate whether the two-feature optimal subset maintains classification accuracy when tested on independent validation data collected under different maritime conditions, and whether expanding the object class taxonomy to include additional categories necessitates retaining the currently redundant features.
 
 
-\begin{figure}
+\begin{figure}[htpb]
     \centering
     \includegraphics[width=0.60\linewidth]{Images/feature_analysis_multi_1.png}
-    \caption{Information theoretical analysis of the 10 features used for classification. Feature-class MI evaluation (left), feature-feature MI redundancy matrix (center), mRMR score (right).}
+    \caption{Mutual information computed between each individual feature and the class label, quantifying each feature's discriminative power for object classification. Higher MI values indicate stronger dependency between the feature and class membership}
     \label{MGC_feature_analysis1}
 \end{figure}
-\begin{figure}
+\begin{figure}[htpb]
     \centering
     \includegraphics[width=0.60\linewidth]{Images/feature_analysis_multi_2.png}
-    \caption{Information theoretical analysis of the 10 features used for classification. Feature-class MI evaluation (left), feature-feature MI redundancy matrix (center), mRMR score (right).}
+    \caption{Heatmap visualization of pairwise mutual information between all features, revealing redundant information content. Color intensity represents the strength of statistical dependency between feature pairs, with darker/warmer colors indicating higher redundancy.}
     \label{MGC_feature_analysis2}
 \end{figure}
-\begin{figure}
+\begin{figure}[htpb]
     \centering
     \includegraphics[width=0.6\linewidth]{Images/feature_analysis_multi_3.png}
-    \caption{Information theoretical analysis of the 10 features used for classification. Feature-class MI evaluation (left), feature-feature MI redundancy matrix (center), mRMR score (right).}
+    \caption{Evolution of mRMR scores as features are sequentially added to the optimal subset. The mRMR criterion balances feature relevance (high MI with class labels) against redundancy (low MI with already-selected features). The red circle indicates the optimal subset size where marginal improvement in mRMR score diminishes, representing the knee point in the relevance-redundancy tradeoff.}
     \label{MGC_feature_analysis_3}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htpb]
     \centering
     \includegraphics[width=0.95\linewidth]{Images/feature_analysis_class.png}
-    \caption{Feature MI redundancy matrices for six maritime object classes}
+    \caption{Feature-feature mutual information matrices computed separately for each of the six object classes. Each panel shows the redundancy structure within a single class.}
     \label{MGC_feature_analysis_class}
 \end{figure}
 
@@ -3013,6 +3235,51 @@ This dramatic reduction from ten to two features suggests that the majority of c
 % Beyond computational efficiency, the image frame approach mitigates error propagation inherent to coordinate transformations. Each transformation between reference frames accumulates uncertainties from camera calibration parameters, LiDAR-to-camera registration errors, temporal synchronization misalignment between sensor modalities, and platform motion during data acquisition, including vessel roll, pitch, and yaw dynamics. By fusing detections in the image frame, the methodology requires only a single forward transformation projecting LiDAR detections into image coordinates rather than the bidirectional transformations demanded by world frame fusion. This reduction in transformation operations directly limits cumulative error propagation through the perception pipeline.
 
 % The apparent bias toward the camera sensor coordinate system requires explicit justification, though this bias proves methodologically sound rather than arbitrary. The GB-CACHE detection method, while fundamentally a three-dimensional perception approach operating on volumetric LiDAR data, adapts naturally to a two-dimensional representation through straightforward projection of detected object boundaries into the image plane. Conversely, YOLO and analogous vision-based detection architectures produce inherently two-dimensional bounding boxes that cannot be transformed into three-dimensional world coordinates without supplementary depth information or geometric assumptions that would introduce additional uncertainty into the fusion process. This asymmetry in detection output dimensionality makes the image frame a natural common ground where both modalities can be represented without information loss or geometric ambiguity. Furthermore, consistency with established maritime object detection benchmarks, which typically evaluate performance using image space metrics such as intersection over union and precision-recall characteristics, facilitates direct comparison of the proposed fusion methodology against existing approaches in the literature.
+
+The performance comparison between \ac{YOLO} and \ac{GB-CACHE} provides insight into the capabilities and limitations of vision-based and LiDAR-based object detection methods for autonomous surface vessels. Although both systems operate in real time, they differ fundamentally in training requirements, computational characteristics, and the types of information they provide for decision-making.
+
+\subsection{Training Burden and Data Requirements}
+
+A primary distinction between the two methods lies in the effort required to produce a functional classifier. 
+The YOLO model relies on transfer learning and therefore requires a labeled image dataset.
+For this study, 778 images containing 1,934 manually annotated bounding boxes were generated, requiring approximately 13 hours of labeling. 
+The difficulty of acquiring large, labeled image datasets is a persistent challenge in the maritime domain, where object diversity, environmental variability, and limited publicly available datasets constrain the feasibility of purely vision-based approaches.
+
+In contrast, GB-CACHE requires only that tracked LiDAR objects be associated with a class label.
+From 10,984 LiDAR detections, consolidation into tracked objects produced 916 final training samples across six classes.
+The complete data extraction, feature computation, and classifier training for all six classes were completed in under two hours. 
+This low training burden is a significant advantage for rapid deployment and for operations in environments where labeled vision data is scarce.
+
+% \subsection{Computational Performance and Real-Time Feasibility}
+
+Although YOLO and GB-CACHE both achieve real-time performance, they do so under different computational assumptions.
+YOLOv8 inference was executed on the NVIDIA GTX1080 installed in Atlas, achieving an average latency of 12.1ms.
+% Power measurements showed that the small YOLOv8 model used only 36 watts, demonstrating that modern embedded-to-midrange GPUs can support high-throughput vision inference without excessive energy demands.
+
+GB-CACHE, by contrast, operates entirely on the CPU and has a fixed, deterministic computational structure governed by its grid-based indexing and feature-extraction steps.
+Its runtime remained comfortably below real-time requirements across all bagfiles.
+The deterministic execution profile makes GB-CACHE attractive for safety-critical systems where predictable latency and guaranteed upper bounds on processing time are essential for obstacle avoidance and planning.
+
+% \subsection{Differences in Classification Capability}
+
+The two modalities provide fundamentally different types of information.
+YOLO performs both detection and classification using 2D visual cues such as color, texture, and shape.
+Its mAP50 performance of approximately 0.80 reflects combined localization and classification quality and is influenced by lighting, saturation, glare, and environmental conditions inherent to maritime imagery.
+
+GB-CACHE performs classification only after geometric clustering.
+Its multivariate Gaussian classifier achieved 97.49\% accuracy across six classes, but this figure reflects only semantic class assignment, not object detection performance.
+GB-CACHE’s reliance on 3D geometry enables it to distinguish between classes that present similar visual appearance but different LiDAR signatures.
+This is most clearly evident in the A2 and A3 buoys: YOLO cannot reliably distinguish them due to their similar appearance in 2D imagery and must therefore treat them as a combined ``round buoy’’ class, while GB-CACHE uses geometric measurements within the point cloud to retain them as separate categories.
+
+% \subsection{Implications for Autonomous Maritime Sensing}
+
+The complementary strengths of YOLO and GB-CACHE highlight why neither sensing modality is sufficient on its own for robust perception in maritime environments.
+YOLO provides rich semantic information and strong classification performance under favorable lighting but remains sensitive to illumination extremes and offers limited 3D spatial fidelity.
+GB-CACHE is invariant to lighting, excels at geometric discrimination, but cannot infer color-based attributes and depends on LiDAR visibility, which may be degraded under heavy spray or severe weather.
+
+These findings justify the late-fusion strategy presented later in this dissertation.
+By combining YOLO’s rapid, semantically rich detections with GB-CACHE’s reliable geometric measurements and deterministic timing, the fused system achieves a more complete and fault-tolerant representation of the environment than either modality can provide independently.
+
 
 \section{Late Fusion} \label{fusion}
 \label{fusion_method}
@@ -3274,7 +3541,6 @@ The predominance of two object classes, combined with the modest sample size, li
 The results that follow should therefore be interpreted as indicative rather than comprehensive.
 
 % \subsection{Mean Error Performance}
-
 Table \ref{tab:fusion_mean_error} presents the mean pixel-level error for each modality across all four bounding-box edges. YOLO exhibits the lowest mean error for the top, right, and bottom edges. GB-CACHE demonstrates competitive performance for the left edge and exhibits substantially larger errors for the top and right edges, which aligns with expectations due to the height and perspective sensitivity of LiDAR projections into the image plane. The late-fusion estimate consistently lies between the two independent sensing modalities. This confirms that the static Kalman weighting shifts the fused ROI toward the more reliable source on a per-edge basis.
 
 \begin{table}[htpb]
@@ -3290,7 +3556,7 @@ YOLO        & -4.81 & $\mathbf{2.85}$  & $\mathbf{1.78}$  & $\mathbf{2.61}$   \\
 Late-Fusion & -1.53 & 18.1  & -2.32 & 4.29  \\
 \hline
 \end{tabular}
-\caption{Mean pixel-level error relative to ground truth}
+\caption{Mean pixel-level error relative to ground truth. Minimum values are set in bold type.}
 \label{tab:fusion_mean_error}
 \end{table}
 
@@ -3314,9 +3580,38 @@ YOLO        & 14.70 & 52.74  & $\mathbf{19.67}$  & 13.82   \\
 Late-Fusion & $\mathbf{14.69}$ & $\mathbf{38.99}$  & 21.45 & $\mathbf{12.14}$  \\
 \hline
 \end{tabular}
-\caption{Variance of pixel-level error relative to ground truth}
+\caption{Variance of pixel-level error relative to ground truth. Minimum values are set in bold type.}
 \label{tab:fusion_variance}
 \end{table}
+
+Combining the results of the mean and variance shows a trend toward a normal distribution, even with a small sample size. 
+Figure~\ref{per_edge_error_yolo} shows YOLO with a close to zero mean and a unimodal curve.  
+Figure~\ref{per_edge_error_lidar} shows a similar strong peak close to zero on all but the top edge, though a slight bimodal curve can be seen, which may be discerned. 
+While this small sample size can not confirm or rule out the relevance of this trend, it is worth noting that a combination of the prevalence of tall buoys in the ground truth labels, combined with a steady breeze over the duration of the examined bag would produce a left (or right) bias as all tall buoys would lean over to one side than the other. However, this does not correlate with the bimodal result seen with the top edge.
+
+\begin{figure}[bp]
+    \centering
+
+    %--- Left Subfigure ---%
+    \begin{subfigure}[t]{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/error_hist_yolo.png}
+        \caption{Per-edge error distribution, YOLO}
+        \label{per_edge_error_yolo}
+    \end{subfigure}
+    % \hfill
+    \vspace{1em}
+    %--- Right Subfigure ---%
+    \begin{subfigure}[t]{0.8\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Images/error_hist_lidar.png}
+        \caption{Per-edge error distribution, GB-CACHE}
+        \label{per_edge_error_lidar}
+    \end{subfigure}
+
+    \caption{Histograms of the per-edge error seen for YOLO (a) and GB-CACHE (b) measured from ground truth labels.}
+    \label{per_edge_error}
+\end{figure}
 
 % \subsubsection{Confidence from ground-truth referenced error}
 
@@ -3522,15 +3817,15 @@ v = f_y y' + c_y.
 \label{eq:intrinsics_to_pixels}
 \end{equation}
 
-\chapter{Video Encoding and Timestamp Pipeline} \label{append_video_pipeline}
+% \chapter{Video Encoding and Timestamp Pipeline} \label{append_video_pipeline}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.95\textwidth]{Images/gstreamer_block.png}
-\caption{Block diagram of the GStreamer video pipeline for encoding the NVIDIA Jetson's hardware timestamp within the RTSP video stream. Individual blocks represent functional steps within the pipeline.
-Green blocks represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue blocks with chamfered corners denote timestamp acquisition and application operations within the pipeline.}
-\label{fig_video_pipeline_appendix}
-\end{figure}
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.95\textwidth]{Images/gstreamer_block.png}
+% \caption{Block diagram of the GStreamer video pipeline for encoding the NVIDIA Jetson's hardware timestamp within the RTSP video stream. Individual blocks represent functional steps within the pipeline.
+% Green blocks represent video data entering or leaving the pipeline, while red rectangles indicate local file creation. Light-blue blocks with chamfered corners denote timestamp acquisition and application operations within the pipeline.}
+% \label{fig_video_pipeline_appendix}
+% \end{figure}
 
 % \chapter{test 2}
 
