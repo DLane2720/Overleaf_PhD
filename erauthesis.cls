@@ -508,7 +508,7 @@
 	\vspace{2.0in}%
 	\begin{center}%
 		A \@Dissertation\ Submitted to the College of Engineering Department of Mechanical 
-		Engineering in Partial Fulfillment of the Requirements for the Degree of
+		Engineering in Partial Fulfillment of the Requirements for the Degree of \\[1.2ex]
 		\@degree in \@department
 	\end{center}%
 	\clearpage}
@@ -561,9 +561,14 @@
 		\ifx\@signatureblock\relax
   
     \ifdefined\@coadvisor
-  This \expandafter{\@Dissertation} was prepared under the direction of the candidate's committee chair Dr. \expandafter{\@advisor} and Co-advisor Dr. \expandafter{\@coadvisor}, Daytona Beach Campus and Dissertation Committee Members, Dr. \expandafter{\@committememone}, Daytona Beach Campus, Dr. \expandafter{\@committememtwo}, Daytona Beach Campus,Dr. \expandafter{\@committememthree}, Daytona Beach Campus and Dr. \expandafter{\@committememfour}, Daytona Beach Campus, and has been approved by the Dissertation Committee. It was submitted to the Department of Mechanical Engineering in partial fulfillment of the requirements for the degree of Doctor of Philosophy in Mechanical Engineering.
-\else
-  This \expandafter{\@Dissertation} was prepared under the direction of the candidate's committee chair Dr. \expandafter{\@advisor}, Daytona Beach Campus and Dissertation Committee Members, Dr. \expandafter{\@committememzero}, Daytona Beach Campus, Dr. \expandafter{\@committememone}, Daytona Beach Campus, Dr. \expandafter{\@committememtwo}, Daytona Beach Campus,Dr. \expandafter{\@committememthree}, Daytona Beach Campus and Dr. \expandafter{\@committememfour}, Daytona Beach Campus, and has been approved by the Dissertation Committee. It was submitted to the Department of Mechanical Engineering in partial fulfillment of the requirements for the degree of Doctor of Philosophy in Mechanical Engineering.
+    {%
+  \hyphenpenalty=10000
+  \exhyphenpenalty=10000
+  % \emergencystretch=1em
+  This \expandafter{\@Dissertation} was prepared under the direction of the candidate's committee chair \mbox{Dr. \expandafter{\@advisor}} and Co-advisor \mbox{Dr. \expandafter{\@coadvisor}}, Daytona Beach Campus and Dissertation Committee Members, \mbox{Dr. \expandafter{\@committememone}}, Daytona Beach Campus, \mbox{Dr. \expandafter{\@committememtwo}}, Daytona Beach Campus, \mbox{Dr. \expandafter{\@committememthree}}, Daytona Beach Campus, and has been approved by the Dissertation Committee. It was submitted to the Department of Mechanical Engineering in partial fulfillment of the requirements for the degree of Doctor of Philosophy in Mechanical Engineering. \par
+  }%
+% \else
+%   This \expandafter{\@Dissertation} was prepared under the direction of the candidate's committee chair Dr. \expandafter{\@advisor}, Daytona Beach Campus and Dissertation Committee Members, Dr. \expandafter{\@committememzero}, Daytona Beach Campus, Dr. \expandafter{\@committememone}, Daytona Beach Campus, Dr. \expandafter{\@committememtwo}, Daytona Beach Campus,Dr. \expandafter{\@committememthree}, Daytona Beach Campus, and has been approved by the Dissertation Committee. \mbox{It was submitted to the Department of Mechanical Engineering in partial fulfillment of the requirements for the degree of Doctor of Philosophy in Mechanical Engineering.}
 \fi
 
   
@@ -597,19 +602,19 @@
         
     \end{minipage}%
 \vspace{.3in}
-    \begin{minipage}[t]{0.5\linewidth}
+    \begin{minipage}[t]{1\linewidth}
         \centering
         \noindent\showsignature{2.5in}{\@committememtitle}{\@committememthree\vspace{-2.5ex}}
         
     \end{minipage}%
-    \begin{minipage}[t]{0.5\linewidth}
-        \centering
-        \noindent\showsignature{2.5in}{\@committememtitle}{\@committememfour\vspace{-3ex}}
-    \end{minipage}%
+    % \begin{minipage}[t]{0.5\linewidth}
+%     %     \centering
+%     %     \noindent\showsignature{2.5in}{\@committememtitle}{\@committememfour\vspace{-3ex}}
+%     % \end{minipage}%
 \vspace{.3in}
     \begin{minipage}[t]{0.5\linewidth}
         \centering
-        \noindent\showsignature{2.5in}{\@chairtitle}{\@chair\vspace{-2.5ex}},
+        \noindent\showsignature{2.5in}{\@chairtitle}{\@chair\vspace{-2.5ex}}
             \end{minipage}%
     \begin{minipage}[t]{0.5\linewidth}
         \centering

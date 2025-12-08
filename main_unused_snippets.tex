@@ -1,7 +1,52 @@
 \chapter{Sensing Platform} \label{sensing_platform}
 
 
-        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Although the temporal drift rate is consistent, the initial offset for each ROS bag was unknown.
+% This was determined by examining the first five ROS image messages in each bag and manually pairing them with the corresponding frames in the source video. 
+% This established the time offset between the ROS message timestamps and video frame timestamps, computed as the average difference across the initialization frames
+% \begin{equation}
+%     \Delta t = \frac{1}{N_{init}} \sum_{i=1}^{N_{init}} (t_{video,i} - t_{ROS,i})\;,
+% \end{equation}
+% where $N_{init} = 5$ represents the number of manually aligned initialization frames, $t_{video,i}$ is the video timestamp for frame $i$, and $t_{ROS,i}$ is the corresponding ROS message timestamp. 
+% This offset was then used to programmatically pair the remaining image messages in the bag with their corresponding video frames. For each ROS message ($i > N_{init}$), the predicted video timestamp was calculated as:
+% \begin{equation}
+% \hat{t}_{video,i} = t_{ROS,i} + \Delta t \;.
+% \end{equation}
+
+% A search window $W_i$ of candidate video frames was defined around this predicted timestamp, and the corresponding video frame $f_i$ was then selected by maximizing the Structural Similarity Index (SSIM)
+% \begin{equation}
+%   f_i = \arg\max_{f \in W_i} \text{SSIM}(I_{ROS,i}, I_{video,f})\;,
+% \end{equation}
+% where $I_{ROS,i}$ is the ROS image message and $I_{video,f}$ is the video frame.
+
+% SSIM-based alignment was automated on a subset of frames sampled at one-second intervals across each bag file. The set of frames selected for SSIM verification is defined as:
+% \begin{equation}
+%   S = \{i \mid t_{ROS,i} - t_{ROS,i-1} \geq 1.0\text{ s}\}\;,
+% \end{equation}
+% such that $|S| \approx T_{total}$ where $T_{total}$ is the total recording duration in seconds. Once alignment was confirmed through SSIM scores, the timestamps and frame indices for intermediate frames were linearly interpolated from the verified matches. For frames $j$ between adjacent verified pairs $(i_k, i_{k+1}) \in S$, the frame index was interpolated as
+% \begin{equation}
+%   f_j = f_{i_k} + \left\lfloor \frac{t_{ROS,j} - t_{ROS,i_k}}{t_{ROS,i_{k+1}} - t_{ROS,i_k}} \times (f_{i_{k+1}} - f_{i_k}) \right\rfloor  \;.
+% \end{equation}
+% Accordingly, the total number of frames analyzed by SSIM is approximately equal to the total number of seconds of recorded data.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \subsection*{Summary of Temporal Calibration}
+
+% The primary temporal contribution of this work was the development of a GStreamer-based video pipeline that embeds GPS-disciplined system timestamps directly into the H.264/H.265 stream using \ac{SEI} \ac{NAL} units. 
+% % This approach was designed to replace the previous closed-caption method, which was susceptible to synchronization loss when frames were dropped and difficult to extract data from in real-time. 
+% This allows vision data to be streamed over the UAV LAN without losing synchronization due to dropped frames or network latency.
+% Initial testing demonstrated complete timestamp fidelity between the encoded and decoded video streams.
+
+% However, analysis of the recorded ROS bagfiles revealed a measurable timestamp drift between the Jetson and Atlas PCs during extended operation. Although the precise cause could not be verified, the effect is consistent with the presence of two parallel timestamping mechanisms operating simultaneously. Importantly, the drift was highly linear and therefore correctable.
+
+% To recover accurate alignment, SSIM scores were used as a post-processing metric for frame matching.
+% SSIM provided a reliable means of pairing each ROS image with its corresponding frame from the source video, enabling the removal of temporal drift and the reconstruction of a unified timeline across all camera data.
+% This process ensured that the multimodal dataset used in the object-detection analysis is both temporally and spatially consistent, thereby supporting valid comparison and subsequent sensor-fusion evaluation. 
+% The structure and composition of this fully synchronized dataset are described in the following section.
+
+
 
 %%%%%%%%%%%%%%%%%
 % \subsection{Livox LiDAR} \label{sensors_LiDAR}
